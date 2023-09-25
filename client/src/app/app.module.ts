@@ -5,16 +5,18 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { FlexLayoutModule } from '@angular/flex-layout';
-import { DefaultComponent } from './layouts/default/default.component';
-import { FullwidthComponent } from './layouts/fullwidth/fullwidth.component';
+import { DefaultModule } from './layouts/default/default.module';
+import { FullwidthModule } from './layouts/fullwidth/fullwidth.module';
 
 @NgModule({
-  declarations: [AppComponent, DefaultComponent, FullwidthComponent],
+  declarations: [AppComponent],
   imports: [
     BrowserModule,
     AppRoutingModule,
     BrowserAnimationsModule,
     FlexLayoutModule,
+    DefaultModule,
+    FullwidthModule,
   ],
   providers: [],
   bootstrap: [AppComponent],
