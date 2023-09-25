@@ -4,7 +4,7 @@ import dotenv from "dotenv";
 
 const app = express();
 dotenv.config();
-
+const PORT = process.env.PORT || 8800;
 //DB Connection
 const connectMongoDB = async () => {
   try {
@@ -19,8 +19,8 @@ const connectMongoDB = async () => {
   }
 };
 
-app.listen(8800, () => {
-  console.log(`Server started on http://localhost:${8800}`);
+app.listen(PORT, () => {
+  console.log(`Server started on http://localhost:${PORT}`);
   connectMongoDB().catch((err) => {
     console.error("Failed to connect to MongoDB", err);
     process.exit(1);
