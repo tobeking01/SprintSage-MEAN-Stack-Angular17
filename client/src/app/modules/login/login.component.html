@@ -1,1 +1,72 @@
-<p>login works!</p>
+<div class="p-10 mx-auto mt-5 shadow-lg lg:w-3/12">
+  <h3 class="py-5 text-3xl font-bold text-center">Login</h3>
+
+  <form [formGroup]="loginForm" class="flex flex-col">
+    <!-- Email -->
+    <div class="flex flex-col mt-4 mb-1">
+      <input
+        type="email"
+        placeholder="Email"
+        formControlName="email"
+        required
+        autocomplete="email"
+        class="p-2 border border-gray-300 rounded"
+      />
+      <span
+        *ngIf="
+          loginForm.hasError('required', 'email') &&
+          loginForm.controls['email'].dirty
+        "
+        class="text-red-500"
+        >*A valid email is required</span
+      ><span *ngIf="loginForm.hasError('email', 'email')" class="text-red-500"
+        >*Email is invalid</span
+      >
+    </div>
+
+    <!-- Password -->
+    <div class="flex flex-col mt-4 mb-1">
+      <input
+        type="password"
+        placeholder="Password"
+        formControlName="password"
+        required
+        autocomplete="current-password"
+        class="p-2 border border-gray-300 rounded"
+      />
+      <span
+        *ngIf="
+          loginForm.hasError('required', 'password') &&
+          loginForm.controls['password'].dirty
+        "
+        class="text-red-500"
+        >*Password is required</span
+      >
+    </div>
+
+    <button
+      [disabled]="loginForm.invalid"
+      [class.disabled]="loginForm.invalid"
+      (click)="login()"
+      class="p-2 mt-3 text-white bg-indigo-500 rounded hover:bg-indigo-700"
+    >
+      Login
+    </button>
+  </form>
+
+  <div class="flex justify-center mt-5">
+    <span> Don't have an account?</span
+    ><a routerLink="/register" class="ml-2 text-indigo-600 cursor-pointer">
+      Register Here</a
+    >
+  </div>
+  <div class="flex justify-center mt-5">
+    <span> Forgot your password?</span
+    ><a
+      routerLink="/forgot-password"
+      class="ml-2 text-indigo-600 cursor-pointer"
+    >
+      Click Here to Reset Password!</a
+    >
+  </div>
+</div>

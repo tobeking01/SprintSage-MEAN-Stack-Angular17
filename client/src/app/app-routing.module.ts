@@ -4,6 +4,8 @@ import { DefaultComponent } from './layouts/default/default.component';
 import { DashboardComponent } from './modules/dashboard/dashboard.component';
 import { FullwidthComponent } from './layouts/fullwidth/fullwidth.component';
 import { HomeComponent } from './modules/home/home.component';
+import { LoginComponent } from './modules/login/login.component';
+import { RegisterComponent } from './modules/register/register.component';
 
 const routes: Routes = [
   {
@@ -11,7 +13,7 @@ const routes: Routes = [
     component: DefaultComponent,
     children: [
       {
-        path: '',
+        path: 'dashboard',
         component: DashboardComponent,
       },
     ],
@@ -23,6 +25,14 @@ const routes: Routes = [
       {
         path: 'home',
         component: HomeComponent,
+      },
+      {
+        path: 'login',
+        component: LoginComponent,
+      },
+      {
+        path: 'register',
+        component: RegisterComponent,
       },
     ],
   },
