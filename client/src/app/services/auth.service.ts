@@ -12,7 +12,7 @@ import { apiUrls } from '../api.urls';
 export class AuthService {
   // Using Angular's dependency injection to get an instance of HttpClient.
   // This is used for making HTTP requests.
-  http = inject(HttpClient);
+  constructor(private http: HttpClient) {}
 
   /**
    * Function to call the registration API.
@@ -33,5 +33,10 @@ export class AuthService {
     // Using the post method of HttpClient to make an HTTP POST request.
     // The API endpoint is constructed using a constant and appending the specific route for registration.
     return this.http.post<any>(`${apiUrls.authServiceApi}login`, loginObj);
+  }
+
+  logout() {
+    // Clear user token or any user-related information from the storage
+    localStorage.removeItem('userToken');
   }
 }

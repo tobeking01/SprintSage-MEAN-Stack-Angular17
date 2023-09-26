@@ -15,13 +15,13 @@
         </li>
         <li>
           <button mat-button [matMenuTriggerFor]="menu">
-            <mat-icon>person_outline</mat-icon>
+            <mat-icon>logout</mat-icon>Logout
           </button>
-          <mat-menu #menu="matMenu">
-            <button mat-menu-item>
-              <mat-icon>exit_to_app</mat-icon>Sign Out
-            </button>
-          </mat-menu>
+      <mat-menu #menu="matMenu">
+  <button mat-menu-item (click)="onLogout()"> 
+    <mat-icon>exit_to_app</mat-icon>Sign Out
+  </button>
+</mat-menu>
         </li>
       </ul>
     </div>

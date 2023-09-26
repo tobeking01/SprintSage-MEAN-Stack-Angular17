@@ -5,7 +5,10 @@
   }
 
   .profile-card {
-    text-align: center;
+    display: flex; // Convert to flex container
+    flex-direction: column; // Stack children vertically
+    align-items: center; // Center children horizontally
+    justify-content: center; // Center children vertically
     padding: 0 20px 20px 20px;
 
     img {

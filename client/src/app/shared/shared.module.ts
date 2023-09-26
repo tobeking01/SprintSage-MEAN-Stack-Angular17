@@ -12,6 +12,8 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatIconModule } from '@angular/material/icon';
 import { HeaderFullwidthComponent } from './components/header-fullwidth/header-fullwidth.component';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatCardModule } from '@angular/material/card';
 
 @NgModule({
   declarations: [
@@ -30,6 +32,8 @@ import { HeaderFullwidthComponent } from './components/header-fullwidth/header-f
     MatButtonModule,
     MatMenuModule,
     MatListModule,
+    MatFormFieldModule,
+    MatCardModule,
   ],
   exports: [
     HeaderComponent,

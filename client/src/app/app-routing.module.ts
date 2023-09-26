@@ -6,6 +6,8 @@ import { FullwidthComponent } from './layouts/fullwidth/fullwidth.component';
 import { HomeComponent } from './modules/home/home.component';
 import { LoginComponent } from './modules/login/login.component';
 import { RegisterComponent } from './modules/register/register.component';
+import { ManageProjectComponent } from './modules/manage-project/manage-project.component';
+import { ManageTicketComponent } from './modules/manage-ticket/manage-ticket.component';
 
 const routes: Routes = [
   {
@@ -15,6 +17,14 @@ const routes: Routes = [
       {
         path: 'dashboard',
         component: DashboardComponent,
+      },
+      {
+        path: 'manage-project',
+        component: ManageProjectComponent,
+      },
+      {
+        path: 'manage-ticket',
+        component: ManageTicketComponent,
       },
     ],
   },

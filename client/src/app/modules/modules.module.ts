@@ -10,6 +10,8 @@ import { RegisterComponent } from './register/register.component';
 import { ResetComponent } from './reset/reset.component';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { ManageProjectComponent } from './manage-project/manage-project.component';
+import { ManageTicketComponent } from './manage-ticket/manage-ticket.component';
 
 @NgModule({
   declarations: [
@@ -19,6 +21,8 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
     LoginComponent,
     RegisterComponent,
     ResetComponent,
+    ManageProjectComponent,
+    ManageTicketComponent,
   ],
   imports: [
     CommonModule,
@@ -34,6 +38,8 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
     LoginComponent,
     RegisterComponent,
     ResetComponent,
+    ManageProjectComponent,
+    ManageTicketComponent,
   ],
 })
 export class ModulesModule {}
