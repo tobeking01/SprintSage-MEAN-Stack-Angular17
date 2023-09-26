@@ -36,7 +36,7 @@ export class AuthService {
   }
 
   logout() {
-    // Clear user token or any user-related information from the storage
+    // TODO
     localStorage.removeItem('userToken');
   }
 }

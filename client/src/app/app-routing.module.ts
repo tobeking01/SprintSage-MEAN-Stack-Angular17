@@ -8,6 +8,8 @@ import { LoginComponent } from './modules/login/login.component';
 import { RegisterComponent } from './modules/register/register.component';
 import { ManageProjectComponent } from './modules/manage-project/manage-project.component';
 import { ManageTicketComponent } from './modules/manage-ticket/manage-ticket.component';
+import { TeamComponent } from './modules/team/team.component';
+import { ProfileComponent } from './modules/profile/profile.component';
 
 const routes: Routes = [
   {
@@ -25,6 +27,14 @@ const routes: Routes = [
       {
         path: 'manage-ticket',
         component: ManageTicketComponent,
+      },
+      {
+        path: 'team',
+        component: TeamComponent,
+      },
+      {
+        path: 'profile',
+        component: ProfileComponent,
       },
     ],
   },

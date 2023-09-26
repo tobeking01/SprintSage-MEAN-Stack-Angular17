@@ -12,6 +12,8 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { ManageProjectComponent } from './manage-project/manage-project.component';
 import { ManageTicketComponent } from './manage-ticket/manage-ticket.component';
+import { TeamComponent } from './team/team.component';
+import { ProfileComponent } from './profile/profile.component';
 
 @NgModule({
   declarations: [
@@ -23,6 +25,8 @@ import { ManageTicketComponent } from './manage-ticket/manage-ticket.component';
     ResetComponent,
     ManageProjectComponent,
     ManageTicketComponent,
+    TeamComponent,
+    ProfileComponent,
   ],
   imports: [
     CommonModule,
@@ -40,6 +44,8 @@ import { ManageTicketComponent } from './manage-ticket/manage-ticket.component';
     ResetComponent,
     ManageProjectComponent,
     ManageTicketComponent,
+    TeamComponent,
+    ProfileComponent,
   ],
 })
 export class ModulesModule {}

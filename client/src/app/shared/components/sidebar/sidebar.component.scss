@@ -19,12 +19,6 @@
     }
   }
 
-  /* Style the active link */
-  mat-nav-list a.mat-list-item.list-item-active {
-    background-color: #ffe082;
-    font-weight: bold; // Make the active item's text bold
-  }
-
   /* Add hover effect to mat-list-item */
   mat-nav-list a.mat-list-item:hover {
     background-color: #ffe082;
