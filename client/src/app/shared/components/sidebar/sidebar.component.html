@@ -1,1 +1,50 @@
-<p>sidebar works!</p>
+<mat-nav-list>
+  <div class="profile-card">
+    <div class="header">
+      <h2>{{ userName }}</h2>
+      <h4>{{ email }}</h4>
+    </div>
+    <img
+      src="https://material.angular.io/assets/img/examples/shiba2.jpg"
+      alt="user profile card"
+    />
+  </div>
+  <mat-divider> </mat-divider>
+  <mat-card>
+    <h2 matSubheader>Manage</h2>
+    <a
+      mat-list-item
+      [routerLinkActive]="['list-item-active']"
+      routerLink="/dashboard"
+      ><mat-icon>dashboard</mat-icon> Dashboard</a
+    >
+    <a
+      mat-list-item
+      [routerLinkActive]="['list-item-active']"
+      routerLink="/manage-project"
+      ><mat-icon>create_new_folder</mat-icon> Projects</a
+    >
+    <a
+      mat-list-item
+      [routerLinkActive]="['list-item-active']"
+      routerLink="/manage-ticket"
+      ><mat-icon>local_activity</mat-icon> Tickets</a
+    >
+  </mat-card>
+  <mat-divider> </mat-divider>
+  <mat-card>
+    <h2 matSubheader>Teams</h2>
+    <a
+      mat-list-item
+      [routerLinkActive]="['list-item-active']"
+      routerLink="/team"
+      ><mat-icon>groups</mat-icon> My Team</a
+    >
+    <a
+      mat-list-item
+      [routerLinkActive]="['list-item-active']"
+      routerLink="/profile"
+      ><mat-icon>account_circle</mat-icon> Profile</a
+    >
+  </mat-card>
+</mat-nav-list>

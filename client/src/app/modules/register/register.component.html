@@ -1,0 +1,154 @@
+<div class="p-10 mx-auto mt-5 shadow-lg lg:w-3/12">
+  <h3 class="py-5 text-3xl font-bold text-center">Register</h3>
+
+  <form [formGroup]="registerForm" class="flex flex-col">
+    <!-- First Name -->
+    <div class="flex flex-col mt-4 mb-1">
+      <input
+        type="text"
+        placeholder="First Name"
+        formControlName="firstName"
+        required
+        autocomplete="firstName"
+        class="p-2 border border-gray-300 rounded"
+      />
+      <span
+        *ngIf="
+          registerForm.hasError('required', 'firstName') &&
+          registerForm.controls['firstName'].dirty
+        "
+        class="text-red-500"
+        >*First Name is required</span
+      >
+    </div>
+
+    <!-- Last Name -->
+    <div class="flex flex-col mt-4 mb-1">
+      <input
+        type="text"
+        placeholder="Last Name"
+        formControlName="lastName"
+        required
+        autocomplete="lastName"
+        class="p-2 border border-gray-300 rounded"
+      />
+      <span
+        *ngIf="
+          registerForm.hasError('required', 'lastName') &&
+          registerForm.controls['lastName'].dirty
+        "
+        class="text-red-500"
+        >*Last Name is required</span
+      >
+    </div>
+
+    <!-- Email -->
+    <div class="flex flex-col mt-4 mb-1">
+      <input
+        type="email"
+        placeholder="Email"
+        formControlName="email"
+        required
+        autocomplete="email"
+        class="p-2 border border-gray-300 rounded"
+      />
+      <span
+        *ngIf="
+          registerForm.hasError('required', 'email') &&
+          registerForm.controls['email'].dirty
+        "
+        class="text-red-500"
+        >*A valid email is required</span
+      ><span
+        *ngIf="registerForm.hasError('email', 'email')"
+        class="text-red-500"
+        >*Email is invalid</span
+      >
+    </div>
+
+    <!-- Username -->
+    <div class="flex flex-col mt-4 mb-1">
+      <input
+        type="text"
+        placeholder="Username"
+        formControlName="userName"
+        required
+        autocomplete="userName"
+        class="p-2 border border-gray-300 rounded"
+      />
+      <span
+        *ngIf="
+          registerForm.hasError('required', 'userName') &&
+          registerForm.controls['userName'].dirty
+        "
+        class="text-red-500"
+        >*Username is required</span
+      >
+    </div>
+
+    <!-- Password -->
+    <div class="flex flex-col mt-4 mb-1">
+      <input
+        type="password"
+        placeholder="Password"
+        formControlName="password"
+        required
+        autocomplete="current-password"
+        class="p-2 border border-gray-300 rounded"
+      />
+      <span
+        *ngIf="
+          registerForm.hasError('required', 'password') &&
+          registerForm.controls['password'].dirty
+        "
+        class="text-red-500"
+        >*Password is required</span
+      >
+    </div>
+
+    <!-- Confirm Password -->
+    <div class="flex flex-col mt-4 mb-1">
+      <input
+        type="password"
+        placeholder="Confirm Password"
+        formControlName="confirmPassword"
+        required
+        autocomplete="confirmPassword"
+        class="p-2 border border-gray-300 rounded"
+      />
+      <span
+        *ngIf="
+          registerForm.hasError('required', 'confirmPassword') &&
+          registerForm.controls['confirmPassword'].dirty
+        "
+        class="text-red-500"
+        >*Please confirm your password</span
+      ><span
+        *ngIf="
+          registerForm.hasError(
+            'confirmPasswordValidator',
+            'confirmPassword'
+          ) && registerForm.controls['confirmPassword'].dirty
+        "
+        class="text-red-500"
+        >*Password didn't match!</span
+      >
+    </div>
+
+    <button
+      [disabled]="registerForm.invalid"
+      [class.disabled]="registerForm.invalid"
+      (click)="register()"
+      class="p-2 mt-3 text-white bg-indigo-500 rounded hover:bg-indigo-700"
+    >
+      Register
+    </button>
+  </form>
+
+  <div class="flex justify-center mt-5">
+    <span> Already have an account?</span
+    ><a routerLink="/login" class="ml-2 text-indigo-600 cursor-pointer">
+      Login Here</a
+    >
+  </div>
+</div>
