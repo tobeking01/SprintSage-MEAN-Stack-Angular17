@@ -32,8 +32,8 @@ export const register = async (req, res, next) => {
     });
     if (userExists) {
       return res
-        .status(400)
-        .json(CreateError(400, "Email or Username already exists."));
+        .status(409)
+        .json(CreateError(409, "Email or Username already exists."));
     }
 
     // Generate a salt using bcrypt. This will be used to hash the password.
@@ -107,7 +107,16 @@ export const login = async (req, res, next) => {
     res
       .cookie("access_token", token, { httpOnly: true })
       .status(200)
-      .json({ status: 200, message: "Login Success", data: user });
+      .json({
+        status: 200,
+        message: "Login Success",
+        data: {
+          id: user._id,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          userName: user.userName,
+        },
+      });
   } catch (error) {
     // Log and return any errors that occur during the login process.
     console.error("Error during login:", error);
@@ -125,10 +134,9 @@ export const registerAdmin = async (req, res, next) => {
     }
 
     // Fetch all roles for the admin user. In this context, admins have all roles.
-    const role = await Role.find({});
-    if (!role) {
-      return res.status(400).json(CreateError(400, "User role not found."));
-    }
+    const roles = await Role.find({});
+    if (roles.length === 0)
+      return next(CreateError(400, "User roles not found."));
 
     const userExists = await User.findOne({
       $or: [{ email }, { userName }],
@@ -173,7 +181,7 @@ export const sendEmail = async (req, res) => {
     // Query the database to find a user with the provided email.
     // Note: This search is case insensitive.
     const user = await User.findOne({
-      email: { $regex: "^" + email + "$", $options: "i" },
+      email: new RegExp(`^${email}$`, "i"),
     });
 
     // If the user does not exist, return a 400 error.
@@ -200,6 +208,7 @@ export const sendEmail = async (req, res) => {
 
     // Set up email transport using nodemailer. This example uses Gmail as the email service.
     const mailTransporter = nodemailer.createTransport({
+      // TODO Remove email and pass after test
       service: "gmail",
       auth: {
         user: "tunein9ja@gmail.com",
@@ -209,6 +218,7 @@ export const sendEmail = async (req, res) => {
 
     // Define the content of the email to be sent.
     let mailDetails = {
+      // TODO Remove email and pass after test
       from: "tunein9ja@gmail.com",
       to: email,
       subject: "Reset Password!",
