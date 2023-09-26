@@ -1,6 +1,7 @@
 // Importing necessary modules from Angular's HTTP client module and core module.
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
+import { BehaviorSubject } from 'rxjs';
 
 // Importing the API URLs constants from a separate module.
 import { apiUrls } from '../api.urls';
@@ -13,6 +14,7 @@ export class AuthService {
   // Using Angular's dependency injection to get an instance of HttpClient.
   // This is used for making HTTP requests.
   constructor(private http: HttpClient) {}
+  isLoggedIn$ = new BehaviorSubject<boolean>(this.isLoggedIn());
 
   /**
    * Function to call the registration API.
@@ -30,13 +32,27 @@ export class AuthService {
   }
 
   loginService(loginObj: any) {
-    // Using the post method of HttpClient to make an HTTP POST request.
-    // The API endpoint is constructed using a constant and appending the specific route for registration.
     return this.http.post<any>(`${apiUrls.authServiceApi}login`, loginObj);
   }
 
+  sendEmailService(email: string) {
+    return this.http.post<any>(`${apiUrls.authServiceApi}send-email`, {
+      email: email,
+    });
+  }
+
+  resetPasswordService(resetObj: any) {
+    return this.http.post<any>(`${apiUrls.authServiceApi}reset`, resetObj);
+  }
+
+  isLoggedIn() {
+    const loggedIn = !!localStorage.getItem('user_id');
+    this.isLoggedIn$.next(loggedIn);
+    return loggedIn;
+  }
+
   logout() {
-    // TODO
-    localStorage.removeItem('userToken');
+    localStorage.removeItem('user_id'); // Clear user id from local storage
+    this.isLoggedIn$.next(false); // Update isLoggedIn$ to false
   }
 }

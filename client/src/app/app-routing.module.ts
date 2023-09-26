@@ -1,5 +1,5 @@
 import { NgModule } from '@angular/core';
-import { RouterModule, Routes } from '@angular/router';
+import { RouterModule } from '@angular/router';
 import { DefaultComponent } from './layouts/default/default.component';
 import { DashboardComponent } from './modules/dashboard/dashboard.component';
 import { FullwidthComponent } from './layouts/fullwidth/fullwidth.component';
@@ -10,10 +10,12 @@ import { ManageProjectComponent } from './modules/manage-project/manage-project.
 import { ManageTicketComponent } from './modules/manage-ticket/manage-ticket.component';
 import { TeamComponent } from './modules/team/team.component';
 import { ProfileComponent } from './modules/profile/profile.component';
+import { Routes } from '@angular/router';
+import { ForgetPasswordComponent } from './modules/forget-password/forget-password.component';
 
 const routes: Routes = [
   {
-    path: '',
+    path: 'dashboard',
     component: DefaultComponent,
     children: [
       {
@@ -43,7 +45,7 @@ const routes: Routes = [
     component: FullwidthComponent,
     children: [
       {
-        path: 'home',
+        path: '',
         component: HomeComponent,
       },
       {
@@ -53,6 +55,10 @@ const routes: Routes = [
       {
         path: 'register',
         component: RegisterComponent,
+      },
+      {
+        path: 'forget-password',
+        component: ForgetPasswordComponent,
       },
     ],
   },
