@@ -1,6 +1,7 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { AuthService } from 'src/app/services/auth.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-login',
@@ -9,9 +10,12 @@ import { AuthService } from 'src/app/services/auth.service';
 })
 export class LoginComponent implements OnInit {
   loginForm!: FormGroup;
-  AuthService = inject(AuthService);
-  router: any;
-  constructor(private fb: FormBuilder) {}
+
+  constructor(
+    private fb: FormBuilder,
+    private authService: AuthService,
+    private router: Router
+  ) {}
 
   ngOnInit(): void {
     this.loginForm = this.fb.group({
@@ -20,17 +24,13 @@ export class LoginComponent implements OnInit {
     });
   }
 
-  login() {
-    // Calling the loginService method from the AuthService
-    // with the values from the loginForm as its argument
-    this.AuthService.loginService(this.loginForm.value).subscribe({
-      // The next function handles successful responses from the service
+  login(): void {
+    this.authService.loginService(this.loginForm.value).subscribe({
       next: (res) => {
         alert('Login is Success!');
         this.loginForm.reset();
         this.router.navigate(['dashboard']);
       },
-      // The error function handles errors that might occur during the service call
       error: (err) => {
         console.log(err);
       },

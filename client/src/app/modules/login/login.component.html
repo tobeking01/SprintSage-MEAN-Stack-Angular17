@@ -1,7 +1,8 @@
 <div class="p-10 mx-auto mt-5 shadow-lg lg:w-3/12">
   <h3 class="py-5 text-3xl font-bold text-center">Login</h3>
 
-  <form [formGroup]="loginForm" class="flex flex-col">
+  <!-- Updated form tag to use (ngSubmit) for form submission -->
+  <form [formGroup]="loginForm" class="flex flex-col" (ngSubmit)="login()">
     <!-- Email -->
     <div class="flex flex-col mt-4 mb-1">
       <input
@@ -18,10 +19,12 @@
           loginForm.controls['email'].dirty
         "
         class="text-red-500"
-        >*A valid email is required</span
-      ><span *ngIf="loginForm.hasError('email', 'email')" class="text-red-500"
-        >*Email is invalid</span
       >
+        *A valid email is required
+      </span>
+      <span *ngIf="loginForm.hasError('email', 'email')" class="text-red-500">
+        *Email is invalid
+      </span>
     </div>
 
     <!-- Password -->
@@ -40,14 +43,16 @@
           loginForm.controls['password'].dirty
         "
         class="text-red-500"
-        >*Password is required</span
       >
+        *Password is required
+      </span>
     </div>
 
+    <!-- Updated button tag to be of type submit -->
     <button
       [disabled]="loginForm.invalid"
       [class.disabled]="loginForm.invalid"
-      (click)="login()"
+      type="submit"
       class="p-2 mt-3 text-white bg-indigo-500 rounded hover:bg-indigo-700"
     >
       Login
@@ -55,18 +60,18 @@
   </form>
 
   <div class="flex justify-center mt-5">
-    <span> Don't have an account?</span
-    ><a routerLink="/register" class="ml-2 text-indigo-600 cursor-pointer">
-      Register Here</a
-    >
+    <span> Don't have an account?</span>
+    <a routerLink="/register" class="ml-2 text-indigo-600 cursor-pointer">
+      Register Here
+    </a>
   </div>
   <div class="flex justify-center mt-5">
-    <span> Forgot your password?</span
-    ><a
+    <span> Forgot your password?</span>
+    <a
       routerLink="/forget-password"
       class="ml-2 text-indigo-600 cursor-pointer"
     >
-      Click Here to Reset Password!</a
-    >
+      Click Here to Reset Password!
+    </a>
   </div>
 </div>

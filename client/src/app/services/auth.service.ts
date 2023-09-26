@@ -14,7 +14,7 @@ export class AuthService {
   // Using Angular's dependency injection to get an instance of HttpClient.
   // This is used for making HTTP requests.
   constructor(private http: HttpClient) {}
-  isLoggedIn$ = new BehaviorSubject<boolean>(this.isLoggedIn());
+  isLoggedIn$ = new BehaviorSubject<boolean>(false);
 
   /**
    * Function to call the registration API.
