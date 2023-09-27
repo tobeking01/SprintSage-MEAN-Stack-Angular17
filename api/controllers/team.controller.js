@@ -12,6 +12,7 @@ import { CreateSuccess } from "../utils/success.js";
  */
 export const createTeam = async (req, res, next) => {
   try {
+    console.log("Received Payload:", req.body);
     // Extract team data from request body.
     const { teamName, teamMembers, projects } = req.body;
 
@@ -20,15 +21,29 @@ export const createTeam = async (req, res, next) => {
       return next(CreateError(400, "Invalid team name."));
     }
 
-    // Create and save the new Team instance to the database.
+    if (
+      !Array.isArray(teamMembers) ||
+      teamMembers.some((id) => typeof id !== "string")
+    ) {
+      return next(CreateError(400, "Invalid team members."));
+    }
+
+    if (
+      !Array.isArray(projects) ||
+      projects.some((id) => typeof id !== "string")
+    ) {
+      return next(CreateError(400, "Invalid projects."));
+    }
+
+    // Additional logic to validate if teamMembers and projects exist in your DB can be added here.
+
     const newTeam = new Team({ teamName, teamMembers, projects });
     await newTeam.save();
 
-    // Respond with a success message.
     res.status(201).json(CreateSuccess(201, "Team Created!", newTeam));
   } catch (error) {
-    console.error("Error creating team:", error); // Log the error for debugging.
-    next(CreateError(500, "Internal Server Error!")); // Forward the error to the error-handling middleware.
+    console.error("Error creating team:", error);
+    next(CreateError(500, "Internal Server Error!"));
   }
 };
 

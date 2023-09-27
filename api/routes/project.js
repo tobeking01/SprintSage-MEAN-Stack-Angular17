@@ -22,31 +22,51 @@ const router = express.Router();
  * POST /projects
  * Route to create a new project. Linked with the 'createProject' method from Project Controller.
  */
-router.post("/", verifyToken, verifyAdmin, createProject);
+// router.post("/createProject", verifyToken, verifyAdmin, createProject);
+
+router.post("/createProject", createProject); //test API
 
 /**
  * GET /projects
  * Route to get all projects. Linked with the 'getAllProjects' method from Project Controller.
  */
-router.get("/", verifyToken, getAllProjects);
+// router.get("/getAllProjects", verifyToken, getAllProjects);
+
+router.get("/getAllProjects", getAllProjects); // test
 
 /**
  * GET /projects/:id
  * Route to get a specific project by its ID. Linked with the 'getProjectById' method from Project Controller.
  */
-router.get("/:id", verifyToken, getProjectById);
+// router.get("/getProjectById/:id", verifyToken, getProjectById);
+
+router.get("/getProjectById/:id", getProjectById); // test
 
 /**
  * PUT /projects/:id
  * Route to update a specific project by its ID. Linked with the 'updateProjectById' method from Project Controller.
  */
-router.put("/:id", verifyToken, verifyAdmin, updateProjectById);
+router.put(
+  "/updateProjectById/:id",
+  verifyToken,
+  verifyAdmin,
+  updateProjectById
+);
+
+// router.put("/updateProjectById/:id", updateProjectById); // test
 
 /**
  * DELETE /projects/:id
  * Route to delete a specific project by its ID. Linked with the 'deleteProjectById' method from Project Controller.
  */
-router.delete("/:id", verifyToken, verifyAdmin, deleteProjectById);
+router.delete(
+  "/deleteProjectById/:id",
+  verifyToken,
+  verifyAdmin,
+  deleteProjectById
+);
+
+// router.delete("/deleteProjectById/:id", deleteProjectById); // test
 
 // Exporting the router to be used in the application's main entry file (usually 'app.js' or 'server.js').
 export default router;

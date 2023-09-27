@@ -159,7 +159,7 @@ export const registerAdmin = async (req, res, next) => {
       email,
       password: hashPassword,
       isAdmin: true,
-      roles: role,
+      roles: roles,
     });
     await newAdminUser.save();
 
@@ -217,7 +217,6 @@ export const sendEmail = async (req, res) => {
 
     // Define the content of the email to be sent.
     let mailDetails = {
-      // TODO Remove email and pass after test
       from: process.env.EMAIL_USER,
       to: email,
       subject: "Reset Password!",
