@@ -16,7 +16,9 @@ const router = express.Router();
  * Route to create a new ticket.
  * It uses 'createTicket' method from Ticket Controller.
  */
-router.post("/createTicket", verifyToken, verifyUser, createTicket);
+// router.post("/createTicket", verifyToken, verifyUser, createTicket);
+
+router.post("/createTicket", createTicket);
 
 /**
  * GET /tickets
