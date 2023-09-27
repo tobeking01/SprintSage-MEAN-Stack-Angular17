@@ -42,11 +42,14 @@ export class RegisterComponent implements OnInit {
   register() {
     this.AuthService.registerService(this.registerForm.value).subscribe({
       next: (res) => {
-        alert('User Created!');
+        this.snackBar.open('User Created! You can now log in.', 'Close', {
+          duration: 3000, // Duration to show the Snackbar
+        });
         this.registerForm.reset();
         this.router.navigate(['login']);
       },
       error: (err) => {
+        // Here, consider adding more specific error messages depending on the error received, if possible.
         this.snackBar.open('Registration Failed! Please try again.', 'Close', {
           duration: 3000, // Duration to show the Snackbar
         });
