@@ -1,4 +1,13 @@
 // role.router.js
+import express from "express";
+import {
+  createRole,
+  getAllRoles,
+  updateRole,
+  deleteRole,
+} from "../controllers/role.controller.js";
+import { verifyAdmin } from "../utils/verifyToken.js";
+
 const router = express.Router();
 
 // Route to create a new role. Accessible only by Admins after token verification.
