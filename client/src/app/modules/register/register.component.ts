@@ -40,6 +40,7 @@ export class RegisterComponent implements OnInit {
   }
 
   register() {
+    console.log('Data being sent:', this.registerForm);
     this.AuthService.registerService(this.registerForm.value).subscribe({
       next: (res) => {
         this.snackBar.open('User Created! You can now log in.', 'Close', {
@@ -50,9 +51,13 @@ export class RegisterComponent implements OnInit {
       },
       error: (err) => {
         // Here, consider adding more specific error messages depending on the error received, if possible.
-        this.snackBar.open('Registration Failed! Please try again.', 'Close', {
-          duration: 3000, // Duration to show the Snackbar
-        });
+        this.snackBar.open(
+          err.error.message || 'Registration Failed! Please try again.',
+          'Close',
+          {
+            duration: 3000, // Duration to show the Snackbar
+          }
+        );
       },
     });
   }

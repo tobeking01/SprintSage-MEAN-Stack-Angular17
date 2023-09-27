@@ -6,11 +6,11 @@ import mongoose from "mongoose";
 // and permissions throughout the application.
 const RoleSchema = mongoose.Schema(
   {
-    role: {
+    name: {
       type: String,
       required: true,
       unique: true, // Ensures that each role is unique within the system
-      enum: ["Admin", "User", "SuperUser"], // Defines the available roles within the system
+      enum: ["user", "admin", "moderator"], // Defines the available roles within the system
     },
   },
   {
@@ -21,4 +21,6 @@ const RoleSchema = mongoose.Schema(
 // Exporting the Role model.
 // The model creates a 'Role' collection in the database using the defined schema and
 // allows for interaction with the Role data throughout the application.
-export default mongoose.model("Role", RoleSchema);
+const Role = mongoose.model("Role", RoleSchema);
+
+export default Role;

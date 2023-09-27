@@ -1,4 +1,5 @@
 // Import necessary libraries, models, and utility functions for user authentication and error handling.
+import express from "express"; // Importing express
 import Role from "../models/Role.js";
 import User from "../models/User.js";
 import bcrypt from "bcryptjs"; // Used for password hashing.
@@ -48,7 +49,7 @@ export const register = async (req, res, next) => {
       userName,
       email,
       password: hashPassword,
-      roles: role,
+      roles: [role._id],
     });
     // Save the user instance to the database.
     await newUser.save();
