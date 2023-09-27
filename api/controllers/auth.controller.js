@@ -208,18 +208,17 @@ export const sendEmail = async (req, res) => {
 
     // Set up email transport using nodemailer. This example uses Gmail as the email service.
     const mailTransporter = nodemailer.createTransport({
-      // TODO Remove email and pass after test
       service: "gmail",
       auth: {
-        user: "tunein9ja@gmail.com",
-        pass: "atdp btpb gzbs vfyi",
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
       },
     });
 
     // Define the content of the email to be sent.
     let mailDetails = {
       // TODO Remove email and pass after test
-      from: "tunein9ja@gmail.com",
+      from: process.env.EMAIL_USER,
       to: email,
       subject: "Reset Password!",
       html: `
