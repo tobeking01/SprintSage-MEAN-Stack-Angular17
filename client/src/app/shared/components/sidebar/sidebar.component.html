@@ -1,8 +1,7 @@
 <mat-nav-list>
   <div class="profile-card">
     <div class="header">
-      <h2>{{ userName }}</h2>
-      <h4>{{ email }}</h4>
+      <h4>{{ userName }}</h4>
     </div>
     <img
       src="https://material.angular.io/assets/img/examples/shiba2.jpg"
@@ -15,9 +14,20 @@
     <a
       mat-list-item
       [routerLinkActive]="['list-item-active']"
-      routerLink="dashboard"
-      ><mat-icon>dashboard</mat-icon> Dashboard</a
+      *ngIf="isModerator"
+      routerLink="moderator-dashboard"
     >
+      <mat-icon>dashboard</mat-icon> Moderator Dashboard
+    </a>
+    <a
+      mat-list-item
+      [routerLinkActive]="['list-item-active']"
+      *ngIf="!isModerator"
+      routerLink="dashboard"
+    >
+      <mat-icon>dashboard</mat-icon> User Dashboard
+    </a>
+
     <a
       mat-list-item
       [routerLinkActive]="['list-item-active']"

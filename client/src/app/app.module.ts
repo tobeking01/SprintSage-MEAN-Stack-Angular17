@@ -1,6 +1,8 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { HttpClientModule } from '@angular/common/http';
+import { HTTP_INTERCEPTORS } from '@angular/common/http';
+import { AuthInterceptor } from './auth.interceptor';
 import { ReactiveFormsModule } from '@angular/forms';
 
 import { AppRoutingModule } from './app-routing.module';
@@ -10,6 +12,7 @@ import { FlexLayoutModule } from '@angular/flex-layout';
 import { DefaultModule } from './layouts/default/default.module';
 import { FullwidthModule } from './layouts/fullwidth/fullwidth.module';
 import { ModulesModule } from './modules/modules.module';
+
 @NgModule({
   declarations: [AppComponent],
   imports: [
@@ -23,7 +26,9 @@ import { ModulesModule } from './modules/modules.module';
     HttpClientModule,
     ReactiveFormsModule,
   ],
-  providers: [],
+  providers: [
+    { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
+  ],
   bootstrap: [AppComponent],
 })
 export class AppModule {}

@@ -1,5 +1,4 @@
 // Import necessary libraries, models, and utility functions for user authentication and error handling.
-import express from "express"; // Importing express
 import Role from "../models/Role.js";
 import User from "../models/User.js";
 import bcrypt from "bcryptjs"; // Used for password hashing.
@@ -309,4 +308,24 @@ export const resetPassword = (req, res, next) => {
       }
     }
   });
+};
+
+// signOut
+export const signOut = async (req, res) => {
+  try {
+    req.session.destroy((err) => {
+      if (err) {
+        console.error("Error destroying session:", err); // Log the error for debugging.
+        return res
+          .status(500)
+          .json(CreateError(500, "Error destroying session!"));
+      }
+      return res
+        .status(200)
+        .json(CreateSuccess(200, "You've been signed out!"));
+    });
+  } catch (err) {
+    console.error("Error during sign out:", err); // Log the error for debugging.
+    return res.status(500).json(CreateError(500, "Error Signing out!"));
+  }
 };

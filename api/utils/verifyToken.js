@@ -13,22 +13,20 @@ const checkTokenExpiry = (err) => {
  * Middleware to verify if the JWT token exists and is valid.
  */
 export const verifyToken = (req, res, next) => {
-  // Extract the 'access_token' from the request cookies.
-  const token = req.cookies.access_token;
+  try {
+    const token = req.cookies.access_token; // Extract token from cookies
+    if (!token) return res.status(403).send({ message: "No token provided!" });
 
-  // If the token is missing, return an authentication error.
-  if (!token) return next(CreateError(401, "You are not authenticated!"));
-
-  // Verify the JWT token's validity using the app's secret key.
-  Jwt.verify(token, process.env.JWT_SECRET, (err, decodedUser) => {
-    if (err) return next(checkTokenExpiry(err)); // Use checkTokenExpiry for error checking.
-
-    // If the token is verified successfully, add the decoded user to the request object.
-    req.user = decodedUser;
-
-    // Move to the next middleware or request handler.
-    next();
-  });
+    // Verify the token using the secret key
+    Jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+      if (err) return res.status(401).send({ message: "Unauthorized!" });
+      req.userId = decoded.id; // Set the user ID for the route handler
+      next();
+    });
+  } catch (error) {
+    console.error("Error during token verification:", error);
+    return res.status(500).send({ message: "Internal Server Error." });
+  }
 };
 
 /**

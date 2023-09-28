@@ -14,6 +14,7 @@ import { ManageProjectComponent } from './manage-project/manage-project.componen
 import { ManageTicketComponent } from './manage-ticket/manage-ticket.component';
 import { TeamComponent } from './team/team.component';
 import { ProfileComponent } from './profile/profile.component';
+import { ModeratorDashboardComponent } from './moderator-dashboard/moderator-dashboard.component';
 
 @NgModule({
   declarations: [
@@ -27,6 +28,7 @@ import { ProfileComponent } from './profile/profile.component';
     ManageTicketComponent,
     TeamComponent,
     ProfileComponent,
+    ModeratorDashboardComponent,
   ],
   imports: [
     CommonModule,
@@ -46,6 +48,7 @@ import { ProfileComponent } from './profile/profile.component';
     ManageTicketComponent,
     TeamComponent,
     ProfileComponent,
+    ModeratorDashboardComponent,
   ],
 })
 export class ModulesModule {}

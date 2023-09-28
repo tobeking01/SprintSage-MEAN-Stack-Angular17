@@ -12,6 +12,8 @@ import { TeamComponent } from './modules/team/team.component';
 import { ProfileComponent } from './modules/profile/profile.component';
 import { Routes } from '@angular/router';
 import { ForgetPasswordComponent } from './modules/forget-password/forget-password.component';
+import { ModeratorDashboardComponent } from './modules/moderator-dashboard/moderator-dashboard.component';
+import { RoleGuard } from './services/role.guard';
 
 const routes: Routes = [
   {
@@ -37,6 +39,12 @@ const routes: Routes = [
       {
         path: 'profile',
         component: ProfileComponent,
+      },
+      {
+        path: 'moderator-dashboard',
+        component: ModeratorDashboardComponent,
+        canActivate: [RoleGuard],
+        data: { expectedRole: 'Moderator' },
       },
     ],
   },

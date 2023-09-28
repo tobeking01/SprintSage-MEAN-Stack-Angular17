@@ -1,20 +1,52 @@
-// Importing necessary modules from Angular's HTTP client module and core module.
 import { HttpClient } from '@angular/common/http';
-import { Injectable, inject } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
+import { Injectable } from '@angular/core';
+import { BehaviorSubject, Observable } from 'rxjs';
+import * as jwtDecode from 'jwt-decode';
 
-// Importing the API URLs constants from a separate module.
 import { apiUrls } from '../api.urls';
 
-// Using the @Injectable decorator to make this service available to Angular's dependency injection system.
+type DecodedToken = {
+  // Define the properties of your decoded JWT token here
+  roles: string[];
+  email: string;
+  exp: number; // expiration time
+  iat: number; // issued at
+  // ...
+};
+
+type User = {
+  userName: string;
+  email: string;
+  roles: string[];
+};
 @Injectable({
-  providedIn: 'root', // This ensures the AuthService is available as a singleton instance throughout the application.
+  providedIn: 'root',
 })
 export class AuthService {
-  // Using Angular's dependency injection to get an instance of HttpClient.
-  // This is used for making HTTP requests.
   constructor(private http: HttpClient) {}
+
   isLoggedIn$ = new BehaviorSubject<boolean>(false);
+
+  // Allow null as a value for BehaviorSubject
+  private currentUserSubject: BehaviorSubject<User | null> =
+    new BehaviorSubject<User | null>(null);
+  currentUser$: Observable<User | null> =
+    this.currentUserSubject.asObservable();
+
+  setCurrentUser(user: User | null): void {
+    this.currentUserSubject.next(user); // Use the user variable, not the User type
+  }
+  // Add Method to get User Roles from the user object in BehaviorSubject
+  getUserRoles(): string[] {
+    const user = this.currentUserSubject.value;
+    return user ? user.roles : [];
+  }
+
+  // Update isAdmin method
+  isAdmin(): boolean {
+    const user: User | null = this.currentUserSubject.value;
+    return user?.roles?.includes('admin') ?? false;
+  }
 
   /**
    * Function to call the registration API.
