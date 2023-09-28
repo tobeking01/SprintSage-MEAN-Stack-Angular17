@@ -46,6 +46,11 @@ app.use("/api/team", teamRoute);
 app.use("/api/project", projectRoute);
 app.use("/api/ticket", ticketRoute);
 
+app.use((req, res, next) => {
+  console.log(`Received request: ${req.method} ${req.originalUrl}`);
+  next();
+});
+
 // Middleware to handle 404 errors for routes not found
 app.use((req, res, next) => {
   const err = new Error("Not Found");

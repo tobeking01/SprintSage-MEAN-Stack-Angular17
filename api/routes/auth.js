@@ -6,6 +6,7 @@ import {
   registerAdmin,
   sendEmail,
   resetPassword,
+  registerModerator,
 } from "../controllers/auth.controller.js";
 
 // Initialize the router from the express module.
@@ -49,9 +50,11 @@ router.post("/register", validateRegistration, register);
 // The validateLogin middleware is called first to ensure the request data is valid.
 router.post("/login", validateLogin, login);
 
+router.post("/register-admin", validateRegistration, registerAdmin);
+
 // Setup the POST route for admin registration.
 // Note: There's no validation middleware for this route in the given code.
-router.post("/register-admin", registerAdmin);
+router.post("/register-moderator", validateRegistration, registerModerator);
 
 // HTTP POST route for sending an email to reset password.
 // When a POST request is made to "/send-email", the sendEmail function is invoked.
