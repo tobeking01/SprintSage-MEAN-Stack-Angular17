@@ -14,6 +14,9 @@ import { Routes } from '@angular/router';
 import { ForgetPasswordComponent } from './modules/forget-password/forget-password.component';
 import { ModeratorDashboardComponent } from './modules/moderator-dashboard/moderator-dashboard.component';
 import { RoleGuard } from './services/role.guard';
+import { AdminDashboardComponent } from './modules/admin-dashboard/admin-dashboard.component';
+import { ResetComponent } from './modules/reset/reset.component';
+import { NotFoundComponent } from './modules/not-found/not-found.component';
 
 const routes: Routes = [
   {
@@ -46,6 +49,12 @@ const routes: Routes = [
         canActivate: [RoleGuard],
         data: { expectedRole: 'Moderator' },
       },
+      {
+        path: 'admin-dashboard',
+        component: AdminDashboardComponent,
+        canActivate: [RoleGuard],
+        data: { expectedRole: 'Admin' },
+      },
     ],
   },
   {
@@ -67,6 +76,15 @@ const routes: Routes = [
       {
         path: 'forget-password',
         component: ForgetPasswordComponent,
+      },
+      {
+        path: 'reset',
+        component: ResetComponent,
+      },
+      { path: '', redirectTo: 'home', pathMatch: 'full' }, // redirect to `first-component`
+      {
+        path: '**',
+        component: NotFoundComponent,
       },
     ],
   },

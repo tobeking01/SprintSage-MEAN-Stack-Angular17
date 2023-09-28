@@ -4,6 +4,7 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 
+import { initializeRoles } from "./controllers/role.controller.js";
 import authRoute from "./routes/auth.js";
 import userRoute from "./routes/user.js";
 import roleRoute from "./routes/role.js";
@@ -70,6 +71,8 @@ const connectMongoDB = async () => {
       useUnifiedTopology: true,
     });
     console.log("Connected to MongoDB Database!");
+    // Call the initializeRoles function here, after a successful database connection
+    initializeRoles();
   } catch (error) {
     console.error("Error connecting to the database:", error);
     process.exit(1); // Exit the process with failure

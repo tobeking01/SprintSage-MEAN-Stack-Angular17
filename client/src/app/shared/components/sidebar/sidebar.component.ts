@@ -1,5 +1,6 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { Subscription } from 'rxjs';
+import { Component } from '@angular/core';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { AuthService } from 'src/app/services/auth.service';
 
 @Component({
@@ -7,22 +8,12 @@ import { AuthService } from 'src/app/services/auth.service';
   templateUrl: './sidebar.component.html',
   styleUrls: ['./sidebar.component.scss'],
 })
-export class SidebarComponent implements OnInit, OnDestroy {
-  userName: string = 'default_user'; // default userName
-  isModerator!: boolean;
+export class SidebarComponent {
+  userName$: Observable<string>;
 
-  private subscription!: Subscription;
-  constructor(private authService: AuthService) {}
-
-  ngOnInit() {
-    this.subscription = this.authService.currentUser$.subscribe((user) => {
-      if (user) {
-        this.isModerator = this.authService.isAdmin();
-        this.userName = user.userName; // assuming the user object has an email property
-      }
-    });
-  }
-  ngOnDestroy() {
-    this.subscription.unsubscribe();
+  constructor(private authService: AuthService) {
+    this.userName$ = this.authService.currentUser$.pipe(
+      map((user) => (user ? user.userName : 'default_user'))
+    );
   }
 }

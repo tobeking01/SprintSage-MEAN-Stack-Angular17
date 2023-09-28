@@ -9,7 +9,7 @@ const db = {
   mongoose,
   User,
   Role,
-  ROLES: ["user", "admin", "moderator"],
+  ROLES: ["User", "Moderator", "Admin"],
 };
 
 export default db;

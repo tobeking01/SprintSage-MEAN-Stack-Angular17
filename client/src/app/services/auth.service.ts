@@ -1,24 +1,14 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
-import * as jwtDecode from 'jwt-decode';
 
 import { apiUrls } from '../api.urls';
 
-type DecodedToken = {
-  // Define the properties of your decoded JWT token here
-  roles: string[];
-  email: string;
-  exp: number; // expiration time
-  iat: number; // issued at
-  // ...
-};
-
-type User = {
+interface User {
   userName: string;
   email: string;
   roles: string[];
-};
+}
 @Injectable({
   providedIn: 'root',
 })
@@ -39,7 +29,7 @@ export class AuthService {
   // Add Method to get User Roles from the user object in BehaviorSubject
   getUserRoles(): string[] {
     const user = this.currentUserSubject.value;
-    return user ? user.roles : [];
+    return user?.roles ?? [];
   }
 
   // Update isAdmin method
@@ -77,10 +67,8 @@ export class AuthService {
     return this.http.post<any>(`${apiUrls.authServiceApi}reset`, resetObj);
   }
 
-  isLoggedIn() {
-    const loggedIn = !!localStorage.getItem('user_id');
-    this.isLoggedIn$.next(loggedIn);
-    return loggedIn;
+  isLoggedIn(): boolean {
+    return !!this.currentUserSubject.value;
   }
 
   logout() {

@@ -1,7 +1,7 @@
 // role.router.js
 import express from "express";
 import {
-  createRole,
+  initializeRoles,
   getAllRoles,
   updateRole,
   deleteRole,
@@ -10,8 +10,9 @@ import { verifyAdmin } from "../utils/verifyToken.js";
 
 const router = express.Router();
 
-// Route to create a new role. Accessible only by Admins after token verification.
-router.post("/createRole", verifyAdmin, createRole); // Simplified path
+// Route to initialize  a new role. Accessible only by Admins after token verification.
+// router.post("/createRole", verifyAdmin, createRole); // Simplified path
+// router.post("/createRole", initializeRoles); // Simplified path
 
 // Route to update an existing role by ID. Accessible only by Admins after token verification.
 router.put("/updateRoleById/:id", verifyAdmin, updateRole); // Simplified path

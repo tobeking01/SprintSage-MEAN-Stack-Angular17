@@ -10,7 +10,7 @@ const RoleSchema = mongoose.Schema(
       type: String,
       required: true,
       unique: true, // Ensures that each role is unique within the system
-      enum: ["user", "admin", "moderator"], // Defines the available roles within the system
+      enum: ["User", "Moderator", "Admin"], // Defines the available roles within the system
     },
   },
   {

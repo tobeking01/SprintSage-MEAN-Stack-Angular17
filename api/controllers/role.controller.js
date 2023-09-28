@@ -24,23 +24,24 @@ const isValidRole = (role) => typeof role === "string" && role.trim() !== "";
  * @param {Object} res - Express response object.
  * @param {function} next - Express next middleware function.
  */
-export const createRole = async (req, res, next) => {
+
+export const initializeRoles = async () => {
   try {
-    // Extract role from request body.
-    const { role } = req.body;
+    const rolesToInitialize = ["User", "Moderator", "Admin"];
+    for (const roleName of rolesToInitialize) {
+      const existingRole = await Role.findOne({ name: roleName });
 
-    // Validate the extracted role using the utility function.
-    if (!isValidRole(role)) return next(CreateError(400, "Invalid role data."));
-
-    // Create and save the new Role instance to the database.
-    const newRole = new Role({ role });
-    await newRole.save();
-
-    // Respond with a success message.
-    res.status(201).json(CreateSuccess(201, "Role Created!"));
+      // If role does not exist, create it
+      if (!existingRole) {
+        await Role.create({ name: roleName });
+        console.log(`${roleName} role created successfully.`);
+      } else {
+        console.log(`${roleName} role already exists.`);
+      }
+    }
   } catch (error) {
-    console.error("Error creating role:", error); // Log the error for debugging.
-    next(CreateError(500, "Internal Server Error!")); // Forward the error to the error handling middleware.
+    // Log any errors encountered during the initialization of the roles
+    console.error("Error creating/checking roles:", error);
   }
 };
 

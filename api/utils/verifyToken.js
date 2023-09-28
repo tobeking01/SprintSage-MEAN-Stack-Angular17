@@ -14,18 +14,17 @@ const checkTokenExpiry = (err) => {
  */
 export const verifyToken = (req, res, next) => {
   try {
-    const token = req.cookies.access_token; // Extract token from cookies
-    if (!token) return res.status(403).send({ message: "No token provided!" });
+    const token = req.cookies.access_token;
+    if (!token) return next(CreateError(403, "No token provided!"));
 
-    // Verify the token using the secret key
     Jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-      if (err) return res.status(401).send({ message: "Unauthorized!" });
-      req.userId = decoded.id; // Set the user ID for the route handler
+      if (err) return next(checkTokenExpiry(err));
+      req.userId = decoded.id;
       next();
     });
   } catch (error) {
     console.error("Error during token verification:", error);
-    return res.status(500).send({ message: "Internal Server Error." });
+    return next(CreateError(500, "Internal Server Error."));
   }
 };
 
@@ -34,14 +33,14 @@ export const verifyToken = (req, res, next) => {
  * or if the user is an admin.
  */
 export const verifyUser = (req, res, next) => {
-  // Check if the user ID in the token matches the user ID in request parameters,
-  // or if the user has an admin role.
+  if (!req.user)
+    return next(CreateError(500, "Unexpected error: Missing user object"));
   if (req.user.id === req.params.id.toString() || req.user.isAdmin) {
-    // Move to the next middleware or request handler.
     next();
   } else {
-    // If not, return an authorization error.
-    return next(CreateError(403, "You are not an authorized User!"));
+    return next(
+      CreateError(403, "Unauthorized: You do not have access to this resource!")
+    );
   }
 };
 
@@ -49,17 +48,13 @@ export const verifyUser = (req, res, next) => {
  * Middleware to verify if the user has admin rights.
  */
 export const verifyAdmin = (req, res, next) => {
-  // Check if the user exists in the request (set by verifyToken middleware).
-  if (!req.user) {
-    return next(CreateError(401, "Token is missing or invalid"));
-  }
-
-  // Check if the user has an admin role.
+  if (!req.user)
+    return next(CreateError(500, "Unexpected error: Missing user object"));
   if (req.user.isAdmin) {
-    // Move to the next middleware or request handler.
     next();
   } else {
-    // If not, return an authorization error.
-    return next(CreateError(403, "You are not an authorized Admin!"));
+    return next(
+      CreateError(403, "Unauthorized: You are not an authorized Admin!")
+    );
   }
 };
