@@ -29,7 +29,11 @@ const routes: Routes = [
       },
       {
         path: 'manage-project',
-        component: ManageProjectComponent,
+        loadChildren: () =>
+          import('./modules/manage-project/manage-project.module').then(
+            (m) => m.ManageProjectModule
+          ),
+        // component: ManageProjectComponent,
       },
       {
         path: 'manage-ticket',

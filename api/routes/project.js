@@ -46,12 +46,14 @@ router.get("/getProjectById/:id", getProjectById); // test
  * PUT /projects/:id
  * Route to update a specific project by its ID. Linked with the 'updateProjectById' method from Project Controller.
  */
-router.put(
-  "/updateProjectById/:id",
-  verifyToken,
-  verifyAdmin,
-  updateProjectById
-);
+// router.put(
+//   "/updateProjectById/:id",
+//   verifyToken,
+//   verifyAdmin,
+//   updateProjectById
+// );
+
+router.put("/updateProjectById/:id", updateProjectById); // test
 
 // router.put("/updateProjectById/:id", updateProjectById); // test
 
@@ -59,12 +61,14 @@ router.put(
  * DELETE /projects/:id
  * Route to delete a specific project by its ID. Linked with the 'deleteProjectById' method from Project Controller.
  */
-router.delete(
-  "/deleteProjectById/:id",
-  verifyToken,
-  verifyAdmin,
-  deleteProjectById
-);
+// router.delete(
+//   "/deleteProjectById/:id",
+//   verifyToken,
+//   verifyAdmin,
+//   deleteProjectById
+// );
+
+router.delete("/deleteProjectById/:id", deleteProjectById); // test
 
 // router.delete("/deleteProjectById/:id", deleteProjectById); // test
 

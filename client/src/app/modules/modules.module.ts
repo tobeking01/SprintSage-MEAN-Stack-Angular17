@@ -10,7 +10,6 @@ import { RegisterComponent } from './register/register.component';
 import { ResetComponent } from './reset/reset.component';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
-import { ManageProjectComponent } from './manage-project/manage-project.component';
 import { ManageTicketComponent } from './manage-ticket/manage-ticket.component';
 import { TeamComponent } from './team/team.component';
 import { ProfileComponent } from './profile/profile.component';
@@ -26,7 +25,6 @@ import { NotFoundComponent } from './not-found/not-found.component';
     LoginComponent,
     RegisterComponent,
     ResetComponent,
-    ManageProjectComponent,
     ManageTicketComponent,
     TeamComponent,
     ProfileComponent,
@@ -48,7 +46,6 @@ import { NotFoundComponent } from './not-found/not-found.component';
     LoginComponent,
     RegisterComponent,
     ResetComponent,
-    ManageProjectComponent,
     ManageTicketComponent,
     TeamComponent,
     ProfileComponent,

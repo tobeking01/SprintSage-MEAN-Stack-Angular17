@@ -14,6 +14,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { HeaderFullwidthComponent } from './components/header-fullwidth/header-fullwidth.component';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatCardModule } from '@angular/material/card';
+import { ConfirmationDialogComponent } from './components/confirmation-dialog/confirmation-dialog.component';
+import { MatDialogModule } from '@angular/material/dialog';
 
 @NgModule({
   declarations: [
@@ -21,6 +23,7 @@ import { MatCardModule } from '@angular/material/card';
     SidebarComponent,
     FooterComponent,
     HeaderFullwidthComponent,
+    ConfirmationDialogComponent,
   ],
   imports: [
     CommonModule,
@@ -34,12 +37,14 @@ import { MatCardModule } from '@angular/material/card';
     MatListModule,
     MatFormFieldModule,
     MatCardModule,
+    MatDialogModule,
   ],
   exports: [
     HeaderComponent,
     SidebarComponent,
     FooterComponent,
     HeaderFullwidthComponent,
+    ConfirmationDialogComponent,
   ],
 })
 export class SharedModule {}
