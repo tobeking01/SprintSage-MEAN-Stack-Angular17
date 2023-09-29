@@ -11,6 +11,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatInputModule } from '@angular/material/input';
 import { MatTableModule } from '@angular/material/table';
+import { ReactiveFormsModule } from '@angular/forms';
 
 const routes: Routes = [
   {
@@ -55,6 +56,7 @@ const routes: Routes = [
     MatTableModule,
     MatPaginatorModule,
     MatInputModule,
+    ReactiveFormsModule,
   ],
   exports: [
     MatCardModule,
@@ -65,6 +67,7 @@ const routes: Routes = [
     MatTableModule,
     MatPaginatorModule,
     MatInputModule,
+    ReactiveFormsModule,
   ],
 })
 export class ManageProjectModule {}

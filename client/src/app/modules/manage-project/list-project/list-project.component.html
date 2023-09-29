@@ -1,4 +1,8 @@
 <mat-card>
+  <button mat-raised-button color="primary" (click)="goToAddProject()">
+    Add Project
+  </button>
+
   <mat-table [dataSource]="MyDataSource" matSort>
     <mat-spinner *ngIf="isLoading"></mat-spinner>
     <p *ngIf="error">{{ error }}</p>
@@ -7,6 +11,23 @@
     <ng-container matColumnDef="projectName">
       <mat-header-cell *matHeaderCellDef> Project Name </mat-header-cell>
       <mat-cell *matCellDef="let data"> {{ data.projectName }} </mat-cell>
+    </ng-container>
+    <!-- Define Description Column -->
+    <ng-container matColumnDef="description">
+      <mat-header-cell *matHeaderCellDef> Description </mat-header-cell>
+      <mat-cell *matCellDef="let data"> {{ data.description }} </mat-cell>
+    </ng-container>
+
+    <!-- Define Start Date Column -->
+    <ng-container matColumnDef="startDate">
+      <mat-header-cell *matHeaderCellDef> Start Date </mat-header-cell>
+      <mat-cell *matCellDef="let data"> {{ data.startDate | date }} </mat-cell>
+    </ng-container>
+
+    <!-- Define End Date Column -->
+    <ng-container matColumnDef="endDate">
+      <mat-header-cell *matHeaderCellDef> End Date </mat-header-cell>
+      <mat-cell *matCellDef="let data"> {{ data.endDate | date }} </mat-cell>
     </ng-container>
 
     <!-- Define Action Column -->

@@ -1,0 +1,30 @@
+.add-project {
+  width: 80%;
+  margin: auto;
+}
+form {
+  //   max-width: 80%;
+  margin: auto;
+  padding: 20px;
+  background: #ffffff;
+  box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.1);
+}
+
+mat-form-field {
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+button {
+  margin-right: 10px;
+}
+
+::ng-deep .mat-raised-button.mat-primary {
+  background-color: #3f51b5; // Choose your color
+  color: #ffffff;
+}
+
+::ng-deep .mat-raised-button.mat-warn {
+  background-color: #f44336; // Choose your color
+  color: #ffffff;
+}

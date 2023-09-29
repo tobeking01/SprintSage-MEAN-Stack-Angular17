@@ -16,7 +16,7 @@ import { CreateSuccess } from "../utils/success.js";
 export const createProject = async (req, res, next) => {
   try {
     // Extract project data from request body.
-    const { projectName } = req.body;
+    const { projectName, description, startDate, endDate } = req.body;
 
     // Validate project data.
     if (
@@ -28,14 +28,19 @@ export const createProject = async (req, res, next) => {
     }
 
     // Create and save the new Project instance to the database.
-    const newProject = new Project({ projectName });
+    const newProject = new Project({
+      projectName,
+      description,
+      startDate,
+      endDate,
+    });
     await newProject.save();
 
     // Respond with a success message.
     res.status(201).json(CreateSuccess(201, "Project Created!", newProject));
   } catch (error) {
-    console.error("Error creating project:", error); // Log the error for debugging.
-    next(CreateError(500, "Internal Server Error!")); // Forward the error to the error handling middleware.
+    console.error("Error creating project:", error);
+    next(CreateError(500, "Internal Server Error!"));
   }
 };
 
@@ -72,29 +77,30 @@ export const getProjectById = async (req, res, next) => {
 // Controller to update a specific project by its ID.
 export const updateProjectById = async (req, res, next) => {
   try {
-    // Extracting the project ID from the request parameters.
     const { id } = req.params;
 
-    // Updating the project in the database and returning the new project document.
-    // { new: true } ensures that the updated document is returned.
+    // You can perform additional validation checks here if required
+    if (req.body.startDate && isNaN(Date.parse(req.body.startDate))) {
+      return next(CreateError(400, "Invalid start date."));
+    }
+
+    if (req.body.endDate && isNaN(Date.parse(req.body.endDate))) {
+      return next(CreateError(400, "Invalid end date."));
+    }
+
     const updatedProject = await Project.findByIdAndUpdate(id, req.body, {
       new: true,
     });
 
-    // If the project does not exist, return a 404 error.
     if (!updatedProject) return next(CreateError(404, "Project not found!"));
 
-    // Respond with the updated project document.
     res
       .status(200)
       .json(
         CreateSuccess(200, "Project updated successfully!", updatedProject)
       );
   } catch (error) {
-    // Log any errors that occur during the updating of the project.
     console.error("Error updating project:", error);
-
-    // Forward a 500 Internal Server Error to the error handling middleware.
     next(CreateError(500, "Internal Server Error!"));
   }
 };

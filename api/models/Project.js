@@ -3,29 +3,40 @@ import mongoose, { Schema } from "mongoose";
 // Define a new mongoose schema for a Project
 const ProjectSchema = new Schema(
   {
-    // Define a field for the project's name
     projectName: {
       type: String,
-      required: true, // The project name is required
-      unique: true, // Project names must be unique
+      required: true,
+      unique: true,
     },
-    // Define a field for teams, which is an array of Team references
+    // Add a new field for the project's description
+    description: {
+      type: String,
+      required: true, // You can set this to true if you want the description to be mandatory.
+    },
+    // Add new fields for the project's start and end dates
+    startDate: {
+      type: Date,
+      required: true, // Assuming that the start date is required
+    },
+    endDate: {
+      type: Date,
+      required: true, // You can set this to true if you want the end date to be mandatory.
+    },
     teams: [
       {
         type: Schema.Types.ObjectId,
-        ref: "Team", // References the "Team" model
+        ref: "Team",
       },
     ],
-    // Define a field for tickets, which is an array of Ticket references
     tickets: [
       {
         type: Schema.Types.ObjectId,
-        ref: "Ticket", // References the "Ticket" model
+        ref: "Ticket",
       },
     ],
   },
   {
-    timestamps: true, // Automatically add createdAt and updatedAt timestamps
+    timestamps: true,
   }
 );
 

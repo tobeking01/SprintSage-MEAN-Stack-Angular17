@@ -10,6 +10,9 @@ import { ConfirmationDialogComponent } from 'src/app/shared/components/confirmat
 export interface Project {
   _id?: string;
   projectName: string;
+  description?: string;
+  startDate?: Date;
+  endDate?: Date;
 }
 
 @Component({
@@ -20,13 +23,20 @@ export interface Project {
 export class ListProjectComponent implements OnInit {
   isLoading = false;
   error: string | null = null;
+  showAddProject = false;
   MyDataSource = new MatTableDataSource();
 
   @ViewChild(MatPaginator, { static: false }) paginator!: MatPaginator;
   @ViewChild(MatSort, { static: false }) sort!: MatSort;
 
   projectList!: Project[];
-  displayedColumns: string[] = ['projectName', 'action'];
+  displayedColumns: string[] = [
+    'projectName',
+    'description',
+    'startDate',
+    'endDate',
+    'action',
+  ];
 
   constructor(
     private router: Router,
@@ -90,5 +100,9 @@ export class ListProjectComponent implements OnInit {
 
   filterProject(searchstring: string) {
     this.MyDataSource.filter = searchstring.trim().toLowerCase();
+  }
+
+  goToAddProject() {
+    this.router.navigate(['/dashboard/manage-project/add-project']);
   }
 }

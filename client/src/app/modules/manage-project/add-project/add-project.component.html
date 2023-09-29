@@ -1,1 +1,66 @@
-<p>add-project works!</p>
+<div class="add-project">
+  <form [formGroup]="projectForm" (ngSubmit)="onSubmit()">
+    <mat-form-field appearance="fill">
+      <mat-label>Project Name</mat-label>
+      <input matInput formControlName="projectName" />
+      <mat-error
+        *ngIf="
+          !projectForm.get('projectName')?.valid &&
+          projectForm.get('projectName')?.touched
+        "
+      >
+        Please enter project name
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="fill">
+      <mat-label>Description</mat-label>
+      <textarea matInput formControlName="description"></textarea>
+      <mat-error
+        *ngIf="
+          !projectForm.get('description')?.valid &&
+          projectForm.get('description')?.touched
+        "
+      >
+        Please enter a description
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="fill">
+      <mat-label>Start Date</mat-label>
+      <input matInput type="date" formControlName="startDate" />
+      <mat-error
+        *ngIf="
+          !projectForm.get('startDate')?.valid &&
+          projectForm.get('startDate')?.touched
+        "
+      >
+        Please select a start date
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="fill">
+      <mat-label>End Date</mat-label>
+      <input matInput type="date" formControlName="endDate" />
+      <mat-error
+        *ngIf="
+          !projectForm.get('endDate')?.valid &&
+          projectForm.get('endDate')?.touched
+        "
+      >
+        Please select an end date
+      </mat-error>
+    </mat-form-field>
+
+    <button
+      mat-raised-button
+      color="primary"
+      type="submit"
+      [disabled]="!projectForm.valid"
+    >
+      Add Project
+    </button>
+    <button mat-raised-button color="warn" (click)="onCancel()">Cancel</button>
+    <!-- Cancel Button -->
+  </form>
+</div>
