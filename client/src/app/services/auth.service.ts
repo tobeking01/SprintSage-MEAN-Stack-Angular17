@@ -6,10 +6,13 @@ import { apiUrls } from '../api.urls';
 const USER_KEY = 'auth-user';
 
 export interface User {
+  firstName: string;
+  lastName: string;
   userName: string;
   email: string;
   roles: string[];
 }
+
 @Injectable({
   providedIn: 'root',
 })
@@ -32,15 +35,19 @@ export class AuthService {
   }
 
   loginService(loginObj: any) {
-    return this.http
-      .post<User>(`${apiUrls.authServiceApi}login`, loginObj)
-      .pipe(
-        tap((user) => {
+    return this.http.post<any>(`${apiUrls.authServiceApi}login`, loginObj).pipe(
+      tap((response) => {
+        const user = response.data; // extract user object from data property of the response
+        if (user) {
           sessionStorage.setItem(USER_KEY, JSON.stringify(user));
           this.currentUserSubject.next(user);
           this.isLoggedIn$.next(true);
-        })
-      );
+        } else {
+          console.error('User data is not available in the response');
+          throw new Error('User data is not available');
+        }
+      })
+    );
   }
 
   logout() {

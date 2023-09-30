@@ -3,7 +3,7 @@
 
   <!-- Updated form tag to use (ngSubmit) for form submission -->
   <form [formGroup]="loginForm" class="flex flex-col" (ngSubmit)="login()">
-    <!-- Email -->
+    <!-- Username -->
     <div class="flex flex-col mt-4 mb-1">
       <input
         type="text"
@@ -20,7 +20,7 @@
         "
         class="text-red-500"
       >
-        *A valid email is required
+        *A valid Username is required
       </span>
       <span
         *ngIf="loginForm.hasError('userName', 'userName')"
