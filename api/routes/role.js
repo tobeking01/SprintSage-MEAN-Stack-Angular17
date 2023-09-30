@@ -1,7 +1,6 @@
 // role.router.js
 import express from "express";
 import {
-  initializeRoles,
   getAllRoles,
   updateRole,
   deleteRole,

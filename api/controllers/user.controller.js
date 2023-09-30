@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs"; // Used for password hashing.
 import User from "../models/User.js"; // User model.
 import { CreateError } from "../utils/error.js"; // Utility to create error objects.
 import { CreateSuccess } from "../utils/success.js"; // Utility to create success objects.
+import Role from "../models/Role.js"; // Importing Role model.
 
 // Constant to represent the number of rounds that bcrypt will use when salting passwords.
 // The higher the number, the more secure the hash, but the longer it will take to generate.
@@ -12,8 +13,19 @@ const SALT_ROUNDS = 10;
 export const createUser = async (req, res, next) => {
   try {
     // Destructuring the user details from the request body.
-    const { firstName, lastName, userName, email, password } = req.body;
+    const { firstName, lastName, userName, email, password, role } = req.body;
+    // Check if role is provided.
+    if (!role) {
+      return next(CreateError(400, "Role is required"));
+    }
 
+    // Find the role in the Role collection.
+    const userRole = await Role.findOne({ name: role });
+
+    // If the role is not found, return an error.
+    if (!userRole) {
+      return next(CreateError(400, "Invalid role"));
+    }
     // Validating that all required fields are present.
     if (!firstName || !lastName || !userName || !email || !password) {
       return next(CreateError(400, "All fields are required"));
@@ -28,7 +40,11 @@ export const createUser = async (req, res, next) => {
     const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
 
     // Creating a new User instance and saving it to the database.
-    const user = new User({ ...req.body, password: hashedPassword });
+    const user = new User({
+      ...req.body,
+      password: hashedPassword,
+      roles: [userRole._id],
+    });
     await user.save();
 
     // Preparing the user object to be sent in the response.

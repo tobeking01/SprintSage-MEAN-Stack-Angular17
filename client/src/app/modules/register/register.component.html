@@ -1,4 +1,8 @@
 <div class="p-10 mx-auto mt-5 shadow-lg lg:w-3/12">
+  <div class="register-logo">
+    <span style="font-weight: bold; color: #e83e8c">Sprint</span>
+    <span style="font-weight: bold; color: #6f42c1">Sage</span>
+  </div>
   <h3 class="py-5 text-3xl font-bold text-center">Register</h3>
 
   <form [formGroup]="registerForm" class="flex flex-col">
@@ -134,7 +138,12 @@
         >*Password didn't match!</span
       >
     </div>
-
+    <div class="flex flex-col mt-4 mb-1">
+      <mat-radio-group formControlName="role" aria-label="Select an option">
+        <mat-radio-button value="Student">Student</mat-radio-button>
+        <mat-radio-button value="Professor">Professor</mat-radio-button>
+      </mat-radio-group>
+    </div>
     <button
       [disabled]="registerForm.invalid"
       [class.disabled]="registerForm.invalid"

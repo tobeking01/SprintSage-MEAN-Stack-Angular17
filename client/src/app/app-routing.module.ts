@@ -12,7 +12,7 @@ import { TeamComponent } from './modules/team/team.component';
 import { ProfileComponent } from './modules/profile/profile.component';
 import { Routes } from '@angular/router';
 import { ForgetPasswordComponent } from './modules/forget-password/forget-password.component';
-import { ModeratorDashboardComponent } from './modules/moderator-dashboard/moderator-dashboard.component';
+import { ProfessorDashboardComponent } from './modules/professor-dashboard/professor-dashboard.component';
 import { RoleGuard } from './services/role.guard';
 import { AdminDashboardComponent } from './modules/admin-dashboard/admin-dashboard.component';
 import { ResetComponent } from './modules/reset/reset.component';
@@ -48,10 +48,10 @@ const routes: Routes = [
         component: ProfileComponent,
       },
       {
-        path: 'moderator-dashboard',
-        component: ModeratorDashboardComponent,
+        path: 'professor-dashboard',
+        component: ProfessorDashboardComponent,
         canActivate: [RoleGuard],
-        data: { expectedRole: 'Moderator' },
+        data: { expectedRole: 'Professor' },
       },
       {
         path: 'admin-dashboard',
@@ -95,7 +95,7 @@ const routes: Routes = [
 ];
 
 @NgModule({
-  // imports: [RouterModule.forRoot(routes, { enableTracing: true })],
+  // imports: [RouterModule.forRoot(routes, { enableTracing: true })], // for debugging
   imports: [RouterModule.forRoot(routes)],
 
   exports: [RouterModule],

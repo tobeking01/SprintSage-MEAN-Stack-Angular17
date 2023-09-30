@@ -32,6 +32,7 @@ export class RegisterComponent implements OnInit {
         userName: ['', Validators.required],
         password: ['', Validators.required],
         confirmPassword: ['', Validators.required],
+        role: ['Student', Validators.required], // Set default to Student and make it required
       },
       {
         validator: confirmPasswordValidator('password', 'confirmPassword'),
@@ -41,7 +42,14 @@ export class RegisterComponent implements OnInit {
 
   register() {
     console.log('Data being sent:', this.registerForm);
-    this.AuthService.registerService(this.registerForm.value).subscribe({
+    if (this.registerForm.invalid) {
+      return; // Do not proceed if form is invalid.
+    }
+
+    const formValue = this.registerForm.value;
+    console.log(formValue);
+
+    this.AuthService.registerService(formValue).subscribe({
       next: (res) => {
         this.snackBar.open('User Created! You can now log in.', 'Close', {
           duration: 3000, // Duration to show the Snackbar
@@ -50,14 +58,16 @@ export class RegisterComponent implements OnInit {
         this.router.navigate(['login']);
       },
       error: (err) => {
-        // Here, consider adding more specific error messages depending on the error received, if possible.
-        this.snackBar.open(
-          err.error.message || 'Registration Failed! Please try again.',
-          'Close',
-          {
-            duration: 3000, // Duration to show the Snackbar
-          }
-        );
+        // More specific error messages
+        let errorMessage = 'Registration Failed! Please try again.';
+        if (err.status === 0) {
+          errorMessage = 'Server is not available! Please try again later.';
+        } else if (err.error && err.error.message) {
+          errorMessage = err.error.message;
+        }
+        this.snackBar.open(errorMessage, 'Close', {
+          duration: 3000,
+        });
       },
     });
   }

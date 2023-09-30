@@ -1,12 +1,11 @@
 // Importing required modules and functions.
 import express from "express";
 import {
-  register,
+  registerStudentProfessor,
   login,
   registerAdmin,
   sendEmail,
   resetPassword,
-  registerModerator,
 } from "../controllers/auth.controller.js";
 
 // Initialize the router from the express module.
@@ -14,19 +13,24 @@ const router = express.Router();
 
 // Middleware function for validating the data provided for user registration.
 // This function checks that all required fields are provided.
-const validateRegistration = (req, res, next) => {
-  // Checks if all the required fields are present in the request body.
-  if (
-    !req.body.email ||
-    !req.body.password ||
-    !req.body.firstName ||
-    !req.body.lastName ||
-    !req.body.userName
-  ) {
-    // If any of the fields are missing, respond with an error message.
+const allowedRoles = ["Student", "Professor"];
+
+const validateStudentProfessor = (req, res, next) => {
+  const { email, password, firstName, lastName, userName, role } = req.body;
+
+  // Check if all the required fields are present in the request body.
+  if (!email || !password || !firstName || !lastName || !userName || !role) {
     return res.status(400).send("Missing required fields for registration.");
   }
-  // If all required fields are present, call the next middleware or handler.
+
+  // Check if the role assigned is one of the allowed roles.
+  if (!allowedRoles.includes(role)) {
+    return res
+      .status(400)
+      .send("Invalid or not allowed role for registration.");
+  }
+
+  // If all validations pass, call the next middleware or handler.
   next();
 };
 
@@ -42,19 +46,29 @@ const validateLogin = (req, res, next) => {
   next();
 };
 
+const validateAdminRegistration = (req, res, next) => {
+  const { email, password, firstName, lastName, userName, role } = req.body;
+  if (!email || !password || !firstName || !lastName || !userName || !role) {
+    return res.status(400).send("Missing required fields for registration.");
+  }
+  if (role !== "Admin") {
+    return res
+      .status(400)
+      .send("Invalid or not allowed role for registration.");
+  }
+  next();
+};
+
 // Setup the POST route for user registration.
 // The validateRegistration middleware is called first to ensure the request data is valid.
-router.post("/register", validateRegistration, register);
+router.post("/register", validateStudentProfessor, registerStudentProfessor);
 
 // Setup the POST route for user login.
 // The validateLogin middleware is called first to ensure the request data is valid.
 router.post("/login", validateLogin, login);
 
-router.post("/register-admin", validateRegistration, registerAdmin);
-
-// Setup the POST route for admin registration.
-// Note: There's no validation middleware for this route in the given code.
-router.post("/register-moderator", validateRegistration, registerModerator);
+// validate Admin
+router.post("/register-admin", validateAdminRegistration, registerAdmin);
 
 // HTTP POST route for sending an email to reset password.
 // When a POST request is made to "/send-email", the sendEmail function is invoked.

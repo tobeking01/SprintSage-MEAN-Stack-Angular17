@@ -25,14 +25,17 @@ export const verifyToken = (req, res, next) => {
 };
 
 export const verifyUser = (req, res, next) => {
-  if (!req.user)
-    return next(CreateError(500, "Unexpected error: Missing user object"));
+  if (!req.user || !req.params.id)
+    return next(
+      CreateError(500, "Unexpected error: Missing user object or parameters")
+    );
 
-  if (
-    req.user.id === req.params.id.toString() ||
-    req.user.isModerator ||
-    req.user.isAdmin
-  ) {
+  const { id, roles = [] } = req.user;
+  const isUserAllowed =
+    id === req.params.id.toString() ||
+    roles.some((role) => ["moderator", "admin"].includes(role.toLowerCase()));
+
+  if (isUserAllowed) {
     next();
   } else {
     return next(
@@ -54,16 +57,16 @@ export const verifyAdmin = (req, res, next) => {
   }
 };
 
-// Middleware to verify if the user has moderator rights.
-export const verifyModerator = (req, res, next) => {
+// Middleware to verify if the user has Professor rights.
+export const verifyProfessor = (req, res, next) => {
   if (!req.user)
     return next(CreateError(500, "Unexpected error: Missing user object"));
 
-  if (req.user.isModerator || req.user.isAdmin) {
+  if (req.user.isProfessor || req.user.isAdmin) {
     next();
   } else {
     return next(
-      CreateError(403, "Unauthorized: You are not an authorized Moderator!")
+      CreateError(403, "Unauthorized: You are not an authorized Professor!")
     );
   }
 };

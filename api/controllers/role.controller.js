@@ -27,7 +27,7 @@ const isValidRole = (role) => typeof role === "string" && role.trim() !== "";
 
 export const initializeRoles = async () => {
   try {
-    const rolesToInitialize = ["User", "Moderator", "Admin"];
+    const rolesToInitialize = ["Student", "Professor", "Admin"];
     for (const roleName of rolesToInitialize) {
       const existingRole = await Role.findOne({ name: roleName });
 

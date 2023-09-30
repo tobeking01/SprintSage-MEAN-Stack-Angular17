@@ -13,9 +13,11 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { ManageTicketComponent } from './manage-ticket/manage-ticket.component';
 import { TeamComponent } from './team/team.component';
 import { ProfileComponent } from './profile/profile.component';
-import { ModeratorDashboardComponent } from './moderator-dashboard/moderator-dashboard.component';
+import { ProfessorDashboardComponent } from './professor-dashboard/professor-dashboard.component';
 import { AdminDashboardComponent } from './admin-dashboard/admin-dashboard.component';
 import { NotFoundComponent } from './not-found/not-found.component';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatRadioModule } from '@angular/material/radio';
 
 @NgModule({
   declarations: [
@@ -28,7 +30,7 @@ import { NotFoundComponent } from './not-found/not-found.component';
     ManageTicketComponent,
     TeamComponent,
     ProfileComponent,
-    ModeratorDashboardComponent,
+    ProfessorDashboardComponent,
     AdminDashboardComponent,
     NotFoundComponent,
   ],
@@ -38,6 +40,8 @@ import { NotFoundComponent } from './not-found/not-found.component';
     ReactiveFormsModule,
     MatSnackBarModule,
     RouterModule,
+    MatMenuModule,
+    MatRadioModule,
   ],
   exports: [
     DashboardComponent,
@@ -49,7 +53,7 @@ import { NotFoundComponent } from './not-found/not-found.component';
     ManageTicketComponent,
     TeamComponent,
     ProfileComponent,
-    ModeratorDashboardComponent,
+    ProfessorDashboardComponent,
     NotFoundComponent,
     AdminDashboardComponent,
   ],

@@ -9,6 +9,12 @@
   padding-top: 20px;
 }
 
+.login-logo {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
 /* Style for the mat-card containing the login form */
 .login mat-card {
   width: 100%; /* Make the mat-card width 100% inside the login container */

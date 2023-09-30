@@ -2,15 +2,14 @@ import mongoose from "mongoose";
 
 // Defining a schema for the Role data model using mongoose.
 // The Role model is used to define the different user roles within the system
-// such as Admin, User, and SuperUser. Each role has different levels of access
+// such as Admin, Professor, and Student. Each role has different levels of access
 // and permissions throughout the application.
 const RoleSchema = mongoose.Schema(
   {
     name: {
       type: String,
+      enum: ["Admin", "Professor", "Student"], // Adjust the values according to your design.
       required: true,
-      unique: true, // Ensures that each role is unique within the system
-      enum: ["User", "Moderator", "Admin"], // Defines the available roles within the system
     },
   },
   {

@@ -8,29 +8,25 @@ import mongoose, { Schema } from "mongoose";
 // associated with user tokens, usually used for email verification,
 // password resets, and similar functionalities.
 const TokenSchema = mongoose.Schema({
-  // `userId` field stores a reference to the corresponding user object
-  // It's of ObjectId type which is used to create references to other documents.
-  // 'ref' is used to associate the ObjectId with User model.
   userId: {
     type: Schema.Types.ObjectId,
     required: true,
     ref: "User",
   },
-
-  // `token` field stores the actual token string.
-  // This token is used for authentication or other user-related tasks.
   token: {
     type: String,
     required: true,
+    index: true, // Added Index for optimized querying
   },
-
-  // `createdAt` field stores the date at which the token is created.
-  // It has a default value of the current date and time at the moment of token creation.
-  // `expires` sets the expiry time for the token to 300 seconds (5 minutes) after creation.
+  type: {
+    // Added type to differentiate the purpose of the token
+    type: String,
+    required: true,
+  },
   createdAt: {
     type: Date,
     default: Date.now,
-    expires: 300, // Token expiration time in seconds
+    expires: 600, // For instance, increased to 10 minutes
   },
 });
 

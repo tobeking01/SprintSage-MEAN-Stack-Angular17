@@ -1,4 +1,8 @@
 <div class="p-10 mx-auto mt-5 shadow-lg lg:w-3/12">
+  <div class="login-logo">
+    <span style="font-weight: bold; color: #e83e8c">Sprint</span>
+    <span style="font-weight: bold; color: #6f42c1">Sage</span>
+  </div>
   <h3 class="py-5 text-3xl font-bold text-center">Login</h3>
 
   <!-- Updated form tag to use (ngSubmit) for form submission -->
@@ -26,7 +30,7 @@
         *ngIf="loginForm.hasError('userName', 'userName')"
         class="text-red-500"
       >
-        *User Name is invalid
+        *Username is invalid
       </span>
     </div>
 
