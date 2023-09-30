@@ -6,24 +6,27 @@
     <!-- Email -->
     <div class="flex flex-col mt-4 mb-1">
       <input
-        type="email"
-        placeholder="Email"
-        formControlName="email"
+        type="text"
+        placeholder="User Name"
+        formControlName="userName"
         required
-        autocomplete="email"
+        autocomplete="userName"
         class="p-2 border border-gray-300 rounded"
       />
       <span
         *ngIf="
-          loginForm.hasError('required', 'email') &&
-          loginForm.controls['email'].dirty
+          loginForm.hasError('required', 'userName') &&
+          loginForm.controls['userName'].dirty
         "
         class="text-red-500"
       >
         *A valid email is required
       </span>
-      <span *ngIf="loginForm.hasError('email', 'email')" class="text-red-500">
-        *Email is invalid
+      <span
+        *ngIf="loginForm.hasError('userName', 'userName')"
+        class="text-red-500"
+      >
+        *User Name is invalid
       </span>
     </div>
 

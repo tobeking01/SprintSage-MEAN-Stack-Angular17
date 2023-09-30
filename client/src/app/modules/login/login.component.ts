@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
-import { AuthService } from 'src/app/services/auth.service';
+import { AuthService, User } from 'src/app/services/auth.service';
 import { Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar'; // <-- import MatSnackBar
 import { CookieService } from 'ngx-cookie-service';
@@ -23,46 +23,27 @@ export class LoginComponent implements OnInit {
 
   ngOnInit(): void {
     this.loginForm = this.fb.group({
-      email: [''],
+      userName: [''],
       password: [''],
     });
   }
 
   login(): void {
     this.authService.loginService(this.loginForm.value).subscribe({
-      next: (res) => {
-        // After successful login
-        const token = res.data?.token;
-        const user = res.data;
+      next: (response: any) => {
+        const user = response.data;
 
-        if (token) {
-          // set the token to cookie and maybe in local storage
-          this.cookieService.set('access_token', token);
+        if (!user) {
+          this.handleLoginError('User object is not available');
+          return;
         }
-        if (user) {
-          console.log('User Object:', user);
-          this.authService.setCurrentUser(user); // Set the current user in AuthService
 
-          const roles = this.authService.getUserRoles(); // get the user roles from AuthService
-          console.log('User Roles: ', roles); // Log the roles
+        this.authService.setCurrentUser(user); // Here user should be response.data
+        const roles = this.authService.getUserRoles(); // Now get the user roles from AuthService
 
-          // Default route in case no roles are assigned or user object is not available
-          let navigateTo = ['not-found'];
-
-          if (roles.includes('Admin')) {
-            navigateTo = ['dashboard', 'admin-dashboard'];
-          } else if (roles.includes('Moderator')) {
-            navigateTo = ['dashboard', 'moderator-dashboard'];
-          } else if (roles.length > 0) {
-            navigateTo = ['dashboard', 'dashboard']; // Default dashboard for logged-in users with roles other than Admin or Moderator
-          }
-          console.log('Navigating To: ', navigateTo);
-
-          this.router.navigate(navigateTo); // Navigate to the calculated route
-        } else {
-          console.error('User object is not available');
-          this.router.navigate(['login']); // Navigate to login if user object is not available
-        }
+        // Calculate the navigation route based on the user roles
+        let navigateTo = this.calculateNavigationRoute(roles);
+        this.router.navigate(navigateTo); // Navigate to the calculated route
 
         this.snackBar.open('Login is Successful!', 'Close', {
           duration: 2000,
@@ -71,11 +52,35 @@ export class LoginComponent implements OnInit {
         this.loginForm.reset();
       },
       error: (err) => {
-        this.snackBar.open('Login Failed! Please try again.', 'Close', {
-          duration: 2000,
-        });
+        this.handleLoginError('Login Failed! Please try again.');
         console.error(err);
       },
     });
+  }
+
+  // A helper method to handle login errors and redirecting to login route
+  private handleLoginError(errorMessage: string): void {
+    console.error(errorMessage);
+    this.snackBar.open(errorMessage, 'Close', {
+      duration: 2000,
+    });
+    this.router.navigate(['login']); // Navigate to login if there is an error
+  }
+
+  // A helper method to calculate the navigation route based on user roles
+  private calculateNavigationRoute(roles: string[]): string[] {
+    console.log('Calculating navigation route for roles:', roles);
+    // Default route in case no roles are assigned or user object is not available
+    let navigateTo: string[] = ['not-found'];
+
+    if (roles.includes('Admin')) {
+      navigateTo = ['dashboard', 'admin-dashboard'];
+    } else if (roles.includes('Moderator')) {
+      navigateTo = ['dashboard', 'moderator-dashboard'];
+    } else if (roles.length > 0) {
+      // Default dashboard for logged-in users with roles other than Admin or Moderator
+      navigateTo = ['dashboard', 'dashboard'];
+    }
+    return navigateTo;
   }
 }

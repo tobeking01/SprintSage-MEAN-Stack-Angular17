@@ -1,10 +1,11 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable, tap } from 'rxjs';
 
 import { apiUrls } from '../api.urls';
+const USER_KEY = 'auth-user';
 
-interface User {
+export interface User {
   userName: string;
   email: string;
   roles: string[];
@@ -13,25 +14,58 @@ interface User {
   providedIn: 'root',
 })
 export class AuthService {
-  constructor(private http: HttpClient) {}
+  isLoggedIn$: BehaviorSubject<boolean>;
 
-  isLoggedIn$ = new BehaviorSubject<boolean>(false);
+  constructor(private http: HttpClient) {
+    this.isLoggedIn$ = new BehaviorSubject<boolean>(false); // Initialize as false by default
+    this.loadUserFromStorage();
+  }
 
-  // Allow null as a value for BehaviorSubject
-  private currentUserSubject: BehaviorSubject<User | null> =
-    new BehaviorSubject<User | null>(null);
-  currentUser$: Observable<User | null> =
-    this.currentUserSubject.asObservable();
+  private currentUserSubject = new BehaviorSubject<User | null>(
+    this.loadUserFromStorage()
+  );
+  currentUser$ = this.currentUserSubject.asObservable();
+
+  private loadUserFromStorage(): User | null {
+    const user = sessionStorage.getItem(USER_KEY);
+    return user ? JSON.parse(user) : null;
+  }
+
+  loginService(loginObj: any) {
+    return this.http
+      .post<User>(`${apiUrls.authServiceApi}login`, loginObj)
+      .pipe(
+        tap((user) => {
+          sessionStorage.setItem(USER_KEY, JSON.stringify(user));
+          this.currentUserSubject.next(user);
+          this.isLoggedIn$.next(true);
+        })
+      );
+  }
+
+  logout() {
+    sessionStorage.removeItem(USER_KEY);
+    this.currentUserSubject.next(null);
+    this.isLoggedIn$.next(false);
+  }
 
   setCurrentUser(user: User | null): void {
-    this.currentUserSubject.next(user); // Use the user variable, not the User type
+    this.currentUserSubject.next(user);
+    if (user) {
+      this.isLoggedIn$.next(true);
+    }
   }
-  // Add Method to get User Roles from the user object in BehaviorSubject
+
   getUserRoles(): string[] {
     const user = this.currentUserSubject.value;
+    console.log('Current User in AuthService:', user);
+
     return user?.roles ?? [];
   }
 
+  isLoggedIn(): boolean {
+    return !!this.currentUserSubject.value;
+  }
   // Update isAdmin method
   isAdmin(): boolean {
     const user: User | null = this.currentUserSubject.value;
@@ -53,10 +87,6 @@ export class AuthService {
     );
   }
 
-  loginService(loginObj: any) {
-    return this.http.post<any>(`${apiUrls.authServiceApi}login`, loginObj);
-  }
-
   sendEmailService(email: string) {
     return this.http.post<any>(`${apiUrls.authServiceApi}send-email`, {
       email: email,
@@ -65,14 +95,5 @@ export class AuthService {
 
   resetPasswordService(resetObj: any) {
     return this.http.post<any>(`${apiUrls.authServiceApi}reset`, resetObj);
-  }
-
-  isLoggedIn(): boolean {
-    return !!this.currentUserSubject.value;
-  }
-
-  logout() {
-    localStorage.removeItem('user_id'); // Clear user id from local storage
-    this.isLoggedIn$.next(false); // Update isLoggedIn$ to false
   }
 }

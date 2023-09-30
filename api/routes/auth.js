@@ -34,9 +34,9 @@ const validateRegistration = (req, res, next) => {
 // This function checks that email and password are provided.
 const validateLogin = (req, res, next) => {
   // Checks if both email and password are present in the request body.
-  if (!req.body.email || !req.body.password) {
+  if (!req.body.userName || !req.body.password) {
     // If either email or password is missing, respond with an error message.
-    return res.status(400).send("Email and password are required.");
+    return res.status(400).send("User name and password are required.");
   }
   // If both fields are present, call the next middleware or handler.
   next();

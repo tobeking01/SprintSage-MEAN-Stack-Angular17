@@ -65,22 +65,22 @@ export const register = async (req, res, next) => {
 // `login` function handles the user authentication process.
 export const login = async (req, res, next) => {
   try {
-    const { email, password } = req.body;
+    const { userName, password } = req.body;
 
-    if (!email || !password) {
+    if (!userName || !password) {
       return res
         .status(400)
-        .json(CreateError(400, "Email and password are required."));
+        .json(CreateError(400, "Username and password are required."));
     }
 
-    // Fetch the user associated with the provided email. Also, populate the associated roles.
-    const user = await User.findOne({ email }).populate("roles");
+    // Fetch the user associated with the provided userName. Also, populate the associated roles.
+    const user = await User.findOne({ userName }).populate("roles");
 
     // If no user is found with the provided email, return an error.
     if (!user) {
       return res
         .status(404)
-        .json(CreateError(404, "User with the given email not found."));
+        .json(CreateError(404, "User with the given userName not found."));
     }
 
     // Compare the provided password with the stored hashed password using bcrypt.
