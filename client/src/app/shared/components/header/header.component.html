@@ -3,7 +3,12 @@
     <button mat-icon-button (click)="toggleSidebar()">
       <mat-icon>menu</mat-icon>
     </button>
-    <span> My App </span>
+
+    <div>
+      <span style="font-weight: bold; color: #e83e8c">Sprint</span>
+      <span style="font-weight: bold; color: #6f42c1">Sage</span>
+      <span style="font-size: small; color: grey"> 👟⏱</span>
+    </div>
 
     <div fxFlex fxLayout="row" fxLayoutAlign="flex-end">
       <ul fxLayout="row" fxLayoutGap="20px">
@@ -17,11 +22,11 @@
           <button mat-button [matMenuTriggerFor]="menu">
             <mat-icon>logout</mat-icon>Logout
           </button>
-      <mat-menu #menu="matMenu">
-  <button mat-menu-item (click)="onLogout()"> 
-    <mat-icon>exit_to_app</mat-icon>Sign Out
-  </button>
-</mat-menu>
+          <mat-menu #menu="matMenu">
+            <button mat-menu-item (click)="onLogout()">
+              <mat-icon>exit_to_app</mat-icon>Sign Out
+            </button>
+          </mat-menu>
         </li>
       </ul>
     </div>
