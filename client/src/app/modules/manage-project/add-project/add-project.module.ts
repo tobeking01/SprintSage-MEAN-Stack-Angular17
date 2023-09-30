@@ -12,7 +12,11 @@ import { MatSortModule } from '@angular/material/sort';
 import { MatCardModule } from '@angular/material/card';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
+import { MatDialogModule } from '@angular/material/dialog'; // Import MatDialogModule
 
+// routes
 const routes: Routes = [
   {
     path: '',
@@ -33,7 +37,11 @@ const routes: Routes = [
     MatInputModule,
     MatSortModule,
     MatCardModule,
+    MatDatepickerModule,
     ReactiveFormsModule,
+    MatNativeDateModule,
+    MatDialogModule,
+    MatToolbarModule,
   ],
   exports: [RouterModule],
 })

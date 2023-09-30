@@ -12,31 +12,22 @@ import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatInputModule } from '@angular/material/input';
 import { MatTableModule } from '@angular/material/table';
 import { ReactiveFormsModule } from '@angular/forms';
+import { MatIconModule } from '@angular/material/icon';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
 
+// routes
 const routes: Routes = [
   {
     path: '',
     component: ManageProjectComponent,
     children: [
       {
-        path: '',
-        loadChildren: () =>
-          import('./list-project/list-project.module').then(
-            (m) => m.ListProjectModule
-          ),
-      },
-      {
         path: 'add-project',
         loadChildren: () =>
           import('./add-project/add-project.module').then(
             (m) => m.AddProjectModule
-          ),
-      },
-      {
-        path: 'edit-project/:id',
-        loadChildren: () =>
-          import('./edit-project/edit-project.module').then(
-            (m) => m.EditProjectModule
           ),
       },
     ],
@@ -56,7 +47,11 @@ const routes: Routes = [
     MatTableModule,
     MatPaginatorModule,
     MatInputModule,
+    MatIconModule,
+    MatProgressSpinnerModule,
     ReactiveFormsModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
   ],
   exports: [
     MatCardModule,
@@ -68,6 +63,8 @@ const routes: Routes = [
     MatPaginatorModule,
     MatInputModule,
     ReactiveFormsModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
   ],
 })
 export class ManageProjectModule {}

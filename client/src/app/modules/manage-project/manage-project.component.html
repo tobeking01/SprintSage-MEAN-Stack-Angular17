@@ -1,9 +1,102 @@
-<mat-card>
-  <div class="alert alert-info">
-    <strong>Manage Project</strong>
+<mat-toolbar>
+  <span>
+    Manage-Add-Update Component. This component will be responsible for adding
+    or updating a Project list.
+  </span>
+</mat-toolbar>
+
+<!-- The toolbar of our app -->
+<mat-toolbar color="primary">
+  <span>Manage Project</span>
+  <span class="example-spacer"></span>
+  <button mat-raised-button color="accent" (click)="openAddEditProjectDialog()">
+    ADD PROJECT
+  </button>
+</mat-toolbar>
+
+<!-- The body of our app -->
+<div class="main-body">
+  <!-- The filter section -->
+  <mat-form-field aria-haspopup="outline">
+    <mat-label>Filter</mat-label>
+    <input
+      matInput
+      (keyup)="applyFilter($event)"
+      placeholder="Filter by name"
+      #input
+    />
+  </mat-form-field>
+
+  <!-- The student details table -->
+  <div class="table-container">
+    <table mat-table [dataSource]="MyDataSource" matSort>
+      <mat-spinner *ngIf="isLoading"></mat-spinner>
+      <p *ngIf="error">{{ error }}</p>
+
+      <!-- // Project Columns -->
+      <ng-container matColumnDef="projectName">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Project Name</th>
+        <td mat-cell *matCellDef="let row">{{ row.projectName }}</td>
+      </ng-container>
+      <ng-container matColumnDef="description">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Description</th>
+        <td mat-cell *matCellDef="let row">{{ row.description }}</td>
+      </ng-container>
+      <ng-container matColumnDef="startDate">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Start Date</th>
+        <td mat-cell *matCellDef="let row">{{ row.startDate | date }}</td>
+      </ng-container>
+      <ng-container matColumnDef="endDate">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>End Date</th>
+        <td mat-cell *matCellDef="let row">{{ row.endDate | date }}</td>
+      </ng-container>
+
+      <!-- // store -->
+      <!-- <ng-container matColumnDef="dob">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>DOB</th>
+        <td mat-cell *matCellDef="let row">{{ row.dob | date }}</td>
+      </ng-container>
+      <ng-container matColumnDef="gender">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Gender</th>
+        <td mat-cell *matCellDef="let row">{{ row.gender }}</td>
+      </ng-container> -->
+
+      <!-- Add more columns for other student attributes as needed -->
+
+      <ng-container matColumnDef="action">
+        <th mat-header-cell *matHeaderCellDef>Action</th>
+        <td mat-cell *matCellDef="let row">
+          <button mat-icon-button (click)="openEditProjectDialog(row)">
+            <mat-icon color="primary">edit</mat-icon>
+          </button>
+          <button mat-icon-button (click)="deleteProject(row.id)">
+            <mat-icon color="warn">delete</mat-icon>
+          </button>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+
+      <!-- This row will be shown when there is no matching data. -->
+      <tr class="mat-row" *matNoDataRow>
+        <td class="mat-cell" colspan="7">
+          No data matching the filter "{{ input.value }}"
+        </td>
+      </tr>
+    </table>
+
+    <mat-paginator
+      [pageSizeOptions]="[5, 10, 25, 100]"
+      aria-label="Select page of students"
+    ></mat-paginator>
   </div>
-</mat-card>
-<br />
-<mat-card>
-  <router-outlet></router-outlet>
-</mat-card>
+</div>
+
+<!-- In the first section, we’re creating the toolbar of our app, and then in the second section, 
+we’re creating the table for the list of employees and also creating pagination. 
+We’re creating these using the Material UI library (if you notice all those custom tags, and attributes starting with “mat”). 
+In the toolbar, we created a button for adding an employee and bound a click event to this button. 
+In the click event, we’re passing a method openAddEditEmployeeDialog(). -->
+
+<!-- https://hackernoon.com/how-to-build-an-employee-management-crud-app-with-angular-and-material-ui -->
