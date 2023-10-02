@@ -1,12 +1,11 @@
 import { NgModule } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { DefaultComponent } from './layouts/default/default.component';
-import { DashboardComponent } from './modules/dashboard/dashboard.component';
+import { StudentDashboardComponent } from './modules/student-dashboard/student-dashboard.component';
 import { FullwidthComponent } from './layouts/fullwidth/fullwidth.component';
 import { HomeComponent } from './modules/home/home.component';
 import { LoginComponent } from './modules/login/login.component';
 import { RegisterComponent } from './modules/register/register.component';
-import { ManageProjectComponent } from './modules/manage-project/manage-project.component';
 import { ProjectTicketComponent } from './modules/project-ticket/project-ticket.component';
 import { TeamComponent } from './modules/team/team.component';
 import { ProfileComponent } from './modules/profile/profile.component';
@@ -20,12 +19,12 @@ import { NotFoundComponent } from './modules/not-found/not-found.component';
 
 const routes: Routes = [
   {
-    path: 'dashboard',
+    path: 'student-dashboard',
     component: DefaultComponent,
     children: [
       {
-        path: 'dashboard',
-        component: DashboardComponent,
+        path: 'student-dashboard',
+        component: StudentDashboardComponent,
       },
       {
         path: 'manage-project',
