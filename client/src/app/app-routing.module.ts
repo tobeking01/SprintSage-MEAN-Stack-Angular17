@@ -7,7 +7,7 @@ import { HomeComponent } from './modules/home/home.component';
 import { LoginComponent } from './modules/login/login.component';
 import { RegisterComponent } from './modules/register/register.component';
 import { ManageProjectComponent } from './modules/manage-project/manage-project.component';
-import { ManageTicketComponent } from './modules/manage-ticket/manage-ticket.component';
+import { ProjectTicketComponent } from './modules/project-ticket/project-ticket.component';
 import { TeamComponent } from './modules/team/team.component';
 import { ProfileComponent } from './modules/profile/profile.component';
 import { Routes } from '@angular/router';
@@ -36,8 +36,8 @@ const routes: Routes = [
         // component: ManageProjectComponent,
       },
       {
-        path: 'manage-ticket',
-        component: ManageTicketComponent,
+        path: 'project-ticket',
+        component: ProjectTicketComponent,
       },
       {
         path: 'team',

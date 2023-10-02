@@ -10,7 +10,7 @@ import { RegisterComponent } from './register/register.component';
 import { ResetComponent } from './reset/reset.component';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
-import { ManageTicketComponent } from './manage-ticket/manage-ticket.component';
+import { ProjectTicketComponent } from './project-ticket/project-ticket.component';
 import { TeamComponent } from './team/team.component';
 import { ProfileComponent } from './profile/profile.component';
 import { ProfessorDashboardComponent } from './professor-dashboard/professor-dashboard.component';
@@ -18,6 +18,9 @@ import { AdminDashboardComponent } from './admin-dashboard/admin-dashboard.compo
 import { NotFoundComponent } from './not-found/not-found.component';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatRadioModule } from '@angular/material/radio';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatSelectModule } from '@angular/material/select';
+import { MatDialogModule } from '@angular/material/dialog';
 
 @NgModule({
   declarations: [
@@ -27,7 +30,7 @@ import { MatRadioModule } from '@angular/material/radio';
     LoginComponent,
     RegisterComponent,
     ResetComponent,
-    ManageTicketComponent,
+    ProjectTicketComponent,
     TeamComponent,
     ProfileComponent,
     ProfessorDashboardComponent,
@@ -42,6 +45,9 @@ import { MatRadioModule } from '@angular/material/radio';
     RouterModule,
     MatMenuModule,
     MatRadioModule,
+    MatFormFieldModule,
+    MatSelectModule,
+    MatDialogModule,
   ],
   exports: [
     DashboardComponent,
@@ -50,7 +56,7 @@ import { MatRadioModule } from '@angular/material/radio';
     LoginComponent,
     RegisterComponent,
     ResetComponent,
-    ManageTicketComponent,
+    ProjectTicketComponent,
     TeamComponent,
     ProfileComponent,
     ProfessorDashboardComponent,

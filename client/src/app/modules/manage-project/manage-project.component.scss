@@ -1,15 +1,79 @@
 .example-spacer {
   flex: 1 1 auto;
 }
-mat-form-field {
-  width: 90%;
-  margin: auto;
+
+.project-header {
+  color: rgb(47, 116, 180);
+}
+.mat-column-projectName {
+  width: 60px;
+  border-right: 1px solid currentColor;
+  padding-right: 60px;
+  text-align: center;
 }
 .main-body {
-  max-width: 100%;
+  max-width: 80%;
   margin: 20px auto;
 }
 .action-icon:hover {
   opacity: 0.8;
   cursor: pointer;
+}
+
+table {
+  width: 100%;
+}
+
+th.mat-sort-header-sorted {
+  color: black;
+}
+
+mat-form-field {
+  max-width: 60%;
+}
+
+/*...existing styles...*/
+
+.main-container {
+  margin: 0 auto;
+  padding: 0 16px; /* Add padding if needed */
+}
+
+.filter-section {
+  margin-bottom: 16px; /* Adjust as needed */
+}
+
+mat-form-field {
+  width: 100%;
+}
+
+.project-item {
+  cursor: pointer;
+  padding: 1rem;
+  border: 1px solid #ccc;
+  margin-bottom: 1rem;
+  transition: background-color 0.3s ease;
+
+  &:hover {
+    background-color: #94becf;
+  }
+  p {
+    margin: 0;
+    padding: 0.5rem 0;
+  }
+}
+
+.no-projects {
+  text-align: center;
+  padding: 1rem;
+  color: #999;
+}
+
+.error-message {
+  color: red;
+  background-color: #ffe6e6;
+  padding: 10px;
+  margin-top: 10px;
+  border: 1px solid #ffcccc;
+  border-radius: 4px;
 }

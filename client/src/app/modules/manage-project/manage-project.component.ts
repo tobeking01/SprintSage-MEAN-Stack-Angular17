@@ -1,19 +1,13 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { MatPaginator } from '@angular/material/paginator';
-import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
+import { Router } from '@angular/router'; // Imported Router
 import { ProjectService } from 'src/app/services/project.service';
-import { ConfirmationDialogComponent } from 'src/app/shared/components/confirmation-dialog/confirmation-dialog.component';
 import { AddProjectComponent } from './add-project/add-project.component';
-
-export interface Project {
-  _id?: string;
-  projectName: string;
-  description?: string;
-  startDate?: Date;
-  endDate?: Date;
-}
+import { Project } from 'src/app/services/model/project.model';
+import { Team } from 'src/app/services/model/team.model';
+import { User } from 'src/app/services/model/user.model';
+import { UserService } from 'src/app/services/user.service'; // Import UserService
 
 @Component({
   selector: 'app-manage-project',
@@ -23,58 +17,59 @@ export interface Project {
 export class ManageProjectComponent implements OnInit {
   isLoading = false;
   error: string | null = null;
-  MyDataSource = new MatTableDataSource();
+  teamMembersDetails: any = {};
+  MyDataSource: MatTableDataSource<Project> = new MatTableDataSource<Project>();
 
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
-  @ViewChild(MatSort) sort!: MatSort;
-
-  projectList!: Project[];
-  displayedColumns: string[] = [
-    'projectName',
-    'description',
-    'startDate',
-    'endDate',
-    'action',
-  ];
-
-  constructor(private service: ProjectService, private dialog: MatDialog) {}
+  constructor(
+    private service: ProjectService,
+    private userService: UserService,
+    private dialog: MatDialog,
+    private router: Router // Injected Router
+  ) {}
 
   ngOnInit(): void {
     this.getProjectList();
   }
-
   getProjectList() {
+    this.isLoading = true;
     this.service.getAllProjects().subscribe(
       (response: any) => {
-        this.MyDataSource.data = response.data; // <-- Set the fetched projects as the data of MyDataSource.
-        console.log('DataSource:', this.MyDataSource);
-        this.MyDataSource.paginator = this.paginator;
-        this.MyDataSource.sort = this.sort;
+        this.MyDataSource.data = Array.isArray(response.data)
+          ? (response.data as Project[])
+          : ((response.data?.projects || []) as Project[]);
+
+        // After fetching projects, load team members' details
+        this.MyDataSource.data.forEach((project) => {
+          project.teams?.forEach((team) => this.loadTeamMembersDetails(team));
+        });
+
+        console.log(this.MyDataSource.data);
         this.isLoading = false;
       },
       (error: any) => {
-        console.error(
-          'Error:',
-          error.error || error.message || 'An unknown error occurred'
-        );
-        this.error =
-          error.error || 'An error occurred while fetching projects.';
+        this.error = 'An error occurred while fetching projects.';
         this.isLoading = false;
       }
     );
   }
 
-  openEditProjectDialog(data: any) {
-    const dialogRef = this.dialog.open(AddProjectComponent, {
-      data,
-    });
-
-    dialogRef.afterClosed().subscribe({
-      next: (val) => {
-        if (val) {
-          this.getProjectList(); // Refresh the student list after editing
+  loadTeamMembersDetails(team: Team) {
+    team.teamMembers.forEach((memberId) => {
+      this.userService.getUserById(memberId).subscribe(
+        (user: User) => {
+          this.teamMembersDetails[memberId] = user;
+        },
+        (error: any) => {
+          if (error.status === 404) {
+            console.error('User not found', error);
+            this.teamMembersDetails[memberId] = { name: 'User not found' };
+            this.error = `User with ID ${memberId} not found`;
+          } else {
+            console.error('Error fetching user details', error);
+            this.error = 'Error fetching user details';
+          }
         }
-      },
+      );
     });
   }
 
@@ -82,35 +77,17 @@ export class ManageProjectComponent implements OnInit {
     const dialogRef = this.dialog.open(AddProjectComponent);
     dialogRef.afterClosed().subscribe({
       next: (val) => {
-        if (val) {
-          this.getProjectList(); // Refresh the student list after adding or updating
-        }
+        if (val) this.getProjectList();
       },
-    });
-  }
-
-  deleteProject(id: string) {
-    const dialogRef = this.dialog.open(ConfirmationDialogComponent);
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result) {
-        this.service.deleteProjectById(id).subscribe(
-          () => {
-            this.getProjectList();
-          },
-          (error) => {
-            console.error('Error deleting project:', error);
-            // Optionally, display an error message to the user.
-          }
-        );
-      }
     });
   }
 
   applyFilter(event: Event) {
     const filterValue = (event.target as HTMLInputElement).value;
     this.MyDataSource.filter = filterValue.trim().toLowerCase();
-    if (this.MyDataSource.paginator) {
-      this.MyDataSource.paginator.firstPage();
-    }
+  }
+  navigateToProjectDetail(projectId: string) {
+    // Navigate to ProjectDetailComponent when a project is clicked
+    this.router.navigate(['/project-details', projectId]);
   }
 }

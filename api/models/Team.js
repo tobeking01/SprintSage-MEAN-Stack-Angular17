@@ -6,7 +6,6 @@ const TeamSchema = new Schema(
     // Define a field for the team's name
     teamName: {
       type: String,
-      required: true, // The team name is required
       unique: true, // Team names must be unique
     },
     // Define a field for team members, which is an array of User references

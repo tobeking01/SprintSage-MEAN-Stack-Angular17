@@ -25,7 +25,7 @@ router.post("/createUser", createUser);
 // Before accessing this route, there are two middlewares that run:
 // 1. verifyToken - Checks if a valid token is provided in the request.
 // 2. verifyAdmin - Ensures that the user is an admin.
-router.get("/getAllUsers", verifyToken, verifyAdmin, getAllUsers);
+router.get("/getAllUsers", getAllUsers);
 
 // OR
 // router.get("/", verifyToken, verifyAdmin, getAllUsers);
@@ -35,7 +35,7 @@ router.get("/getAllUsers", verifyToken, verifyAdmin, getAllUsers);
 // 1. verifyToken - Checks if a valid token is provided in the request.
 // 2. verifyUser - Checks if the logged-in user matches the requested user ID or if the logged-in user is an admin.
 
-router.get("/getUserById/:id", verifyToken, verifyUser, getUserById);
+router.get("/getUserById/:id", getUserById);
 
 // OR
 // router.get("/:id", verifyToken, verifyUser, getUserById);
@@ -46,7 +46,9 @@ router.get("/getUserById/:id", verifyToken, verifyUser, getUserById);
 // Middleware:
 // - verifyToken: Validates the JWT token passed in the request header.
 // - verifyUser: Ensures the authenticated user is modifying their own data or is an admin.
-router.put("/updateUser/:id", verifyToken, verifyUser, updateUser);
+// router.put("/updateUser/:id", verifyToken, verifyUser, updateUser);
+
+router.put("/updateUser/:id", updateUser);
 
 // DELETE /deleteUser/:id
 // Route for deleting an existing user by ID.
@@ -54,7 +56,9 @@ router.put("/updateUser/:id", verifyToken, verifyUser, updateUser);
 // Middleware:
 // - verifyToken: Validates the JWT token passed in the request header.
 // - verifyAdmin: Ensures the authenticated user has admin privileges.
-router.delete("/deleteUser/:id", verifyToken, verifyAdmin, deleteUser);
+// router.delete("/deleteUser/:id", verifyToken, verifyAdmin, deleteUser);
+
+router.delete("/deleteUser/:id", deleteUser);
 
 // Export the router for use in other parts of the application.
 export default router;

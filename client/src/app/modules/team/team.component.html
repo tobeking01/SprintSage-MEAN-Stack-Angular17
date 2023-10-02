@@ -1,1 +1,38 @@
-<p>team works!</p>
+<form [formGroup]="addTeamMemberForm" (ngSubmit)="onSubmit()">
+  <mat-form-field class="full-width">
+    <mat-label>Project</mat-label>
+    <mat-select formControlName="project">
+      <mat-option *ngFor="let project of projects" [value]="project._id">
+        {{ project.projectName }}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field class="full-width">
+    <mat-label>Team Members</mat-label>
+    <mat-select formControlName="user">
+      <mat-option *ngFor="let user of users" [value]="user._id">
+        {{ user.firstName }} {{ user.lastName }}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <div mat-dialog-actions class="action-btns">
+    <button
+      mat-raised-button
+      color="accent"
+      type="submit"
+      [disabled]="addTeamMemberForm.invalid"
+    >
+      Add
+    </button>
+    <button
+      mat-raised-button
+      type="button"
+      color="warn"
+      [mat-dialog-close]="false"
+    >
+      Cancel
+    </button>
+  </div>
+</form>

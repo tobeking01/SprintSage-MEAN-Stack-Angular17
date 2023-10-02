@@ -16,7 +16,8 @@ import { CreateSuccess } from "../utils/success.js";
 export const createProject = async (req, res, next) => {
   try {
     // Extract project data from request body.
-    const { projectName, description, startDate, endDate } = req.body;
+    const { projectName, description, startDate, endDate, teams, tickets } =
+      req.body;
 
     // Validate project data.
     if (
@@ -30,9 +31,11 @@ export const createProject = async (req, res, next) => {
     // Create and save the new Project instance to the database.
     const newProject = new Project({
       projectName,
-      description,
-      startDate,
-      endDate,
+      description: description || "Default Description",
+      startDate: startDate || new Date(),
+      endDate: endDate || new Date(),
+      teams: teams || [],
+      tickets: tickets || [], // Use provided tickets or default to an empty array if not provided
     });
     await newProject.save();
 
@@ -45,23 +48,31 @@ export const createProject = async (req, res, next) => {
 };
 
 // Controller to get all projects.
+// Controller to get all projects.
 export const getAllProjects = async (req, res, next) => {
   try {
-    const projects = await Project.find(); // Fetch all projects from the database.
+    const projects = await Project.find()
+      .populate("teams") // populating teams
+      .populate("tickets"); // populating tickets
+
     res
       .status(200)
       .json(CreateSuccess(200, "Projects fetched successfully!", projects));
   } catch (error) {
-    console.error("Error fetching projects:", error); // Log the error for debugging.
+    console.error("Error fetching projects:", error);
     next(CreateError(500, "Internal Server Error!"));
   }
 };
 
 // Controller to get a specific project by its ID.
+// Controller to get a specific project by its ID.
 export const getProjectById = async (req, res, next) => {
   try {
-    const { id } = req.params; // Extract project ID from route parameters.
-    const project = await Project.findById(id); // Fetch the project from the database by ID.
+    const { id } = req.params;
+
+    const project = await Project.findById(id)
+      .populate("teams") // populating teams
+      .populate("tickets"); // populating tickets
 
     if (!project) return next(CreateError(404, "Project not found!"));
 
@@ -69,7 +80,7 @@ export const getProjectById = async (req, res, next) => {
       .status(200)
       .json(CreateSuccess(200, "Project fetched successfully!", project));
   } catch (error) {
-    console.error("Error fetching project:", error); // Log the error for debugging.
+    console.error("Error fetching project:", error);
     next(CreateError(500, "Internal Server Error!"));
   }
 };
@@ -77,21 +88,28 @@ export const getProjectById = async (req, res, next) => {
 // Controller to update a specific project by its ID.
 export const updateProjectById = async (req, res, next) => {
   try {
-    const { id } = req.params;
+    const { id } = req.params; // Extract the ID from the URL Params
 
-    // You can perform additional validation checks here if required
-    if (req.body.startDate && isNaN(Date.parse(req.body.startDate))) {
-      return next(CreateError(400, "Invalid start date."));
+    // Validate IDs of teams and tickets if they are in the request body.
+    if (req.body.teams && !Array.isArray(req.body.teams)) {
+      return next(CreateError(400, "Teams must be an array."));
     }
 
-    if (req.body.endDate && isNaN(Date.parse(req.body.endDate))) {
-      return next(CreateError(400, "Invalid end date."));
+    if (req.body.tickets && !Array.isArray(req.body.tickets)) {
+      return next(CreateError(400, "Tickets must be an array."));
     }
 
-    const updatedProject = await Project.findByIdAndUpdate(id, req.body, {
-      new: true,
+    const projectUpdates = { ...req.body };
+
+    // If required, you can further validate that each id in the teams and tickets arrays is a valid ObjectId,
+    // and corresponds to an existing Team or Ticket document in the database.
+
+    // Find by ID and Update
+    const updatedProject = await Project.findByIdAndUpdate(id, projectUpdates, {
+      new: true, // Return the updated document
     });
 
+    // Check if the Project was found and updated
     if (!updatedProject) return next(CreateError(404, "Project not found!"));
 
     res
@@ -100,7 +118,7 @@ export const updateProjectById = async (req, res, next) => {
         CreateSuccess(200, "Project updated successfully!", updatedProject)
       );
   } catch (error) {
-    console.error("Error updating project:", error);
+    console.error("Error updating project:", error); // Log the error for debugging purposes
     next(CreateError(500, "Internal Server Error!"));
   }
 };

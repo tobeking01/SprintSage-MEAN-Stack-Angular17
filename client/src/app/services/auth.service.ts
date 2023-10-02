@@ -3,18 +3,10 @@ import { Injectable } from '@angular/core';
 import { Observable, BehaviorSubject, throwError } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 import { apiUrls } from '../api.urls';
+import { User } from './model/user.model';
 
 // Constant to manage the user key in session storage
 const USER_KEY = 'auth-user';
-
-// Interface to define the structure of User
-export interface User {
-  firstName: string;
-  lastName: string;
-  userName: string;
-  email: string;
-  roles: string[];
-}
 
 @Injectable({
   providedIn: 'root',
@@ -103,3 +95,6 @@ export class AuthService {
     return this.http.post<any>(`${apiUrls.authServiceApi}reset`, resetObj);
   }
 }
+
+// auth.service.ts
+export { User } from './model/user.model';

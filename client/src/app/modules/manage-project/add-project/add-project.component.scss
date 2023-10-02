@@ -1,23 +1,67 @@
-.h3 {
-  font-weight: bold;
+[mat-dialog-title] h1 {
+  font-size: 1.5rem;
+  margin: 0;
+  padding: 10px 0;
 }
 
-.row {
+mat-dialog-content {
+  .content {
+    display: flex;
+    flex-direction: column;
+    mat-form-field {
+      margin-bottom: 20px;
+    }
+  }
+}
+
+mat-dialog-actions {
   display: flex;
   justify-content: space-between;
-  gap: 20px;
-  margin-bottom: 10px;
+  button {
+    margin: 20px; // Added 20px padding all around the buttons
+    padding: 20px;
+  }
 }
-mat-form-field {
+
+.content {
+  .full-width {
+    width: 100%;
+  }
+
+  .member-row {
+    display: flex;
+    align-items: center;
+
+    .member-name {
+      flex-grow: 1;
+    }
+  }
+
+  button {
+    margin-left: 10px;
+  }
+}
+
+.action-btns {
+  button {
+    margin: 20px;
+  }
+}
+
+.full-width {
   width: 100%;
 }
-mat-hint {
-  margin: 5px;
-}
-.action-btns {
-  float: right;
-  margin-right: 10px;
-}
-.action-btns button {
-  padding: 20px;
+
+.member-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  .member-name {
+    flex-grow: 1;
+  }
+
+  button {
+    margin-left: 10px;
+  }
 }

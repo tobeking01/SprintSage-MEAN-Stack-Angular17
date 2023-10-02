@@ -15,6 +15,10 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatDialogModule } from '@angular/material/dialog'; // Import MatDialogModule
+import { MatTabsModule } from '@angular/material/tabs';
+import { MatIconModule } from '@angular/material/icon';
+import { MatSelectModule } from '@angular/material/select';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 // routes
 const routes: Routes = [
@@ -42,6 +46,10 @@ const routes: Routes = [
     MatNativeDateModule,
     MatDialogModule,
     MatToolbarModule,
+    MatTabsModule,
+    MatIconModule,
+    MatSelectModule,
+    MatTooltipModule,
   ],
   exports: [RouterModule],
 })

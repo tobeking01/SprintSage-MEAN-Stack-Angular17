@@ -16,6 +16,10 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
+import { MatSortModule } from '@angular/material/sort';
+import { MatListModule } from '@angular/material/list';
+import { ModulesModule } from '../modules.module';
+import { MatSelectModule } from '@angular/material/select';
 
 // routes
 const routes: Routes = [
@@ -30,12 +34,35 @@ const routes: Routes = [
             (m) => m.AddProjectModule
           ),
       },
+      {
+        path: 'project-details',
+        loadChildren: () =>
+          import('./project-details/project-details.module').then(
+            (m) => m.ProjectDetailsModule
+          ),
+      },
     ],
   },
 ];
 
 @NgModule({
   declarations: [ManageProjectComponent],
+  exports: [
+    MatCardModule,
+    MatToolbarModule,
+    MatButtonModule,
+    MatMenuModule,
+    MatFormFieldModule,
+    MatTableModule,
+    MatPaginatorModule,
+    MatInputModule,
+    ReactiveFormsModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
+    MatSortModule,
+    MatListModule,
+    MatSelectModule,
+  ],
   imports: [
     CommonModule,
     RouterModule.forChild(routes),
@@ -52,19 +79,10 @@ const routes: Routes = [
     ReactiveFormsModule,
     MatDatepickerModule,
     MatNativeDateModule,
-  ],
-  exports: [
-    MatCardModule,
-    MatToolbarModule,
-    MatButtonModule,
-    MatMenuModule,
-    MatFormFieldModule,
-    MatTableModule,
-    MatPaginatorModule,
-    MatInputModule,
-    ReactiveFormsModule,
-    MatDatepickerModule,
-    MatNativeDateModule,
+    MatSortModule,
+    MatListModule,
+    ModulesModule,
+    MatSelectModule,
   ],
 })
 export class ManageProjectModule {}

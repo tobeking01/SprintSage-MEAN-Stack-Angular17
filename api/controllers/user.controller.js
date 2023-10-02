@@ -1,9 +1,11 @@
 // Importing necessary libraries and modules.
+import mongoose from "mongoose";
 import bcrypt from "bcryptjs"; // Used for password hashing.
 import User from "../models/User.js"; // User model.
 import { CreateError } from "../utils/error.js"; // Utility to create error objects.
 import { CreateSuccess } from "../utils/success.js"; // Utility to create success objects.
 import Role from "../models/Role.js"; // Importing Role model.
+// ... other imports ...
 
 // Constant to represent the number of rounds that bcrypt will use when salting passwords.
 // The higher the number, the more secure the hash, but the longer it will take to generate.
