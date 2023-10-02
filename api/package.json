@@ -6,8 +6,8 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "cleardb": "node utils/clearDB.js",
-    "seeddb": "node utils/seedDb.js",
+    "clearDB": "node utils/clearDB.js",
+    "seedDB": "node utils/seedDb.js",
     "start": "nodemon index.js"
   },
   "keywords": [],
