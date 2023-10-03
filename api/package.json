@@ -7,7 +7,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "clearDB": "node utils/clearDB.js",
-    "seedDB": "node utils/seedDb.js",
+    "seedDB": "node utils/seedDB.js",
     "start": "nodemon index.js"
   },
   "keywords": [],

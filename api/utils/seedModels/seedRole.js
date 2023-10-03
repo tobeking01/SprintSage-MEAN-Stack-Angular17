@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import dotenv from "dotenv";
-import Role from "../models/Role.js";
+import Role from "../../models/Role.js";
 
 dotenv.config(); // Load environment variables
 
