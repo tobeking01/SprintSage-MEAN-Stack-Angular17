@@ -1,6 +1,7 @@
 import Team from "../models/Team.js";
 import { CreateError } from "../utils/error.js";
 import { CreateSuccess } from "../utils/success.js";
+import mongoose from "mongoose";
 
 /**
  * @async
@@ -10,36 +11,58 @@ import { CreateSuccess } from "../utils/success.js";
  * @param {Object} res - Express response object.
  * @param {function} next - Express next middleware function.
  */
+
 export const createTeam = async (req, res, next) => {
   try {
     console.log("Received Payload:", req.body);
-    // Extract team data from request body.
     const { teamName, teamMembers, projects } = req.body;
 
-    // Validate team data.
-    if (!teamName || typeof teamName !== "string" || teamName.trim() === "") {
-      return next(CreateError(400, "Invalid team name."));
-    }
+    // other validations...
 
+    // Validate teamMembers
     if (
       !Array.isArray(teamMembers) ||
-      teamMembers.some((id) => typeof id !== "string")
+      teamMembers.some(
+        (id) => typeof id !== "string" || !mongoose.Types.ObjectId.isValid(id)
+      )
     ) {
       return next(CreateError(400, "Invalid team members."));
     }
 
+    // Optionally, validate the existence of team members in the database here.
+    // Similar logic applies to projects.
+    const User = mongoose.model("User"); // or however you import your User model
+
+    for (const memberId of teamMembers) {
+      const userExists = await User.exists({ _id: memberId });
+      if (!userExists)
+        return next(
+          CreateError(400, `User with id ${memberId} does not exist.`)
+        );
+    }
+
+    // similarly, validate projects if provided
     if (
-      !Array.isArray(projects) ||
-      projects.some((id) => typeof id !== "string")
+      projects &&
+      (!Array.isArray(projects) ||
+        projects.some(
+          (id) => typeof id !== "string" || !mongoose.Types.ObjectId.isValid(id)
+        ))
     ) {
       return next(CreateError(400, "Invalid projects."));
     }
 
-    // Additional logic to validate if teamMembers and projects exist in your DB can be added here.
+    const Project = mongoose.model("Project"); // or however you import your Project model
+    for (const projectId of projects || []) {
+      const projectExists = await Project.exists({ _id: projectId });
+      if (!projectExists)
+        return next(
+          CreateError(400, `Project with id ${projectId} does not exist.`)
+        );
+    }
 
     const newTeam = new Team({ teamName, teamMembers, projects });
     await newTeam.save();
-
     res.status(201).json(CreateSuccess(201, "Team Created!", newTeam));
   } catch (error) {
     console.error("Error creating team:", error);
@@ -83,6 +106,9 @@ export const getTeamById = async (req, res, next) => {
   try {
     const { id } = req.params; // Extracting the team ID from the route parameters.
 
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return next(CreateError(400, "Invalid ID format."));
+    }
     // Fetching the team from the database by ID and populating references.
     const team = await Team.findById(id)
       .populate("teamMembers")
@@ -110,7 +136,16 @@ export const getTeamById = async (req, res, next) => {
 export const updateTeamById = async (req, res, next) => {
   try {
     const { id } = req.params; // Extracting the team ID from the route parameters.
+    // Validate the input here
+    const updates = req.body;
+    const allowedUpdates = ["teamName", "teamMembers", "projects"]; // Replace with your actual field names
+    const isValidOperation = Object.keys(updates).every((update) =>
+      allowedUpdates.includes(update)
+    );
 
+    if (!isValidOperation) {
+      return next(CreateError(400, "Invalid updates!"));
+    }
     // Updating the team in the database and returning the updated team document.
     const updatedTeam = await Team.findByIdAndUpdate(id, req.body, {
       new: true,

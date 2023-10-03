@@ -13,7 +13,11 @@ import {
 } from "../controllers/project.controller.js";
 
 // Importing any middlewares (if any) like authentication or authorization middlewares.
-import { verifyToken, verifyAdmin, verifyUser } from "../utils/verifyToken.js";
+import {
+  verifyToken,
+  verifyAdmin,
+  verifyUser,
+} from "../utils/verify-validate.js";
 
 // Initialize a new instance of express router.
 const router = express.Router();
@@ -22,7 +26,7 @@ const router = express.Router();
  * POST /projects
  * Route to create a new project. Linked with the 'createProject' method from Project Controller.
  */
-// router.post("/createProject", verifyToken, verifyAdmin, createProject);
+// router.post("/createProject", verifyToken, createProject);
 
 router.post("/createProject", createProject); //test API
 
@@ -49,13 +53,10 @@ router.get("/getProjectById/:id", getProjectById); // test
 // router.put(
 //   "/updateProjectById/:id",
 //   verifyToken,
-//   verifyAdmin,
 //   updateProjectById
 // );
 
 router.put("/updateProjectById/:id", updateProjectById); // test
-
-// router.put("/updateProjectById/:id", updateProjectById); // test
 
 /**
  * DELETE /projects/:id
@@ -64,13 +65,10 @@ router.put("/updateProjectById/:id", updateProjectById); // test
 // router.delete(
 //   "/deleteProjectById/:id",
 //   verifyToken,
-//   verifyAdmin,
 //   deleteProjectById
 // );
 
 router.delete("/deleteProjectById/:id", deleteProjectById); // test
-
-// router.delete("/deleteProjectById/:id", deleteProjectById); // test
 
 // Exporting the router to be used in the application's main entry file (usually 'app.js' or 'server.js').
 export default router;

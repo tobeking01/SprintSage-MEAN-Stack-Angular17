@@ -19,8 +19,8 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { MatSortModule } from '@angular/material/sort';
 import { MatListModule } from '@angular/material/list';
 import { ModulesModule } from '../modules.module';
+import { MatDialogModule } from '@angular/material/dialog';
 import { MatSelectModule } from '@angular/material/select';
-
 // routes
 const routes: Routes = [
   {
@@ -62,6 +62,7 @@ const routes: Routes = [
     MatSortModule,
     MatListModule,
     MatSelectModule,
+    MatDialogModule,
   ],
   imports: [
     CommonModule,
@@ -83,6 +84,7 @@ const routes: Routes = [
     MatListModule,
     ModulesModule,
     MatSelectModule,
+    MatDialogModule,
   ],
 })
 export class ManageProjectModule {}

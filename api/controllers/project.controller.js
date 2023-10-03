@@ -12,11 +12,10 @@ import { CreateSuccess } from "../utils/success.js";
  * @param {function} next - Express next middleware function.
  */
 
-// Controller to create a new project.
 export const createProject = async (req, res, next) => {
   try {
     // Extract project data from request body.
-    const { projectName, description, startDate, endDate, teams, tickets } =
+    const { projectName, description, teams, tickets, startDate, endDate } =
       req.body;
 
     // Validate project data.
@@ -28,15 +27,21 @@ export const createProject = async (req, res, next) => {
       return next(CreateError(400, "Invalid project data."));
     }
 
+    // Validate teams.
+    if (teams && !Array.isArray(teams)) {
+      return next(CreateError(400, "Teams must be an array."));
+    }
+
     // Create and save the new Project instance to the database.
     const newProject = new Project({
       projectName,
       description: description || "Default Description",
       startDate: startDate || new Date(),
       endDate: endDate || new Date(),
-      teams: teams || [],
+      teams: teams || [], // Use provided teams or default to an empty array if not provided
       tickets: tickets || [], // Use provided tickets or default to an empty array if not provided
     });
+
     await newProject.save();
 
     // Respond with a success message.

@@ -7,23 +7,32 @@ export class RoleGuard implements CanActivate {
   constructor(private authService: AuthService, private router: Router) {}
 
   canActivate(route: ActivatedRouteSnapshot): boolean {
-    const expectedRole: string = route.data['expectedRole'];
-    if (!expectedRole) {
+    console.log(route.data['expectedRole']);
+    const expectedRoles: string[] = Array.isArray(route.data['expectedRole'])
+      ? route.data['expectedRole']
+      : [];
+    console.log(expectedRoles);
+    if (!expectedRoles.length) {
       console.error('Expected role not defined for route:', route.url);
-      this.router.navigate(['']);
+      // Handle unauthorized access appropriately
+      this.router.navigate(['not-found']);
       return false;
     }
 
-    console.log('Is Logged In:', this.authService.isLoggedIn()); // Log login status
-    console.log('User Roles:', this.authService.getUserRoles()); // Log user roles
-    console.log('Expected Role:', expectedRole); // Log expected role
+    // Log login status, user roles, expected roles, and activating route for debugging purposes
+    console.log('Is Logged In:', this.authService.isLoggedIn());
+    console.log('User Roles:', this.authService.getUserRoles());
+    console.log('Expected Roles:', expectedRoles);
     console.log('Activating route:', route.url);
 
+    // Check if user is logged in and if any of the user roles is among the expected roles.
     if (
       !this.authService.isLoggedIn() ||
-      !this.authService.getUserRoles().includes(expectedRole)
+      !expectedRoles.some((role) =>
+        this.authService.getUserRoles().includes(role)
+      )
     ) {
-      this.router.navigate(['']);
+      this.router.navigate(['not-found']);
       return false;
     }
     return true;

@@ -3,7 +3,6 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AuthService, User } from 'src/app/services/auth.service';
 import { NavigationExtras, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { CookieService } from 'ngx-cookie-service';
 
 @Component({
   selector: 'app-login',
@@ -17,8 +16,7 @@ export class LoginComponent implements OnInit {
     private fb: FormBuilder,
     private authService: AuthService,
     private router: Router,
-    private snackBar: MatSnackBar,
-    private cookieService: CookieService
+    private snackBar: MatSnackBar
   ) {}
 
   ngOnInit(): void {
@@ -74,10 +72,11 @@ export class LoginComponent implements OnInit {
       return [];
     }
 
-    if (roles.includes('Admin')) return ['dashboard', 'admin-dashboard'];
+    if (roles.includes('Admin'))
+      return ['student-dashboard', 'admin-dashboard'];
     if (roles.includes('Professor'))
-      return ['dashboard', 'professor-dashboard'];
-    if (roles.includes('Student')) return ['dashboard'];
+      return ['student-dashboard', 'professor-dashboard'];
+    if (roles.includes('Student')) return ['student-dashboard'];
 
     const navigationExtras: NavigationExtras = {
       queryParams: { message: 'Invalid Role' },

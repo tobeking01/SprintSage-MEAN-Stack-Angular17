@@ -8,6 +8,7 @@ import { Project } from 'src/app/services/model/project.model';
 import { Team } from 'src/app/services/model/team.model';
 import { User } from 'src/app/services/model/user.model';
 import { UserService } from 'src/app/services/user.service'; // Import UserService
+import { TeamComponent } from '../team/team.component';
 
 @Component({
   selector: 'app-manage-project',
@@ -52,7 +53,13 @@ export class ManageProjectComponent implements OnInit {
       }
     );
   }
-
+  // In your component class
+  openTeamDialog() {
+    const dialogRef = this.dialog.open(TeamComponent);
+    dialogRef.afterClosed().subscribe((result) => {
+      console.log(`Dialog result: ${result}`);
+    });
+  }
   loadTeamMembersDetails(team: Team) {
     team.teamMembers.forEach((memberId) => {
       this.userService.getUserById(memberId).subscribe(

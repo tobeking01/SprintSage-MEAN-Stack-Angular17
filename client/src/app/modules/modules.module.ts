@@ -19,8 +19,10 @@ import { NotFoundComponent } from './not-found/not-found.component';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatSelectModule } from '@angular/material/select';
 import { MatDialogModule } from '@angular/material/dialog';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { MatIconModule } from '@angular/material/icon';
 
 @NgModule({
   declarations: [
@@ -48,6 +50,8 @@ import { MatDialogModule } from '@angular/material/dialog';
     MatFormFieldModule,
     MatSelectModule,
     MatDialogModule,
+    MatInputModule,
+    MatIconModule,
   ],
   exports: [
     StudentDashboardComponent,

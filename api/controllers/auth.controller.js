@@ -96,7 +96,11 @@ export const login = async (req, res, next) => {
 
     // Send the generated JWT token as a cookie in the response.
     res
-      .cookie("access_token", token, { httpOnly: true })
+      .cookie("access_token", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production", // set to true in production when using HTTPS
+        sameSite: "Strict", // for CSRF protection
+      })
       .status(200)
       .json({
         status: 200,
@@ -312,9 +316,7 @@ export const signOut = async (req, res) => {
           .status(500)
           .json(CreateError(500, "Error destroying session!"));
       }
-      return res
-        .status(200)
-        .json(CreateSuccess(200, "You've been signed out!"));
+      return res.status(204).send(); // No content to send.
     });
   } catch (err) {
     console.error("Error during sign out:", err); // Log the error for debugging.

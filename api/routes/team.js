@@ -7,7 +7,11 @@ import {
   deleteTeamById,
 } from "../controllers/team.controller.js";
 
-import { verifyToken, verifyAdmin, verifyUser } from "../utils/verifyToken.js";
+import {
+  verifyToken,
+  verifyAdmin,
+  verifyProfessor,
+} from "../utils/verify-validate.js";
 
 const router = express.Router();
 
@@ -16,7 +20,7 @@ const router = express.Router();
  * Route to create a new team. Requires admin privileges.
  * It uses 'createTeam' method from Team Controller.
  */
-// router.post("/createTeam", verifyToken, verifyAdmin, createTeam);
+// router.post("/createTeam", verifyToken, createTeam);
 
 router.post("/createTeam", createTeam); // test
 
@@ -40,14 +44,14 @@ router.get("/getTeamById/:id", verifyToken, getTeamById);
  * Route to update a specific team by its ID. Requires admin privileges.
  * It uses 'updateTeamById' method from Team Controller.
  */
-router.put("/updateTeamById/:id", verifyToken, verifyAdmin, updateTeamById);
+router.put("/updateTeamById/:id", verifyToken, updateTeamById);
 
 /**
  * DELETE /teams/:id
  * Route to delete a specific team by its ID. Requires admin privileges.
  * It uses 'deleteTeamById' method from Team Controller.
  */
-router.delete("/deleteTeamById/:id", verifyToken, verifyAdmin, deleteTeamById);
+router.delete("/deleteTeamById/:id", verifyToken, deleteTeamById);
 
 // Export the configured routes to be used in the application.
 export default router;

@@ -1,71 +1,76 @@
-// Importing mongoose and Schema from mongoose library for defining schemas
-// and interacting with the MongoDB database.
 import mongoose, { Schema } from "mongoose";
+import AuditLog from "./AuditLog.js";
 
-// Creating a Schema for the Ticket. This will define the structure of
-// the document to be stored in the MongoDB collection.
 const TicketSchema = new Schema(
   {
-    // `issueDescription` field to store a detailed description of the issue in the ticket.
     issueDescription: {
       type: String,
-      required: true, // This field is mandatory.
+      required: true,
     },
 
-    // `status` field represents the current status of the ticket. It can be either "Open", "In Progress", or "Closed".
     status: {
       type: String,
-      enum: ["Open", "In Progress", "Closed"], // Enumerated list of possible statuses.
-      default: "Open", // The default status is "Open" when a ticket is created.
+      enum: ["Open", "In Progress", "Closed"],
+      default: "Open",
     },
 
-    // `severity` field indicates the impact level of the issue in the ticket.
     severity: {
       type: String,
-      enum: ["Low", "Medium", "High"], // Enumerated list of possible severities.
-      required: true, // Severity is mandatory.
+      enum: ["Low", "Medium", "High"],
+      required: true,
     },
 
-    // `submittedBy` field stores a reference to the user who created/submitted the ticket.
-    submittedBy: {
+    submittedByUser: {
       type: Schema.Types.ObjectId,
-      ref: "User", // Reference to the User model.
-      required: true, // This field is mandatory.
+      ref: "User",
+      required: true,
     },
 
-    // `assignedTo` field stores a reference to the user who is assigned to resolve the ticket.
-    assignedTo: {
+    assignedToUser: {
       type: Schema.Types.ObjectId,
-      ref: "User", // Reference to the User model.
+      ref: "User",
     },
 
-    // `dateAdded` field stores the date and time when the ticket was created.
-    dateAdded: {
-      type: Date,
-      default: Date.now, // Default to the current date and time.
+    projectId: {
+      type: Schema.Types.ObjectId,
+      ref: "Project",
+      required: true,
     },
 
-    // `lastModifiedDate` field stores the date and time when the ticket was last modified.
-    lastModifiedDate: {
-      type: Date,
-      default: Date.now, // Default to the current date and time.
-    },
-
-    // `ticketType` field represents the type of the ticket. It can be a "Bug", "Feature Request", or "Other".
     ticketType: {
       type: String,
-      enum: ["Bug", "Feature Request", "Other"], // Enumerated list of possible ticket types.
-      required: true, // This field is mandatory.
+      enum: ["Bug", "Feature Request", "Other"],
+      required: true,
     },
   },
   {
-    // The `timestamps` option will add `createdAt` and `updatedAt` fields to the schema.
-    // `createdAt` represents the time the document was created.
-    // `updatedAt` represents the time the document was last updated.
     timestamps: true,
   }
 );
 
-// Exporting the Ticket model, allowing other parts of the application
-// to interact with the 'Ticket' collection using this schema.
+// Logging and Auditing
+// Logging and Auditing
+TicketSchema.pre("save", async function (next) {
+  try {
+    if (this.isModified("status")) {
+      const originalDoc = await this.constructor.findOne(this._id);
+      const oldValue = originalDoc ? originalDoc.status : null;
+
+      const audit = new AuditLog({
+        action: "STATUS_CHANGE",
+        ticketId: this._id,
+        changedBy: this.submittedByUser,
+        oldValue: oldValue,
+        newValue: this.status,
+      });
+
+      await audit.save();
+    }
+    next();
+  } catch (err) {
+    console.error("Error during audit log creation:", err);
+    next(err);
+  }
+});
+
 export default mongoose.model("Ticket", TicketSchema);

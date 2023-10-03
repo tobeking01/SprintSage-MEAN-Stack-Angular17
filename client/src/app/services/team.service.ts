@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, catchError, throwError } from 'rxjs';
 
 import { apiUrls } from '../api.urls';
 import { Team } from './model/team.model';
@@ -21,11 +21,20 @@ export class TeamService {
     });
   }
   // Method to create a new team.
-  createTeam(teamData: any): Observable<Team> {
+  createTeam(teamData: {
+    teamName: string;
+    teamMembers: string[];
+  }): Observable<Team> {
     return this.http.post<Team>(`${this.apiUrl}createTeam`, teamData);
   }
+
   getAllTeams(): Observable<Team[]> {
-    return this.http.get<Team[]>(`${this.apiUrl}getAllTeams`);
+    return this.http.get<Team[]>(`${this.apiUrl}getAllTeams`).pipe(
+      catchError((error) => {
+        // Handle or transform error before propagating it.
+        return throwError(error);
+      })
+    );
   }
 
   getTeamById(id: string): Observable<Team> {

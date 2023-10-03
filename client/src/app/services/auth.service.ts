@@ -20,7 +20,7 @@ export class AuthService {
     this.loadUserFromStorage();
   }
 
-  // Loads user from session storage
+  // Loads user from session storage. It’s here for if in any case, needed
   private loadUserFromStorage(): void {
     const user = sessionStorage.getItem(USER_KEY);
     if (user) this.currentUserSubject.next(JSON.parse(user));
@@ -32,22 +32,35 @@ export class AuthService {
       tap((response) => {
         const user = response.data;
         if (user) {
-          sessionStorage.setItem(USER_KEY, JSON.stringify(user));
           this.currentUserSubject.next(user);
           this.isLoggedIn$.next(true);
         } else {
           throw new Error('User data is not available');
         }
       }),
-      catchError((error) => throwError(error))
+      catchError((error) => {
+        if (error.status === 401) {
+          // Handle Unauthorized, maybe redirect to login page
+        }
+        return throwError(error);
+      })
     );
   }
 
-  // Logout user
+  // Logout user by calling the logout endpoint to invalidate the JWT token
   logout(): void {
-    sessionStorage.removeItem(USER_KEY);
-    this.currentUserSubject.next(null);
-    this.isLoggedIn$.next(false);
+    this.http.post(`${apiUrls.authServiceApi}logout`, {}).subscribe(
+      () => {
+        this.currentUserSubject.next(null);
+        this.isLoggedIn$.next(false);
+      },
+      (error) => {
+        // handle error, maybe log the user out locally anyway
+        console.error('Logout error', error);
+        this.currentUserSubject.next(null);
+        this.isLoggedIn$.next(false);
+      }
+    );
   }
 
   // Set current user

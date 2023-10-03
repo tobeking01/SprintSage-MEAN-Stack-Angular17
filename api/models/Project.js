@@ -35,5 +35,11 @@ const ProjectSchema = new Schema(
   }
 );
 
+// Cascade Delete Tickets when a project is deleted
+ProjectSchema.pre("remove", async function (next) {
+  await this.model("Ticket").deleteMany({ projectId: this._id });
+  next();
+});
+
 // Export the mongoose model for the "Project" schema
 export default mongoose.model("Project", ProjectSchema);

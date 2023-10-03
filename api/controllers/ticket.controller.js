@@ -13,22 +13,38 @@ import { CreateSuccess } from "../utils/success.js";
 export const createTicket = async (req, res, next) => {
   try {
     // Extract ticket data from request body.
-    const { issueDescription, severity, submittedBy, assignedTo, ticketType } =
-      req.body;
+    const {
+      issueDescription,
+      status,
+      severity,
+      submittedByUser,
+      assignedToUser,
+      projectId,
+      ticketType,
+    } = req.body;
 
     // Validate mandatory ticket data.
-    if (!issueDescription || !severity || !submittedBy || !ticketType) {
+    if (
+      !issueDescription ||
+      !severity ||
+      !submittedByUser ||
+      !projectId ||
+      !ticketType
+    ) {
       return next(CreateError(400, "Invalid ticket data."));
     }
 
     // Create and save the new Ticket instance to the database.
     const newTicket = new Ticket({
       issueDescription,
+      status,
       severity,
-      submittedBy,
-      assignedTo,
+      submittedByUser,
+      assignedToUser,
+      projectId,
       ticketType,
     });
+
     await newTicket.save();
 
     // Respond with a success message.

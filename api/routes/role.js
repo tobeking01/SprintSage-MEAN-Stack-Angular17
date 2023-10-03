@@ -5,7 +5,7 @@ import {
   updateRole,
   deleteRole,
 } from "../controllers/role.controller.js";
-import { verifyAdmin } from "../utils/verifyToken.js";
+import { verifyAdmin } from "../utils/verify-validate.js";
 
 const router = express.Router();
 

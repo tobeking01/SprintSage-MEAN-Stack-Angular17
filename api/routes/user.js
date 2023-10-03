@@ -7,7 +7,11 @@ import {
   updateUser,
   deleteUser,
 } from "../controllers/user.controller.js";
-import { verifyToken, verifyAdmin, verifyUser } from "../utils/verifyToken.js";
+import {
+  verifyToken,
+  verifyAdmin,
+  verifyUser,
+} from "../utils/verify-validate.js";
 // Initialize a new instance of the express router.
 const router = express.Router();
 
@@ -16,37 +20,33 @@ const router = express.Router();
 // Access: Admin
 // Middleware:
 // - verifyToken: Validates the JWT token passed in the request header.
-// - verifyAdmin: Ensures the authenticated user has admin privileges.
-// router.post("/createUser", verifyToken, verifyAdmin, createUser);
+// router.post("/createUser", verifyToken, createUser);
 
 router.post("/createUser", createUser);
 
 // Setup the GET route for retrieving all users.
 // Before accessing this route, there are two middlewares that run:
 // 1. verifyToken - Checks if a valid token is provided in the request.
-// 2. verifyAdmin - Ensures that the user is an admin.
 router.get("/getAllUsers", getAllUsers);
 
 // OR
-// router.get("/", verifyToken, verifyAdmin, getAllUsers);
+// router.get("/", verifyToken, getAllUsers);
 
 // Setup the GET route for retrieving a user based on its ID.
 // Before accessing this route, there are two middlewares that run:
 // 1. verifyToken - Checks if a valid token is provided in the request.
-// 2. verifyUser - Checks if the logged-in user matches the requested user ID or if the logged-in user is an admin.
 
 router.get("/getUserById/:id", getUserById);
 
 // OR
-// router.get("/:id", verifyToken, verifyUser, getUserById);
+// router.get("/:id", verifyToken, getUserById);
 
 // PUT /updateUser/:id
 // Route for updating an existing user by ID.
 // Access: Admin or the authenticated user.
 // Middleware:
 // - verifyToken: Validates the JWT token passed in the request header.
-// - verifyUser: Ensures the authenticated user is modifying their own data or is an admin.
-// router.put("/updateUser/:id", verifyToken, verifyUser, updateUser);
+// router.put("/updateUser/:id", verifyToken, updateUser);
 
 router.put("/updateUser/:id", updateUser);
 
@@ -55,8 +55,7 @@ router.put("/updateUser/:id", updateUser);
 // Access: Admin
 // Middleware:
 // - verifyToken: Validates the JWT token passed in the request header.
-// - verifyAdmin: Ensures the authenticated user has admin privileges.
-// router.delete("/deleteUser/:id", verifyToken, verifyAdmin, deleteUser);
+// router.delete("/deleteUser/:id", verifyToken, deleteUser);
 
 router.delete("/deleteUser/:id", deleteUser);
 

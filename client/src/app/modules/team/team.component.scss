@@ -1,0 +1,27 @@
+// Full-width class styling
+.full-width {
+  width: 100%;
+  margin-bottom: 10px; // Adds a bit of margin between form fields for better spacing
+}
+
+// Styling mat-dialog-actions
+.mat-dialog-actions {
+  justify-content: space-between; // Distributes action buttons evenly
+
+  .action-btns {
+    display: flex;
+    gap: 10px; // Adds a bit of gap between buttons for better spacing
+  }
+}
+
+// Styling mat-raised-button
+::ng-deep .mat-raised-button {
+  min-width: 100px; // Ensure buttons have a minimum width
+}
+
+// Styling mat-select
+::ng-deep .mat-select {
+  .mat-select-value {
+    padding-right: 30px; // adjust the padding as you see fit
+  }
+}

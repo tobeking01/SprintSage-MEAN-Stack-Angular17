@@ -4,6 +4,7 @@
 
 <form [formGroup]="projectForm" (ngSubmit)="onSubmit()">
   <div mat-dialog-content class="content">
+    <!-- Project Name Field -->
     <mat-form-field class="full-width">
       <mat-label>Project Name</mat-label>
       <input
@@ -22,18 +23,20 @@
       </mat-error>
     </mat-form-field>
 
+    <!-- Existing Team Selection Field -->
     <mat-form-field class="full-width">
       <mat-label>Select Existing Team</mat-label>
       <mat-select
         formControlName="existingTeam"
         (selectionChange)="onTeamSelectionChange()"
       >
-        <mat-option *ngFor="let team of teams" [value]="team">
-          {{ team }}
+        <mat-option *ngFor="let team of teams" [value]="team._id">
+          {{ team.teamName }}
         </mat-option>
       </mat-select>
     </mat-form-field>
-
+    <ng-template #loading>Loading...</ng-template>
+    <!-- New Team Name Field -->
     <mat-form-field
       class="full-width"
       matTooltip="Unselect the existing team to create a new one"
@@ -48,9 +51,10 @@
       />
     </mat-form-field>
 
+    <!-- Team Members Field Array -->
     <div formArrayName="teamMembers">
       <div
-        *ngFor="let member of teamMembers.controls; let i = index"
+        *ngFor="let memberControl of teamMembers.controls; let i = index"
         class="member-row"
       >
         <div [formGroupName]="i">
@@ -61,18 +65,26 @@
                 {{ user.firstName }} {{ user.lastName }}
               </mat-option>
             </mat-select>
+
+            <!-- Error Display -->
+            <mat-error *ngIf="memberControl.get('name')?.hasError('required')">
+              Name is required!
+            </mat-error>
           </mat-form-field>
 
+          <!-- Remove Member Button -->
           <button mat-icon-button color="warn" (click)="removeMember(i)">
             <mat-icon>remove_circle</mat-icon>
           </button>
         </div>
       </div>
 
+      <!-- Add Member Button -->
       <button mat-button (click)="addTeamMember()">+ Add Member</button>
     </div>
   </div>
 
+  <!-- Action Buttons -->
   <div mat-dialog-actions class="action-btns">
     <button
       mat-raised-button
@@ -82,7 +94,6 @@
     >
       {{ data ? "Update" : "Save" }}
     </button>
-
     <button
       mat-raised-button
       type="button"
