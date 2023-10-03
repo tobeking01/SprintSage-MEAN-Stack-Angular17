@@ -27,11 +27,13 @@ const isValidRole = (role) => typeof role === "string" && role.trim() !== "";
 
 export const initializeRoles = async () => {
   try {
+    // Define the list of default roles to be initialized.
     const rolesToInitialize = ["Student", "Professor", "Admin"];
+
     for (const roleName of rolesToInitialize) {
       const existingRole = await Role.findOne({ name: roleName });
 
-      // If role does not exist, create it
+      // If the role does not already exist, create it.
       if (!existingRole) {
         await Role.create({ name: roleName });
         console.log(`${roleName} role created successfully.`);
@@ -40,8 +42,7 @@ export const initializeRoles = async () => {
       }
     }
   } catch (error) {
-    // Log any errors encountered during the initialization of the roles
-    console.error("Error creating/checking roles:", error);
+    console.error("Error initializing roles:", error);
   }
 };
 

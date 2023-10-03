@@ -11,23 +11,51 @@ import UserToken from "../models/UserToken.js";
 // `registerStudentProfessor` function handles the process of registering a new Student or Professor.
 export const registerStudentProfessor = async (req, res, next) => {
   try {
-    const { firstName, lastName, userName, email, password, role } = req.body; // Extract role from request body
+    // Extract relevant fields from request body
+    const {
+      firstName,
+      lastName,
+      userName,
+      email,
+      password,
+      role,
+      schoolYear,
+      expectedGraduation,
+      professorTitle,
+      professorDepartment,
+    } = req.body;
 
+    // Validate required fields
     if (!firstName || !lastName || !userName || !email || !password || !role) {
       return res.status(400).json(CreateError(400, "All fields are required."));
     }
 
-    // Validate role
+    // Check role and validate accordingly
     if (!["Student", "Professor"].includes(role)) {
       return res.status(400).json(CreateError(400, "Invalid role."));
     }
 
-    // Fetch the role from the Role model in the database.
+    // For 'Student' role, validate student-specific fields
+    if (role === "Student" && (!schoolYear || !expectedGraduation)) {
+      return res
+        .status(400)
+        .json(CreateError(400, "Student-specific fields are required."));
+    }
+
+    // For 'Professor' role, validate professor-specific fields
+    if (role === "Professor" && (!professorTitle || !professorDepartment)) {
+      return res
+        .status(400)
+        .json(CreateError(400, "Professor-specific fields are required."));
+    }
+
+    // Find role in the Role collection
     const roleDoc = await Role.findOne({ name: role });
     if (!roleDoc) {
       return res.status(400).json(CreateError(400, `${role} role not found.`));
     }
 
+    // Check if user with same email or username already exists
     const userExists = await User.findOne({
       $or: [{ email }, { userName }],
     });
@@ -37,22 +65,32 @@ export const registerStudentProfessor = async (req, res, next) => {
         .json(CreateError(409, "Email or Username already exists."));
     }
 
+    // Encrypt password for security
     const salt = await bcrypt.genSalt(10);
     const hashPassword = await bcrypt.hash(password, salt);
 
+    // Create a new user instance and populate fields
     const newUser = new User({
       firstName,
       lastName,
       userName,
       email,
       password: hashPassword,
-      roles: [roleDoc._id], // Associate the role document ID here
+      roles: [roleDoc._id],
+      schoolYear: role === "Student" ? schoolYear : undefined,
+      expectedGraduation: role === "Student" ? expectedGraduation : undefined,
+      professorTitle: role === "Professor" ? professorTitle : undefined,
+      professorDepartment:
+        role === "Professor" ? professorDepartment : undefined,
     });
 
+    // Save the new user to the database
     await newUser.save();
 
+    // Send success response
     res.status(200).json(CreateSuccess(200, "Registration Successfully!"));
   } catch (error) {
+    // Handle errors and send them to the next middleware
     console.error("Error registering user:", error);
     next(CreateError(500, "Error registering user!"));
   }
@@ -323,48 +361,3 @@ export const signOut = async (req, res) => {
     return res.status(500).json(CreateError(500, "Error Signing out!"));
   }
 };
-
-// API Codes not used
-// `registerModerator` function is for registering moderator users specifically.
-// export const registerProfessor = async (req, res, next) => {
-//   try {
-//     const { firstName, lastName, userName, email, password, role } = req.body;
-
-//     if (!firstName || !lastName || !userName || !email || !password || !role) {
-//       return res.status(400).json(CreateError(400, "All fields are required."));
-//     }
-
-//     // Generate a salt using bcrypt. This will be used to hash the password.
-//     const salt = await bcrypt.genSalt(10);
-//     // Hash the user's password using the generated salt.
-//     const hashPassword = await bcrypt.hash(password, salt);
-
-//     // Fetch the Professor role.
-//     const professorRole = await Role.findOne({ name: "Professor" });
-//     if (!professorRole)
-//       return next(CreateError(400, "Professor role not found."));
-
-//     const userExists = await User.findOne({ $or: [{ email }, { userName }] });
-//     if (userExists)
-//       return res
-//         .status(409)
-//         .json(CreateError(409, "Email or Username already exists."));
-
-//     const newProfessorUser = new User({
-//       firstName,
-//       lastName,
-//       userName,
-//       email,
-//       password: hashPassword,
-//       roles: [professorRole._id], // Assign only the moderator role
-//     });
-//     await newProfessorUser.save();
-
-//     res
-//       .status(200)
-//       .json(CreateSuccess(200, "Professor Registration Successfully!"));
-//   } catch (error) {
-//     console.error("Error registering Professor:", error);
-//     next(CreateError(500, "Error registering Professor!"));
-//   }
-// };

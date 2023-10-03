@@ -2,7 +2,9 @@
 import Project from "../models/Project.js";
 import { CreateError } from "../utils/error.js";
 import { CreateSuccess } from "../utils/success.js";
-
+import User from "../models/User.js";
+import Team from "../models/Team.js";
+import Role from "../models/Role.js";
 /**
  * Controller to create a new project.
  * @async
@@ -12,39 +14,44 @@ import { CreateSuccess } from "../utils/success.js";
  * @param {function} next - Express next middleware function.
  */
 
+// Controller to create a new project.
 export const createProject = async (req, res, next) => {
   try {
-    // Extract project data from request body.
     const { projectName, description, teams, tickets, startDate, endDate } =
       req.body;
 
-    // Validate project data.
+    // Validate project name
     if (
       !projectName ||
       typeof projectName !== "string" ||
       projectName.trim() === ""
     ) {
-      return next(CreateError(400, "Invalid project data."));
+      return next(CreateError(400, "Project name is missing or invalid."));
     }
 
-    // Validate teams.
+    // Validate teams. Check if each ID in the teams array corresponds to an existing Team in the database.
     if (teams && !Array.isArray(teams)) {
       return next(CreateError(400, "Teams must be an array."));
     }
 
-    // Create and save the new Project instance to the database.
+    for (let teamId of teams) {
+      const team = await Team.findById(teamId);
+      if (!team)
+        return next(CreateError(400, `Team with ID ${teamId} does not exist.`));
+    }
+
+    // Further validations can be added as needed.
+
     const newProject = new Project({
       projectName,
       description: description || "Default Description",
       startDate: startDate || new Date(),
       endDate: endDate || new Date(),
-      teams: teams || [], // Use provided teams or default to an empty array if not provided
-      tickets: tickets || [], // Use provided tickets or default to an empty array if not provided
+      teams: teams || [],
+      tickets: tickets || [],
     });
 
     await newProject.save();
-
-    // Respond with a success message.
     res.status(201).json(CreateSuccess(201, "Project Created!", newProject));
   } catch (error) {
     console.error("Error creating project:", error);
@@ -52,13 +59,17 @@ export const createProject = async (req, res, next) => {
   }
 };
 
-// Controller to get all projects.
-// Controller to get all projects.
+// Controller to get all projects with pagination.
 export const getAllProjects = async (req, res, next) => {
   try {
+    const limit = parseInt(req.query.limit) || 10; // Default limit is 10 items per page.
+    const skip = parseInt(req.query.skip) || 0; // Default is the first page.
+
     const projects = await Project.find()
-      .populate("teams") // populating teams
-      .populate("tickets"); // populating tickets
+      .skip(skip)
+      .limit(limit)
+      .populate("teams")
+      .populate("tickets");
 
     res
       .status(200)

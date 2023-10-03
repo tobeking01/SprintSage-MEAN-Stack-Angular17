@@ -14,51 +14,59 @@ const SALT_ROUNDS = 10;
 // Controller to create a new user.
 export const createUser = async (req, res, next) => {
   try {
-    // Destructuring the user details from the request body.
     const { firstName, lastName, userName, email, password, role } = req.body;
-    // Check if role is provided.
-    if (!role) {
-      return next(CreateError(400, "Role is required"));
-    }
 
-    // Find the role in the Role collection.
+    // Check for required fields.
+    if (!role) return next(CreateError(400, "Role is required"));
     const userRole = await Role.findOne({ name: role });
-
-    // If the role is not found, return an error.
-    if (!userRole) {
-      return next(CreateError(400, "Invalid role"));
-    }
-    // Validating that all required fields are present.
+    if (!userRole) return next(CreateError(400, "Invalid role"));
     if (!firstName || !lastName || !userName || !email || !password) {
       return next(CreateError(400, "All fields are required"));
     }
 
-    // Validating email format.
+    // Validate email format.
     if (!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
       return next(CreateError(400, "Invalid email format"));
     }
 
-    // Hashing the user password before saving to the database.
+    // Validate username format.
+    const usernameRegex = /^[a-zA-Z0-9_\-]{3,30}$/;
+    if (!userName.match(usernameRegex)) {
+      return next(CreateError(400, "Invalid username format"));
+    }
+
+    // Hash the user password.
     const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
 
-    // Creating a new User instance and saving it to the database.
-    const user = new User({
-      ...req.body,
+    // Construct the user object.
+    const newUser = {
+      firstName,
+      lastName,
+      userName,
+      email,
       password: hashedPassword,
       roles: [userRole._id],
-    });
+    };
+
+    // Check for role-specific fields.
+    if (role === "Student") {
+      newUser.schoolYear = req.body.schoolYear;
+      newUser.expectedGraduation = req.body.expectedGraduation;
+    } else if (role === "Professor") {
+      newUser.professorTitle = req.body.professorTitle;
+      newUser.professorDepartment = req.body.professorDepartment;
+    }
+
+    const user = new User(newUser);
     await user.save();
 
-    // Preparing the user object to be sent in the response.
+    // Prepare user for response (excluding password).
     const responseUser = user.toObject();
-    delete responseUser.password; // Removing the password from the response object.
-
-    // Sending the success response.
+    delete responseUser.password;
     res
       .status(201)
       .json(CreateSuccess(201, "User Created Successfully!", responseUser));
   } catch (error) {
-    // Sending error response.
     next(CreateError(400, error.message));
   }
 };
@@ -188,15 +196,21 @@ export const deleteUser = async (req, res, next) => {
 export const updateProfile = async (req, res, next) => {
   try {
     const userId = req.params.id;
-    const { role } = req.user; //Get user roles
+    const { role } = req.user; // Assuming your authentication middleware sets this.
 
-    if (!userId || !role) {
-      return next(CreateError(400, "User ID and role are required."));
+    // Check if user is updating their own profile.
+    if (req.user._id !== userId) {
+      return next(
+        CreateError(
+          403,
+          "You do not have permission to update another user's profile."
+        )
+      );
     }
 
     let updates = req.body;
 
-    // Ensure that only allowed fields are updated based on the user's role.
+    // Check for role-specific updates.
     if (role === "Student") {
       updates = {
         schoolYear: req.body.schoolYear,
@@ -208,10 +222,11 @@ export const updateProfile = async (req, res, next) => {
         professorDepartment: req.body.professorDepartment,
       };
     } else {
-      return next(CreateError(400, "Invalid user role."));
+      return next(
+        CreateError(400, "Unrecognized user role. Cannot update profile.")
+      );
     }
 
-    // Find and update the user's profile based on their role.
     const updatedUser = await User.findByIdAndUpdate(userId, updates, {
       new: true,
       runValidators: true,
@@ -221,7 +236,7 @@ export const updateProfile = async (req, res, next) => {
       return next(CreateError(404, "User not found."));
     }
 
-    // Respond with the updated user profile.
+    // Respond with the updated user.
     res.json(
       CreateSuccess(200, "User Profile Updated Successfully!", updatedUser)
     );

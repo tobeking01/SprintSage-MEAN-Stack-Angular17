@@ -13,132 +13,128 @@ import mongoose from "mongoose";
  */
 
 export const createTeam = async (req, res, next) => {
-  try {
-    console.log("Received Payload:", req.body);
-    const { teamName, teamMembers, projects } = req.body;
+  // Destructure relevant fields from the request body.
+  const { teamName, teamMembers, projects } = req.body;
 
-    // other validations...
-
-    // Validate teamMembers
-    if (
-      !Array.isArray(teamMembers) ||
-      teamMembers.some(
-        (id) => typeof id !== "string" || !mongoose.Types.ObjectId.isValid(id)
-      )
-    ) {
-      return next(CreateError(400, "Invalid team members."));
-    }
-
-    // Optionally, validate the existence of team members in the database here.
-    // Similar logic applies to projects.
-    const User = mongoose.model("User"); // or however you import your User model
-
-    for (const memberId of teamMembers) {
-      const userExists = await User.exists({ _id: memberId });
-      if (!userExists)
-        return next(
-          CreateError(400, `User with id ${memberId} does not exist.`)
-        );
-    }
-
-    // similarly, validate projects if provided
-    if (
-      projects &&
-      (!Array.isArray(projects) ||
-        projects.some(
-          (id) => typeof id !== "string" || !mongoose.Types.ObjectId.isValid(id)
-        ))
-    ) {
-      return next(CreateError(400, "Invalid projects."));
-    }
-
-    const Project = mongoose.model("Project"); // or however you import your Project model
-    for (const projectId of projects || []) {
-      const projectExists = await Project.exists({ _id: projectId });
-      if (!projectExists)
-        return next(
-          CreateError(400, `Project with id ${projectId} does not exist.`)
-        );
-    }
-
-    const newTeam = new Team({ teamName, teamMembers, projects });
-    await newTeam.save();
-    res.status(201).json(CreateSuccess(201, "Team Created!", newTeam));
-  } catch (error) {
-    console.error("Error creating team:", error);
-    next(CreateError(500, "Internal Server Error!"));
+  // Validate the format and content of teamMembers.
+  // Ensure each member's ID is a valid MongoDB ObjectId.
+  if (
+    !Array.isArray(teamMembers) ||
+    teamMembers.some(
+      (id) => typeof id !== "string" || !mongoose.Types.ObjectId.isValid(id)
+    )
+  ) {
+    return next(CreateError(400, "Invalid team members."));
   }
-};
 
-/**
- * @async
- * @function getAllTeams
- * @description Controller to fetch all teams from the database.
- * @param {Object} req - Express request object.
- * @param {Object} res - Express response object.
- * @param {function} next - Express next middleware function.
- */
+  // Iterate over teamMembers to ensure no member is already part of another team.
+  for (const memberId of teamMembers) {
+    const userExistsInAnotherTeam = await Team.exists({
+      teamMembers: memberId,
+    });
+    if (userExistsInAnotherTeam) {
+      return next(
+        CreateError(400, `User with id ${memberId} is already in another team.`)
+      );
+    }
+  }
+
+  // If projects are provided, validate their format and content.
+  // Ensure each project's ID is a valid MongoDB ObjectId and not associated with another team.
+  if (
+    projects &&
+    (!Array.isArray(projects) ||
+      projects.some(
+        (id) => typeof id !== "string" || !mongoose.Types.ObjectId.isValid(id)
+      ))
+  ) {
+    return next(CreateError(400, "Invalid projects."));
+  }
+
+  for (const projectId of projects || []) {
+    const projectExistsInAnotherTeam = await Team.exists({
+      projects: projectId,
+    });
+    if (projectExistsInAnotherTeam) {
+      return next(
+        CreateError(
+          400,
+          `Project with id ${projectId} is already associated with another team.`
+        )
+      );
+    }
+  }
+
+  // Instantiate a new Team with the provided details and save to the database.
+  const newTeam = new Team({ teamName, teamMembers, projects });
+  await newTeam.save();
+
+  res.status(201).json(CreateSuccess(201, "Team Created!", newTeam));
+};
 export const getAllTeams = async (req, res, next) => {
   try {
-    // Fetching all teams from the database.
-    const teams = await Team.find()
-      .populate("teamMembers")
-      .populate("projects");
+    // Implementing pagination
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
 
-    // Responding with the list of teams.
+    // Implementing search by team name or member
+    const searchQuery = {};
+    if (req.query.name) {
+      searchQuery.teamName = new RegExp(req.query.name, "i");
+    }
+    if (req.query.memberId) {
+      searchQuery.teamMembers = mongoose.Types.ObjectId(req.query.memberId);
+    }
+
+    // Allow clients to decide whether to populate data
+    const populateData = req.query.populate === "true";
+    const query = Team.find(searchQuery).skip(skip).limit(limit);
+    if (populateData) {
+      query.populate("teamMembers").populate("projects");
+    }
+
+    const teams = await query.exec();
+
     res
       .status(200)
       .json(CreateSuccess(200, "Teams fetched successfully!", teams));
   } catch (error) {
-    console.error("Error fetching teams:", error); // Log the error for debugging.
-    next(CreateError(500, "Internal Server Error!")); // Forward the error to the error-handling middleware.
+    console.error("Error fetching teams:", error);
+    next(CreateError(500, "Internal Server Error!"));
   }
 };
 
-/**
- * @async
- * @function getTeamById
- * @description Controller to fetch a specific team by its ID from the database.
- * ...
- * [Additional comments describing params, usage, etc.]
- */
+// Get team by Id method
 export const getTeamById = async (req, res, next) => {
   try {
-    const { id } = req.params; // Extracting the team ID from the route parameters.
+    const { id } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return next(CreateError(400, "Invalid ID format."));
     }
-    // Fetching the team from the database by ID and populating references.
+
     const team = await Team.findById(id)
       .populate("teamMembers")
       .populate("projects");
 
     if (!team) return next(CreateError(404, "Team not found!"));
 
-    // Responding with the fetched team.
     res
       .status(200)
       .json(CreateSuccess(200, "Team fetched successfully!", team));
   } catch (error) {
-    console.error("Error fetching team:", error); // Log the error for debugging.
-    next(CreateError(500, "Internal Server Error!")); // Forward the error to the error-handling middleware.
+    console.error("Error fetching team:", error);
+    next(CreateError(500, "Internal Server Error!"));
   }
 };
 
-/**
- * @async
- * @function updateTeamById
- * @description Controller to update a specific team by its ID in the database.
- * ...
- * [Additional comments describing params, usage, etc.]
- */
+// update team by Id
 export const updateTeamById = async (req, res, next) => {
   try {
-    const { id } = req.params; // Extracting the team ID from the route parameters.
-    // Validate the input here
+    const { id } = req.params;
     const updates = req.body;
-    const allowedUpdates = ["teamName", "teamMembers", "projects"]; // Replace with your actual field names
+    const allowedUpdates = ["teamName", "teamMembers", "projects"];
     const isValidOperation = Object.keys(updates).every((update) =>
       allowedUpdates.includes(update)
     );
@@ -146,7 +142,7 @@ export const updateTeamById = async (req, res, next) => {
     if (!isValidOperation) {
       return next(CreateError(400, "Invalid updates!"));
     }
-    // Updating the team in the database and returning the updated team document.
+
     const updatedTeam = await Team.findByIdAndUpdate(id, req.body, {
       new: true,
     })
@@ -155,38 +151,28 @@ export const updateTeamById = async (req, res, next) => {
 
     if (!updatedTeam) return next(CreateError(404, "Team not found!"));
 
-    // Responding with the updated team.
     res
       .status(200)
       .json(CreateSuccess(200, "Team updated successfully!", updatedTeam));
   } catch (error) {
-    console.error("Error updating team:", error); // Log the error for debugging.
-    next(CreateError(500, "Internal Server Error!")); // Forward the error to the error-handling middleware.
+    console.error("Error updating team:", error);
+    next(CreateError(500, "Internal Server Error!"));
   }
 };
 
-/**
- * @async
- * @function deleteTeamById
- * @description Controller to delete a specific team by its ID from the database.
- * ...
- * [Additional comments describing params, usage, etc.]
- */
+// delete team by Id
 export const deleteTeamById = async (req, res, next) => {
   try {
-    const { id } = req.params; // Extracting the team ID from the route parameters.
-
-    // Deleting the team from the database by ID.
+    const { id } = req.params;
     const deletedTeam = await Team.findByIdAndDelete(id);
 
     if (!deletedTeam) return next(CreateError(404, "Team not found!"));
 
-    // Responding with the deleted team.
     res
       .status(200)
       .json(CreateSuccess(200, "Team deleted successfully!", deletedTeam));
   } catch (error) {
-    console.error("Error deleting team:", error); // Log the error for debugging.
-    next(CreateError(500, "Internal Server Error!")); // Forward the error to the error-handling middleware.
+    console.error("Error deleting team:", error);
+    next(CreateError(500, "Internal Server Error!"));
   }
 };
