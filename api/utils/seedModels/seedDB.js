@@ -1,29 +1,32 @@
-import axios from "axios";
-import { seedProject } from "./seedProject.js";
-import { seedTeam } from "./seedTeam.js";
-import { seedTicket } from "./seedTicket.js";
-import { seedUser } from "./seedUser.js";
+import mongoose from "mongoose";
+import { seedProjects } from "./seedProject.js";
+import { seedTeams } from "./seedTeam.js";
+import { seedTickets } from "./seedTicket.js";
+import { seedUsers } from "./seedUser.js";
+import dotenv from "dotenv";
 
-const fullURL = "http://localhost:27017/AuthDB";
+dotenv.config();
+const MONGO_URI = process.env.MONGO_URL;
 
 async function seedDB() {
   try {
-    // Call the functions or execute code from the imported scripts
-    await seedProject();
-    await seedTeam();
-    await seedTicket();
-    await seedUser();
+    await mongoose.connect(MONGO_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+    console.log("Connected to MongoDB");
+
+    await seedProjects();
+    await seedTeams();
+    await seedTickets();
+    await seedUsers();
 
     console.log("Database seeded successfully!");
+
+    mongoose.disconnect();
   } catch (error) {
     console.error("Error seeding the database:", error);
   }
 }
 
-// Call the seedDB function to start the seeding process
 seedDB();
-
-// You can now use Axios for making HTTP requests like so:
-axios.get(fullURL).then((response) => {
-  console.log("Response from Axios:", response.data);
-});

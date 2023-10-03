@@ -1,11 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { User } from './model/user.model';
-import { Team } from './model/team.model';
 import { Ticket } from './model/ticket.model';
 import { apiUrls } from '../api.urls';
-import { Project } from './model/project.model';
 
 @Injectable({
   providedIn: 'root',
@@ -51,6 +48,3 @@ export class ProjectService {
     return this.http.get<Ticket[]>(`${apiUrls.ticketServiceApi}getTickets`);
   }
 }
-
-// project.service.ts
-export { Project } from './model/project.model';

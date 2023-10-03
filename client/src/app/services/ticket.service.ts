@@ -17,8 +17,10 @@ export class TicketService {
     return this.http.post<Ticket>(`${this.apiUrl}createTicket`, ticket);
   }
 
-  getAllTickets(): Observable<Ticket[]> {
-    return this.http.get<Ticket[]>(`${this.apiUrl}getAllTickets`);
+  getAllTickets(page: number = 1, limit: number = 10): Observable<any> {
+    return this.http.get<any>(
+      `${this.apiUrl}getAllTickets?page=${page}&limit=${limit}`
+    );
   }
 
   getTicketById(id: string): Observable<Ticket> {

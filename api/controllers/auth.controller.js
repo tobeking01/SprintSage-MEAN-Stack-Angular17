@@ -4,9 +4,17 @@ import User from "../models/User.js";
 import bcrypt from "bcryptjs"; // Used for password hashing.
 import jwt from "jsonwebtoken"; // Used for token creation.
 import nodemailer from "nodemailer"; // Used for sending email.
-import { CreateError } from "../utils/error.js"; // Custom utility function for handling errors.
-import { CreateSuccess } from "../utils/success.js"; // Custom utility function for handling success messages.
+import { sendError, sendSuccess } from "../utils/responseUtility.js";
 import UserToken from "../models/UserToken.js";
+
+/**
+ * Controller for Authentication.
+ * @async
+ * @function
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @param {function} next - Express next middleware function.
+ */
 
 // `registerStudentProfessor` function handles the process of registering a new Student or Professor.
 export const registerStudentProfessor = async (req, res, next) => {
@@ -27,32 +35,28 @@ export const registerStudentProfessor = async (req, res, next) => {
 
     // Validate required fields
     if (!firstName || !lastName || !userName || !email || !password || !role) {
-      return res.status(400).json(CreateError(400, "All fields are required."));
+      return sendError(res, 400, "All fields are required.");
     }
 
     // Check role and validate accordingly
     if (!["Student", "Professor"].includes(role)) {
-      return res.status(400).json(CreateError(400, "Invalid role."));
+      return sendError(res, 400, "Invalid role.");
     }
 
     // For 'Student' role, validate student-specific fields
     if (role === "Student" && (!schoolYear || !expectedGraduation)) {
-      return res
-        .status(400)
-        .json(CreateError(400, "Student-specific fields are required."));
+      return sendError(res, 400, "Student-specific fields are required.");
     }
 
     // For 'Professor' role, validate professor-specific fields
     if (role === "Professor" && (!professorTitle || !professorDepartment)) {
-      return res
-        .status(400)
-        .json(CreateError(400, "Professor-specific fields are required."));
+      return sendError(res, 400, "Professor-specific fields are required.");
     }
 
     // Find role in the Role collection
     const roleDoc = await Role.findOne({ name: role });
     if (!roleDoc) {
-      return res.status(400).json(CreateError(400, `${role} role not found.`));
+      return sendError(res, 400, `${role} role not found.`);
     }
 
     // Check if user with same email or username already exists
@@ -60,9 +64,7 @@ export const registerStudentProfessor = async (req, res, next) => {
       $or: [{ email }, { userName }],
     });
     if (userExists) {
-      return res
-        .status(409)
-        .json(CreateError(409, "Email or Username already exists."));
+      return sendError(res, 409, "Email or Username already exists.");
     }
 
     // Encrypt password for security
@@ -88,11 +90,12 @@ export const registerStudentProfessor = async (req, res, next) => {
     await newUser.save();
 
     // Send success response
-    res.status(200).json(CreateSuccess(200, "Registration Successfully!"));
+    return sendSuccess(res, 200, "Registration Successfully!");
   } catch (error) {
-    // Handle errors and send them to the next middleware
     console.error("Error registering user:", error);
-    next(CreateError(500, "Error registering user!"));
+    // Handle errors and send them to the next middleware
+    const errorResponse = sendError(500, "Error registering user!");
+    next(errorResponse);
   }
 };
 
@@ -102,9 +105,7 @@ export const login = async (req, res, next) => {
     const { userName, password } = req.body;
 
     if (!userName || !password) {
-      return res
-        .status(400)
-        .json(CreateError(400, "Username and password are required."));
+      return sendError(res, 400, "Username and password are required.");
     }
 
     // Fetch the user associated with the provided userName. Also, populate the associated roles.
@@ -112,15 +113,13 @@ export const login = async (req, res, next) => {
 
     // If no user is found with the provided email, return an error.
     if (!user) {
-      return res
-        .status(404)
-        .json(CreateError(404, "User with the given userName not found."));
+      return sendError(res, 404, "User with the given userName not found.");
     }
 
     // Compare the provided password with the stored hashed password using bcrypt.
     const isPasswordCorrect = await bcrypt.compare(password, user.password);
     if (!isPasswordCorrect) {
-      return res.status(401).json(CreateError(401, "Incorrect password."));
+      return sendError(res, 401, "Incorrect password.");
     }
 
     // If authentication is successful, generate a JWT token for the user.
@@ -133,28 +132,33 @@ export const login = async (req, res, next) => {
     );
 
     // Send the generated JWT token as a cookie in the response.
-    res
-      .cookie("access_token", token, {
+    // Create the cookie details
+    const cookieDetails = {
+      name: "access_token",
+      value: token,
+      options: {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production", // set to true in production when using HTTPS
         sameSite: "Strict", // for CSRF protection
-      })
-      .status(200)
-      .json({
-        status: 200,
-        message: "Login Success",
-        data: {
-          id: user._id,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          userName: user.userName,
-          roles: user.roles.map((role) => role.name),
-        },
-      });
+      },
+    };
+
+    // Prepare the data payload
+    const userData = {
+      id: user._id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      userName: user.userName,
+      roles: user.roles.map((role) => role.name),
+    };
+
+    // Send the response using sendSuccess
+    sendSuccess(res, 200, "Login Success", userData, cookieDetails);
   } catch (error) {
     // Log and return any errors that occur during the login process.
     console.error("Error during login:", error);
-    next(CreateError(500, "Internal Server Error."));
+    const errorResponse = sendError(500, "Error during login!");
+    next(errorResponse);
   }
 };
 
@@ -166,7 +170,7 @@ export const registerAdmin = async (req, res, next) => {
     console.log("Processing registration for role:", role); // Logging the received role
 
     if (!firstName || !lastName || !userName || !email || !password || !role) {
-      return next(CreateError(400, "All fields including role are required."));
+      return next(sendError(400, "All fields including role are required."));
     }
 
     // More detailed log about the values received
@@ -179,13 +183,11 @@ export const registerAdmin = async (req, res, next) => {
 
     const adminRole = await Role.findOne({ name: "Admin" });
     if (!adminRole)
-      return next(
-        CreateError(400, "Admin role does not exist in the database.")
-      );
+      return sendError(res, 400, "Admin role does not exist in the database.");
 
     const userExists = await User.findOne({ $or: [{ email }, { userName }] });
     if (userExists)
-      return next(CreateError(409, "Email or Username already exists."));
+      return next(sendError(409, "Email or Username already exists."));
 
     const newAdminUser = new User({
       firstName,
@@ -197,12 +199,11 @@ export const registerAdmin = async (req, res, next) => {
     });
     await newAdminUser.save();
 
-    res
-      .status(200)
-      .json(CreateSuccess(200, "Admin Registration Successfully!"));
+    return sendSuccess(res, 200, "Admin Registration Successfully!");
   } catch (error) {
     console.error("Error registering Admin:", error);
-    next(CreateError(500, "Internal Server Error while registering Admin!"));
+    const errorResponse = sendError(500, "Error registering Admin!");
+    next(errorResponse);
   }
 };
 
@@ -220,9 +221,7 @@ export const sendEmail = async (req, res) => {
 
     // If the user does not exist, return a 400 error.
     if (!user) {
-      return res
-        .status(400)
-        .json(CreateError(400, "User not found to reset the email"));
+      return sendError(res, 400, "User not found to reset the email");
     }
 
     // Prepare a payload for JWT. This will be used to verify the token later.
@@ -276,24 +275,20 @@ export const sendEmail = async (req, res) => {
     mailTransporter.sendMail(mailDetails, async (err, data) => {
       if (err) {
         console.error("Error sending mail:", err);
-        return res
-          .status(500)
-          .json(
-            CreateError(500, "Something went wrong while sending the email!")
-          );
+        return sendError(
+          res,
+          500,
+          "Something went wrong while sending the email!"
+        );
       } else {
         await newToken.save();
-        return res
-          .status(200)
-          .json(CreateSuccess(200, "Email Sent Successfully!"));
+        return sendSuccess(res, 200, "Email Sent Successfully!");
       }
     });
   } catch (err) {
     // If there's an unexpected error, log it and return a 500 status.
     console.error("Error processing sendEmail:", err);
-    return res
-      .status(500)
-      .json(CreateError(500, "Server error! Please try again later."));
+    return sendError(res, 500, "Server error! Please try again later.");
   }
 };
 
@@ -306,7 +301,7 @@ export const resetPassword = (req, res, next) => {
   jwt.verify(token, process.env.JWT_SECRET, async (err, data) => {
     if (err) {
       // If the token is invalid or expired, send an error response.
-      return res.status(500).json(CreateError(500, "Reset Link is Expired!"));
+      return sendError(res, 500, "Reset Link is Expired!");
     } else {
       // If the token is valid, find the user associated with the token's email.
       const response = data;
@@ -326,19 +321,14 @@ export const resetPassword = (req, res, next) => {
           { $set: user },
           { new: true }
         );
-        return res
-          .status(200)
-          .json(CreateSuccess(200, "Password Reset Success!"));
+        return sendSuccess(res, 200, "Password Reset Success!");
       } catch (error) {
         // If there's an error updating the password, send an error response.
-        return res
-          .status(500)
-          .json(
-            CreateError(
-              500,
-              "Something went wrong while resetting the password!"
-            )
-          );
+        return sendError(
+          res,
+          500,
+          "Something went wrong while resetting the password!"
+        );
       }
     }
   });
@@ -350,14 +340,12 @@ export const signOut = async (req, res) => {
     req.session.destroy((err) => {
       if (err) {
         console.error("Error destroying session:", err); // Log the error for debugging.
-        return res
-          .status(500)
-          .json(CreateError(500, "Error destroying session!"));
+        return sendError(res, 500, "Error destroying session!");
       }
       return res.status(204).send(); // No content to send.
     });
   } catch (err) {
     console.error("Error during sign out:", err); // Log the error for debugging.
-    return res.status(500).json(CreateError(500, "Error Signing out!"));
+    return sendError(res, 500, "Error Signing out!");
   }
 };

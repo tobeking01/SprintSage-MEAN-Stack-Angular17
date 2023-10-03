@@ -22,7 +22,7 @@ const router = express.Router();
  */
 // router.post("/createTicket", verifyToken, createTicket);
 
-router.post("/", createTicket);
+router.post("/createTicket/", createTicket);
 
 /**
  * GET /tickets
@@ -30,7 +30,7 @@ router.post("/", createTicket);
  */
 // router.get("/getAllTickets", verifyToken, getAllTickets);
 
-router.get("/", getAllTickets); //test
+router.get("/getAllTickets/", getAllTickets); //test
 
 /**
  * GET /tickets/:id
@@ -39,7 +39,7 @@ router.get("/", getAllTickets); //test
  */
 // router.get("/getTicketById/:id", verifyToken, getTicketById);
 
-router.get("/:id", getTicketById); //test
+router.get("/getTicketById/:id", getTicketById); //test
 
 /**
  * PUT /tickets/:id
@@ -48,7 +48,7 @@ router.get("/:id", getTicketById); //test
  */
 // router.put("/updateTicketById/:id", verifyToken, verifyUser, updateTicketById);
 
-router.put("/:id", updateTicketById);
+router.put("/updateTicketById/:id", updateTicketById);
 
 /**
  * DELETE /tickets/:id
@@ -62,5 +62,5 @@ router.put("/:id", updateTicketById);
 //   deleteTicketById
 // );
 
-router.delete("/:id", deleteTicketById);
+router.delete("/deleteTicketById/:id", deleteTicketById);
 export default router;

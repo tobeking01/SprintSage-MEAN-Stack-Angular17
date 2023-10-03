@@ -1,20 +1,11 @@
-import mongoose from "mongoose";
+import axios from "axios";
 
-// Defining the Ticket schema
-const TicketSchema = new mongoose.Schema({
-  issueDescription: String,
-  status: String,
-  severity: String,
-  submittedByUser: String,
-  assignedToUser: String,
-  projectId: String,
-  ticketType: String,
-});
+// Create an Axios instance with a baseURL
+const api = axios.create({ baseURL: "http://localhost:8800/" });
 
-// Creating a mongoose model for tickets
-const Ticket = mongoose.model("Ticket", TicketSchema);
+const endpoint = "tickets/createTicket";
 
-const ticketsData = [
+const tickets = [
   {
     issueDescription:
       "The application crashes when pressing the submit button on Project A's form",
@@ -45,11 +36,26 @@ const ticketsData = [
   },
 ];
 
+// api
+//   .post(endpoint, ticketData)
+//   .then((response) => {
+//     console.log("Ticket created:", response.data);
+//   })
+//   .catch((error) => {
+//     console.error("Error creating ticket:", error);
+//   });
+
 export const seedTickets = async () => {
-  try {
-    await Ticket.insertMany(ticketsData);
-    console.log("Tickets seeded successfully!");
-  } catch (error) {
-    console.error("Error seeding tickets:", error);
+  for (const ticket of tickets) {
+    try {
+      const response = await api.post(endpoint, ticket);
+      console.log("Ticket created:", response.data);
+    } catch (error) {
+      console.error(
+        "Error seeding tickets using API:",
+        error.response ? error.response.data : error.message
+      );
+    }
   }
+  console.log("All tickets seeded successfully!");
 };

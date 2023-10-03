@@ -1,25 +1,43 @@
+// Import the mongoose library to define and manage the data model
 import mongoose from "mongoose";
 
-// Defining a schema for the Role data model using mongoose.
-// The Role model is used to define the different user roles within the system
-// such as Admin, Professor, and Student. Each role has different levels of access
-// and permissions throughout the application.
+/**
+ * Role Schema Definition
+ *
+ * This schema represents different user roles within the system.
+ * For instance, users can be assigned roles such as Admin, Professor, or Student.
+ * Depending on their assigned role, users may have varied access levels
+ * and permissions throughout the application.
+ */
 const RoleSchema = mongoose.Schema(
   {
+    // The name of the role.
+    // It is limited to one of the three specified values: Admin, Professor, or Student.
     name: {
       type: String,
-      enum: ["Admin", "Professor", "Student"], // Adjust the values according to your design.
-      required: true,
+      enum: ["Admin", "Professor", "Student"], // Allowed values for the role name
+      required: true, // The role name is mandatory for every Role document
     },
   },
   {
-    timestamps: true, // Enables the automatic tracking of when entries are created or updated
+    // Enable automatic tracking of 'createdAt' and 'updatedAt' timestamps.
+    // This provides metadata about when a role was initially added and
+    // the last time it was updated in the database.
+    timestamps: true,
   }
 );
 
-// Exporting the Role model.
-// The model creates a 'Role' collection in the database using the defined schema and
-// allows for interaction with the Role data throughout the application.
+/**
+ * Role Model Definition
+ *
+ * Using the RoleSchema, a mongoose model is defined for interacting with the Role data.
+ * Once defined, the model allows operations such as creating, reading, updating,
+ * and deleting Role documents from the database.
+ *
+ * Note: In the MongoDB database, this will appear as a 'roles' collection due to
+ * mongoose's pluralization.
+ */
 const Role = mongoose.model("Role", RoleSchema);
 
+// Export the Role model so it can be used elsewhere in the application.
 export default Role;

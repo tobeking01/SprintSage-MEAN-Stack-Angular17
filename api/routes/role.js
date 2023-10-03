@@ -10,16 +10,16 @@ import { verifyAdmin } from "../utils/verify-validate.js";
 const router = express.Router();
 
 // Route to initialize  a new role. Accessible only by Admins after token verification.
-// router.post("/createRole", verifyAdmin, createRole); // Simplified path
-// router.post("/createRole", initializeRoles); // Simplified path
+// router.post("/createRole", verifyAdmin, createRole);
+// router.post("/createRole", initializeRoles);
 
 // Route to update an existing role by ID. Accessible only by Admins after token verification.
-router.put("/updateRoleById/:id", verifyAdmin, updateRole); // Simplified path
+router.put("/updateRoleById/:id", verifyAdmin, updateRole);
 
-// Route to retrieve all roles. No verification middleware, hence accessible by all.
-router.get("/getAllRoles", getAllRoles); // Simplified path
+// Route to retrieve all roles.
+router.get("/getAllRoles", getAllRoles);
 
-// Route to delete an existing role by ID. No verification middleware; might be a security concern.
-router.delete("/deleteRoleById/:id", deleteRole); // Simplified path
+// Route to delete an existing role by ID. No verification middleware;
+router.delete("/deleteRoleById/:id", deleteRole);
 
 export default router;

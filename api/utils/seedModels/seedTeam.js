@@ -1,46 +1,38 @@
-// seedTeams.js
-
-import axios from "axios";
 import mongoose from "mongoose";
 
-// Replace this with your API endpoint
-const baseURL = "http://localhost:8800/api/";
-const endpoint = "team/createTeam"; // Replace with your team creation endpoint
+const TeamSchema = new mongoose.Schema({
+  teamName: String,
+  teamMembers: [String], // assuming this is an array of userIds
+});
 
-// Users you've provided
+const Team = mongoose.model("Team", TeamSchema);
+
 const users = [
   "651b4c8dbeabf075e72bbc57",
   "651b4c8dbeabf075e72bbc59",
   "651b4c8dbeabf075e72bbc5b",
 ];
 
-const teams = [
+const teamsData = [
   {
     teamName: "Team Alpha",
-    teamMembers: [users[0], users[1]], // sus1 and sus2
+    teamMembers: [users[0], users[1]],
   },
   {
     teamName: "Team Beta",
-    teamMembers: [users[1], users[2]], // sus2 and sus3
+    teamMembers: [users[1], users[2]],
   },
   {
     teamName: "Team Gamma",
-    teamMembers: [users[0], users[2]], // sus1 and sus3
+    teamMembers: [users[0], users[2]],
   },
 ];
 
-teams.forEach(async (team) => {
+export const seedTeams = async () => {
   try {
-    const response = await axios.post(`${baseURL}${endpoint}`, team);
-    console.log(`Team ${team.teamName} created successfully`, response.data);
+    await Team.insertMany(teamsData);
+    console.log("Teams seeded successfully!");
   } catch (error) {
-    if (error.response) {
-      console.error(
-        `Error creating team ${team.teamName}`,
-        error.response.data
-      );
-    } else {
-      console.error(`Error creating team ${team.teamName}`, error.message);
-    }
+    console.error("Error seeding teams:", error);
   }
-});
+};

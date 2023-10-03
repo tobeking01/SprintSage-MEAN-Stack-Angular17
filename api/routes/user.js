@@ -17,7 +17,6 @@ const router = express.Router();
 
 // POST / createUser;
 // Route for creating a new user.
-// Access: Admin
 // Middleware:
 // - verifyToken: Validates the JWT token passed in the request header.
 // router.post("/createUser", verifyToken, createUser);
@@ -43,7 +42,6 @@ router.get("/getUserById/:id", getUserById);
 
 // PUT /updateUser/:id
 // Route for updating an existing user by ID.
-// Access: Admin or the authenticated user.
 // Middleware:
 // - verifyToken: Validates the JWT token passed in the request header.
 // router.put("/updateUser/:id", verifyToken, updateUser);
@@ -52,7 +50,6 @@ router.put("/updateUser/:id", updateUser);
 
 // DELETE /deleteUser/:id
 // Route for deleting an existing user by ID.
-// Access: Admin
 // Middleware:
 // - verifyToken: Validates the JWT token passed in the request header.
 // router.delete("/deleteUser/:id", verifyToken, deleteUser);

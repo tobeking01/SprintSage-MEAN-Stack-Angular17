@@ -1,20 +1,22 @@
-// seedProjects.js
-
-import axios from "axios";
 import mongoose from "mongoose";
 
-// Replace this with your API endpoint
-const baseURL = "http://localhost:8800/api/";
-const endpoint = "project/createProject"; // Replace with your project creation endpoint
+const ProjectSchema = new mongoose.Schema({
+  projectName: String,
+  description: String,
+  teams: [String], // array of teamIds
+  startDate: Date,
+  endDate: Date,
+});
 
-// Teams you've provided
+const Project = mongoose.model("Project", ProjectSchema);
+
 const teams = [
   "651b4e662a3cd62a2af17a50", // Team Alpha
   "651b4e662a3cd62a2af17a52", // Team Beta
   "651b4e662a3cd62a2af17a54", // Team Gamma
 ];
 
-const projects = [
+const projectsData = [
   {
     projectName: "Project A",
     description: "This is the description for Project A",
@@ -38,24 +40,11 @@ const projects = [
   },
 ];
 
-projects.forEach(async (project) => {
+export const seedProjects = async () => {
   try {
-    const response = await axios.post(`${baseURL}${endpoint}`, project);
-    console.log(
-      `Project ${project.projectName} created successfully`,
-      response.data
-    );
+    await Project.insertMany(projectsData);
+    console.log("Projects seeded successfully!");
   } catch (error) {
-    if (error.response) {
-      console.error(
-        `Error creating project ${project.projectName}`,
-        error.response.data
-      );
-    } else {
-      console.error(
-        `Error creating project ${project.projectName}`,
-        error.message
-      );
-    }
+    console.error("Error seeding projects:", error);
   }
-});
+};

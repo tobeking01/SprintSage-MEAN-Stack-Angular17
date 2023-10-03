@@ -4,6 +4,11 @@ import { Observable, BehaviorSubject, throwError } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 import { apiUrls } from '../api.urls';
 import { User } from './model/user.model';
+import {
+  LoginPayload,
+  RegisterProfessorPayload,
+  RegisterStudentPayload,
+} from './model/auth.model';
 
 // Constant to manage the user key in session storage
 const USER_KEY = 'auth-user';
@@ -20,34 +25,34 @@ export class AuthService {
     this.loadUserFromStorage();
   }
 
-  // Loads user from session storage. It’s here for if in any case, needed
   private loadUserFromStorage(): void {
     const user = sessionStorage.getItem(USER_KEY);
     if (user) this.currentUserSubject.next(JSON.parse(user));
   }
 
-  // Call login service
-  loginService(loginObj: any): Observable<any> {
-    return this.http.post<any>(`${apiUrls.authServiceApi}login`, loginObj).pipe(
-      tap((response) => {
-        const user = response.data;
-        if (user) {
-          this.currentUserSubject.next(user);
-          this.isLoggedIn$.next(true);
-        } else {
-          throw new Error('User data is not available');
-        }
-      }),
-      catchError((error) => {
-        if (error.status === 401) {
-          // Handle Unauthorized, maybe redirect to login page
-        }
-        return throwError(error);
-      })
-    );
+  loginService(loginObj: LoginPayload): Observable<ResponseData> {
+    return this.http
+      .post<ResponseData>(`${apiUrls.authServiceApi}login`, loginObj)
+      .pipe(
+        tap((response) => {
+          const user = response.data;
+          if (user) {
+            this.currentUserSubject.next(user);
+            this.isLoggedIn$.next(true);
+            sessionStorage.setItem(USER_KEY, JSON.stringify(user));
+          } else {
+            throw new Error('User data is not available');
+          }
+        }),
+        catchError((error) => {
+          if (error.status === 401) {
+            // Handle Unauthorized, maybe redirect to login page
+          }
+          return throwError(error);
+        })
+      );
   }
 
-  // Logout user by calling the logout endpoint to invalidate the JWT token
   logout(): void {
     this.http.post(`${apiUrls.authServiceApi}logout`, {}).subscribe(
       () => {
@@ -55,7 +60,6 @@ export class AuthService {
         this.isLoggedIn$.next(false);
       },
       (error) => {
-        // handle error, maybe log the user out locally anyway
         console.error('Logout error', error);
         this.currentUserSubject.next(null);
         this.isLoggedIn$.next(false);
@@ -63,51 +67,57 @@ export class AuthService {
     );
   }
 
-  // Set current user
-  setCurrentUser(user: User | null): void {
-    this.currentUserSubject.next(user);
-    this.isLoggedIn$.next(!!user);
+  registerStudentService(
+    registerObj: RegisterStudentPayload
+  ): Observable<ResponseData> {
+    return this.handleRegistration(registerObj);
   }
 
-  // Get User Roles
-  getUserRoles(): string[] {
-    return this.currentUserSubject.value?.roles || [];
+  registerProfessorService(
+    registerObj: RegisterProfessorPayload
+  ): Observable<ResponseData> {
+    return this.handleRegistration(registerObj);
   }
 
-  // Check if user is logged in
-  isLoggedIn(): boolean {
-    return !!this.currentUserSubject.value;
-  }
-
-  // Check if user is Admin
-  isAdmin(): boolean {
-    return this.currentUserSubject.value?.roles.includes('Admin') || false;
-  }
-
-  // Call register service
-  registerService(registerObj: any): Observable<any> {
+  private handleRegistration(
+    registerObj: BaseUserPayload
+  ): Observable<ResponseData> {
     return this.http
-      .post<any>(`${apiUrls.authServiceApi}register`, registerObj)
+      .post<ResponseData>(`${apiUrls.authServiceApi}register`, registerObj)
       .pipe(
         tap((response) => {
-          if (!response.success) throw new Error('Registration Failed');
+          if (!response.success) {
+            throw new Error('Registration Failed');
+          }
         }),
         catchError((error) => throwError(error))
       );
   }
 
-  // Call send email service
+  setCurrentUser(user: User | null): void {
+    this.currentUserSubject.next(user);
+    this.isLoggedIn$.next(!!user);
+  }
+
+  getUserRoles(): string[] {
+    return this.currentUserSubject.value?.roles || [];
+  }
+
+  isLoggedIn(): boolean {
+    return !!this.currentUserSubject.value;
+  }
+
+  isAdmin(): boolean {
+    return this.currentUserSubject.value?.roles.includes('Admin') || false;
+  }
+
   sendEmailService(email: string): Observable<any> {
     return this.http.post<any>(`${apiUrls.authServiceApi}send-email`, {
       email,
     });
   }
 
-  // Call reset password service
   resetPasswordService(resetObj: any): Observable<any> {
     return this.http.post<any>(`${apiUrls.authServiceApi}reset`, resetObj);
   }
 }
-
-// auth.service.ts
-export { User } from './model/user.model';

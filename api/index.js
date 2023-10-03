@@ -6,7 +6,7 @@ import mongoose from "mongoose";
 // Importing middleware and error handling
 import setupMiddlewares from "./middleware/index.js";
 import errorHandlingMiddleware from "./middleware/errorhandling.js";
-import loggingMiddleware from "./middleware/logging.js"; // Import the new logging middleware
+import logRequestMiddleware from "./middleware/logRequest.js";
 
 // Importing controllers and routes
 import { initializeRoles } from "./controllers/role.controller.js";
@@ -23,7 +23,7 @@ dotenv.config();
 const PORT = process.env.PORT || 8800;
 
 // Applying logging middleware to log each incoming client-side API request
-loggingMiddleware(app);
+logRequestMiddleware(app);
 
 // Setting up middlewares for handling CORS, parsing, etc.
 setupMiddlewares(app);
@@ -66,16 +66,6 @@ const connectMongoDB = async () => {
     process.exit(1); // Terminate the process with a failure code
   }
 };
-
-// Middleware to log each request
-app.use((req, res, next) => {
-  console.log(
-    `Received a ${req.method} request on ${
-      req.path
-    } at ${new Date().toISOString()}`
-  );
-  next();
-});
 
 // Setup error handling middleware
 errorHandlingMiddleware(app);

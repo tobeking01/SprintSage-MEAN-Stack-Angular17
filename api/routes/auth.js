@@ -32,14 +32,6 @@ router.post("/register-admin", validateAdminRegistration, registerAdmin);
 router.post("/send-email", sendEmail);
 
 router.post("/reset", resetPassword);
-// Middleware for generic error handling.
-// This captures any errors that might have been thrown in previous middleware or route handlers.
-router.use((err, req, res, next) => {
-  // Log the error stack trace to the console.
-  console.error(err.stack);
-  // Respond with a generic error message.
-  res.status(500).send("Something broke!");
-});
 
 // Export the router for use in other parts of the application.
 export default router;

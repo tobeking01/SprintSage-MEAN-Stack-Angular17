@@ -1,3 +1,5 @@
+import { sendError } from "../utils/responseUtility.js";
+
 // Error Handling Middleware to handle all errors
 const errorHandlingMiddleware = (app) => {
   // Middleware to log errors and send response to client
@@ -9,32 +11,35 @@ const errorHandlingMiddleware = (app) => {
       err
     );
 
-    if (err.isOperational)
-      return res
-        .status(err.status)
-        .json({ success: false, message: err.message });
+    // If the error is operational (meaning it was expected, like validation errors),
+    // send the error message with the appropriate status code
+    if (err.isOperational) {
+      return sendError(res, err.status, err.message);
+    }
 
-    res.status(500).json({
-      success: false,
-      message: "An error occurred! Please try again later.",
-    });
+    // If it's an unexpected error (not operational), send a generic message
+    sendError(res, 500, "An error occurred! Please try again later.");
   });
 
   // Middleware to handle 404 errors for routes not found
   app.use((req, res, next) => {
     const err = new Error("Not Found");
     err.status = 404;
+    // Pass the error to the next middleware
     next(err);
   });
 
   // Middleware to handle response formatting for errors
   app.use((err, req, res, next) => {
-    if (err instanceof Error)
-      return res.status(err.status || 500).json({
-        success: err.success || false,
-        status: err.status || 500,
-        message: err.message || "Something went wrong!",
-      });
+    // If the error object is an instance of the Error class (which includes operational errors,
+    // 404 errors, and other exceptions), send the error using our utility
+    if (err instanceof Error) {
+      return sendError(
+        res,
+        err.status || 500,
+        err.message || "Something went wrong!"
+      );
+    }
     next();
   });
 };

@@ -12,7 +12,7 @@ import {
   deleteProjectById,
 } from "../controllers/project.controller.js";
 
-// Importing any middlewares (if any) like authentication or authorization middlewares.
+// Importing any middlewares
 import {
   verifyToken,
   verifyAdmin,
@@ -28,15 +28,15 @@ const router = express.Router();
  */
 // router.post("/createProject", verifyToken, createProject);
 
-router.post("/projects", createProject);
+router.post("/project", createProject);
 
 /**
  * GET /projects
  * Route to get all projects. Linked with the 'getAllProjects' method from Project Controller.
  */
-// router.get("/getAllProjects", verifyToken, getAllProjects);
+// router.get("/getAllProject", verifyToken, getAllProjects);
 
-router.get("/projects", getAllProjects);
+router.get("/project", getAllProjects);
 
 /**
  * GET /projects/:id
@@ -44,7 +44,7 @@ router.get("/projects", getAllProjects);
  */
 // router.get("/getProjectById/:id", verifyToken, getProjectById);
 
-router.get("/projects/:id", getProjectById);
+router.get("/project/:id", getProjectById);
 
 /**
  * PUT /projects/:id
@@ -56,7 +56,7 @@ router.get("/projects/:id", getProjectById);
 //   updateProjectById
 // );
 
-router.put("/projects/:id", updateProjectById);
+router.put("/project/:id", updateProjectById);
 
 /**
  * DELETE /projects/:id
@@ -68,7 +68,7 @@ router.put("/projects/:id", updateProjectById);
 //   deleteProjectById
 // );
 
-router.delete("/projects/:id", deleteProjectById);
+router.delete("/project/:id", deleteProjectById);
 
-// Exporting the router to be used in the application's main entry file (usually 'app.js' or 'server.js').
+// Exporting the router.
 export default router;

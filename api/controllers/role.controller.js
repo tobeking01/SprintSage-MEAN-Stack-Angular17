@@ -2,10 +2,10 @@
 
 // Importing the Role model to interact with the 'Role' collection in the database.
 import Role from "../models/Role.js";
+import User from "../models/User.js"; // Assuming User model is in the models directory
 
 // Importing utility functions to create standardized error and success responses.
-import { CreateError } from "../utils/error.js";
-import { CreateSuccess } from "../utils/success.js";
+import { sendError, sendSuccess } from "../utils/responseUtility.js";
 
 /**
  * Utility function to validate the role.
@@ -56,22 +56,23 @@ export const initializeRoles = async () => {
  */
 export const updateRole = async (req, res, next) => {
   try {
-    // Find the role by its ID.
+    if (!isValidRole(req.body.name)) {
+      return sendError(400, "Invalid role!");
+    }
+
     const role = await Role.findById(req.params.id);
+    if (!role) return next(sendError(404, "Role not found!"));
 
-    // If no such role exists, return an error.
-    if (!role) return next(CreateError(404, "Role not found!"));
-
-    // Update the found role and respond with a success message.
-    await Role.findByIdAndUpdate(
+    const updatedRole = await Role.findByIdAndUpdate(
       req.params.id,
       { $set: req.body },
       { new: true }
     );
-    res.status(200).json(CreateSuccess(200, "Role Updated!"));
+    sendSuccess(200, "Role Updated!", updatedRole);
   } catch (error) {
-    console.error("Error updating role:", error); // Log the error for debugging.
-    next(CreateError(500, "Internal Server Error!")); // Forward the error to the error handling middleware.
+    console.error("Error updating role:", error);
+    const errorResponse = sendError(500, "Internal Server Error!");
+    next(errorResponse);
   }
 };
 
@@ -89,12 +90,11 @@ export const getAllRoles = async (req, res, next) => {
     const roles = await Role.find({});
 
     // Respond with the retrieved roles.
-    res
-      .status(200)
-      .json(CreateSuccess(200, "Roles fetched successfully!", roles));
+    sendSuccess(200, "Roles fetched successfully!", roles);
   } catch (error) {
     console.error("Error fetching roles:", error); // Log the error for debugging.
-    next(CreateError(500, "Internal Server Error!")); // Forward the error to the error handling middleware.
+    const errorResponse = sendError(500, "Internal Server Error!");
+    next(errorResponse);
   }
 };
 
@@ -108,17 +108,21 @@ export const getAllRoles = async (req, res, next) => {
  */
 export const deleteRole = async (req, res, next) => {
   try {
-    // Find the role by its ID.
     const role = await Role.findById(req.params.id);
 
-    // If no such role exists, return an error.
-    if (!role) return next(CreateError(404, "Role not found!"));
+    if (!role) return next(sendError(404, "Role not found!"));
 
-    // Delete the found role and respond with a success message.
+    // Example: Assuming you have a User model with a role field
+    const userWithRole = await User.findOne({ role: req.params.id });
+    if (userWithRole) {
+      return sendError(res, 400, "Role is still in use and cannot be deleted!");
+    }
+
     await Role.findByIdAndDelete(req.params.id);
-    res.status(200).json(CreateSuccess(200, "Role deleted!"));
+    sendSuccess(200, "Role deleted!");
   } catch (error) {
-    console.error("Error deleting role:", error); // Log the error for debugging.
-    next(CreateError(500, "Internal Server Error!")); // Forward the error to the error handling middleware.
+    console.error("Error deleting role:", error);
+    const errorResponse = sendError(500, "Internal Server Error!");
+    next(errorResponse);
   }
 };
