@@ -3,6 +3,15 @@ import { CreateError } from "../utils/error.js";
 import { CreateSuccess } from "../utils/success.js";
 import mongoose from "mongoose";
 
+const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
+
+const handlePopulation = (query, req) => {
+  if (req.query.populate === "true") {
+    return query.populate("teamMembers").populate("projects");
+  }
+  return query;
+};
+
 /**
  * @async
  * @function createTeam
@@ -11,74 +20,65 @@ import mongoose from "mongoose";
  * @param {Object} res - Express response object.
  * @param {function} next - Express next middleware function.
  */
-
+// create teams
 export const createTeam = async (req, res, next) => {
-  // Destructure relevant fields from the request body.
   const { teamName, teamMembers, projects } = req.body;
 
   // Validate the format and content of teamMembers.
-  // Ensure each member's ID is a valid MongoDB ObjectId.
   if (
     !Array.isArray(teamMembers) ||
-    teamMembers.some(
-      (id) => typeof id !== "string" || !mongoose.Types.ObjectId.isValid(id)
-    )
+    teamMembers.some((id) => !isValidObjectId(id))
   ) {
     return next(CreateError(400, "Invalid team members."));
   }
 
-  // Iterate over teamMembers to ensure no member is already part of another team.
-  for (const memberId of teamMembers) {
-    const userExistsInAnotherTeam = await Team.exists({
-      teamMembers: memberId,
-    });
-    if (userExistsInAnotherTeam) {
-      return next(
-        CreateError(400, `User with id ${memberId} is already in another team.`)
-      );
-    }
+  // Check if any of the members are already in another team.
+  const membersInAnotherTeam = await Team.findOne({
+    teamMembers: { $in: teamMembers },
+  });
+
+  if (membersInAnotherTeam) {
+    return next(
+      CreateError(400, `One or more members are already in another team.`)
+    );
   }
 
   // If projects are provided, validate their format and content.
-  // Ensure each project's ID is a valid MongoDB ObjectId and not associated with another team.
   if (
     projects &&
-    (!Array.isArray(projects) ||
-      projects.some(
-        (id) => typeof id !== "string" || !mongoose.Types.ObjectId.isValid(id)
-      ))
+    (!Array.isArray(projects) || projects.some((id) => !isValidObjectId(id)))
   ) {
     return next(CreateError(400, "Invalid projects."));
   }
 
-  for (const projectId of projects || []) {
-    const projectExistsInAnotherTeam = await Team.exists({
-      projects: projectId,
+  if (projects) {
+    const projectInAnotherTeam = await Team.findOne({
+      projects: { $in: projects },
     });
-    if (projectExistsInAnotherTeam) {
+
+    if (projectInAnotherTeam) {
       return next(
         CreateError(
           400,
-          `Project with id ${projectId} is already associated with another team.`
+          `One or more projects are already associated with another team.`
         )
       );
     }
   }
 
-  // Instantiate a new Team with the provided details and save to the database.
   const newTeam = new Team({ teamName, teamMembers, projects });
   await newTeam.save();
 
   res.status(201).json(CreateSuccess(201, "Team Created!", newTeam));
 };
+
+// get all teams
 export const getAllTeams = async (req, res, next) => {
   try {
-    // Implementing pagination
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
 
-    // Implementing search by team name or member
     const searchQuery = {};
     if (req.query.name) {
       searchQuery.teamName = new RegExp(req.query.name, "i");
@@ -87,14 +87,8 @@ export const getAllTeams = async (req, res, next) => {
       searchQuery.teamMembers = mongoose.Types.ObjectId(req.query.memberId);
     }
 
-    // Allow clients to decide whether to populate data
-    const populateData = req.query.populate === "true";
     const query = Team.find(searchQuery).skip(skip).limit(limit);
-    if (populateData) {
-      query.populate("teamMembers").populate("projects");
-    }
-
-    const teams = await query.exec();
+    const teams = await handlePopulation(query, req).exec();
 
     res
       .status(200)
@@ -110,13 +104,12 @@ export const getTeamById = async (req, res, next) => {
   try {
     const { id } = req.params;
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
+    if (!isValidObjectId(id)) {
       return next(CreateError(400, "Invalid ID format."));
     }
 
-    const team = await Team.findById(id)
-      .populate("teamMembers")
-      .populate("projects");
+    const query = Team.findById(id);
+    const team = await handlePopulation(query, req).exec();
 
     if (!team) return next(CreateError(404, "Team not found!"));
 

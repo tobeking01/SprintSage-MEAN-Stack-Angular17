@@ -28,7 +28,7 @@ const router = express.Router();
  */
 // router.post("/createProject", verifyToken, createProject);
 
-router.post("/createProject", createProject); //test API
+router.post("/projects", createProject);
 
 /**
  * GET /projects
@@ -36,7 +36,7 @@ router.post("/createProject", createProject); //test API
  */
 // router.get("/getAllProjects", verifyToken, getAllProjects);
 
-router.get("/getAllProjects", getAllProjects); // test
+router.get("/projects", getAllProjects);
 
 /**
  * GET /projects/:id
@@ -44,7 +44,7 @@ router.get("/getAllProjects", getAllProjects); // test
  */
 // router.get("/getProjectById/:id", verifyToken, getProjectById);
 
-router.get("/getProjectById/:id", getProjectById); // test
+router.get("/projects/:id", getProjectById);
 
 /**
  * PUT /projects/:id
@@ -56,7 +56,7 @@ router.get("/getProjectById/:id", getProjectById); // test
 //   updateProjectById
 // );
 
-router.put("/updateProjectById/:id", updateProjectById); // test
+router.put("/projects/:id", updateProjectById);
 
 /**
  * DELETE /projects/:id
@@ -68,7 +68,7 @@ router.put("/updateProjectById/:id", updateProjectById); // test
 //   deleteProjectById
 // );
 
-router.delete("/deleteProjectById/:id", deleteProjectById); // test
+router.delete("/projects/:id", deleteProjectById);
 
 // Exporting the router to be used in the application's main entry file (usually 'app.js' or 'server.js').
 export default router;

@@ -5,6 +5,8 @@ import { CreateSuccess } from "../utils/success.js";
 import User from "../models/User.js";
 import Team from "../models/Team.js";
 import Role from "../models/Role.js";
+import Ticket from "../models/Ticket.js"; // Import the Ticket model at the top of your file
+
 /**
  * Controller to create a new project.
  * @async
@@ -33,7 +35,11 @@ export const createProject = async (req, res, next) => {
     if (teams && !Array.isArray(teams)) {
       return next(CreateError(400, "Teams must be an array."));
     }
-
+    // Validate the existence of all team IDs in one query
+    const countTeams = await Team.countDocuments({ _id: { $in: teams } });
+    if (countTeams !== teams.length) {
+      return next(CreateError(400, "One or more teams are invalid."));
+    }
     for (let teamId of teams) {
       const team = await Team.findById(teamId);
       if (!team)
@@ -60,10 +66,14 @@ export const createProject = async (req, res, next) => {
 };
 
 // Controller to get all projects with pagination.
+// Controller to get all projects with pagination.
 export const getAllProjects = async (req, res, next) => {
   try {
     const limit = parseInt(req.query.limit) || 10; // Default limit is 10 items per page.
     const skip = parseInt(req.query.skip) || 0; // Default is the first page.
+
+    // Get the total count of projects in the database
+    const totalProjects = await Project.countDocuments();
 
     const projects = await Project.find()
       .skip(skip)
@@ -71,9 +81,23 @@ export const getAllProjects = async (req, res, next) => {
       .populate("teams")
       .populate("tickets");
 
-    res
-      .status(200)
-      .json(CreateSuccess(200, "Projects fetched successfully!", projects));
+    // Calculate total pages and the current page for pagination metadata
+    const totalPages = Math.ceil(totalProjects / limit);
+    const currentPage = Math.floor(skip / limit) + 1;
+
+    // Respond with projects data and the pagination metadata
+    res.status(200).json({
+      status: 200,
+      message: "Projects fetched successfully!",
+      data: projects,
+      pagination: {
+        total: totalProjects, // Total number of projects
+        limit, // Number of projects per page
+        skip, // Number of projects skipped
+        totalPages, // Total number of pages
+        currentPage, // Current page number
+      },
+    });
   } catch (error) {
     console.error("Error fetching projects:", error);
     next(CreateError(500, "Internal Server Error!"));
@@ -107,12 +131,22 @@ export const updateProjectById = async (req, res, next) => {
     const { id } = req.params; // Extract the ID from the URL Params
 
     // Validate IDs of teams and tickets if they are in the request body.
-    if (req.body.teams && !Array.isArray(req.body.teams)) {
-      return next(CreateError(400, "Teams must be an array."));
+    if (req.body.teams) {
+      const countTeams = await Team.countDocuments({
+        _id: { $in: req.body.teams },
+      });
+      if (countTeams !== req.body.teams.length) {
+        return next(CreateError(400, "One or more teams are invalid."));
+      }
     }
 
-    if (req.body.tickets && !Array.isArray(req.body.tickets)) {
-      return next(CreateError(400, "Tickets must be an array."));
+    if (req.body.tickets) {
+      const countTickets = await Ticket.countDocuments({
+        _id: { $in: req.body.tickets },
+      });
+      if (countTickets !== req.body.tickets.length) {
+        return next(CreateError(400, "One or more tickets are invalid."));
+      }
     }
 
     const projectUpdates = { ...req.body };

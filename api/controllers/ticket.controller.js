@@ -1,6 +1,9 @@
 import Ticket from "../models/Ticket.js";
+import Project from "../models/Project.js";
 import { CreateError } from "../utils/error.js";
 import { CreateSuccess } from "../utils/success.js";
+
+const TICKET_STATUSES = ["OPEN", "IN_PROGRESS", "CLOSED", "REJECTED"];
 
 // Controller to create a new ticket.
 export const createTicket = async (req, res, next) => {
@@ -28,6 +31,15 @@ export const createTicket = async (req, res, next) => {
       );
     }
 
+    // Inside createTicket function
+    if (!TICKET_STATUSES.includes(status)) {
+      return next(CreateError(400, "Invalid ticket status."));
+    }
+    // Validate projectId
+    const project = await Project.findById(projectId);
+    if (!project) {
+      return next(CreateError(400, "Invalid project ID."));
+    }
     // Instantiate a new Ticket object with provided data.
     const newTicket = new Ticket({
       issueDescription,
@@ -72,11 +84,11 @@ export const getAllTickets = async (req, res, next) => {
 export const getTicketById = async (req, res, next) => {
   try {
     const ticketId = req.params.id;
-
     // Fetch the ticket by ID and populate user details.
     const ticket = await Ticket.findById(ticketId)
       .populate("submittedByUser")
-      .populate("assignedToUser");
+      .populate("assignedToUser")
+      .populate("projectId"); // Populating the project data
 
     // If the ticket doesn't exist, return a 404 error.
     if (!ticket) {
@@ -104,7 +116,8 @@ export const updateTicketById = async (req, res, next) => {
       new: true,
     })
       .populate("submittedByUser")
-      .populate("assignedToUser");
+      .populate("assignedToUser")
+      .populate("projectId"); // Populating the project data
 
     // If the ticket doesn't exist, return a 404 error.
     if (!updatedTicket) {
