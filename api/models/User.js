@@ -8,6 +8,10 @@ const UserSchema = new mongoose.Schema(
     userName: { type: String, required: true, unique: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
+    schoolYear: { type: String },
+    expectedGraduation: { type: Date },
+    professorTitle: { type: String },
+    professorDepartment: { type: String },
     roles: [{ type: mongoose.Schema.Types.ObjectId, ref: "Role" }],
   },
   { timestamps: true }

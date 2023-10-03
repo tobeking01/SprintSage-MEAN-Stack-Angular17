@@ -42,6 +42,18 @@ const TicketSchema = new Schema(
       enum: ["Bug", "Feature Request", "Other"],
       required: true,
     },
+    state: {
+      type: String,
+      enum: [
+        "New",
+        "In Progress",
+        "Ready for QC",
+        "In QC",
+        "Completed",
+        "In Backlog",
+      ],
+      default: "New",
+    },
   },
   {
     timestamps: true,
@@ -73,4 +85,40 @@ TicketSchema.pre("save", async function (next) {
   }
 });
 
+// Method to transition ticket to "In Progress"
+TicketSchema.methods.inProgress = async function () {
+  this.state = "In Progress";
+  await this.save();
+  return this;
+};
+
+// Method to transition ticket to "Ready for QC"
+TicketSchema.methods.readyForQC = async function () {
+  this.state = "Ready for QC";
+  await this.save();
+  return this;
+};
+
+// Method to transition ticket to "In QC"
+TicketSchema.methods.inQC = async function () {
+  this.state = "In QC";
+  await this.save();
+  return this;
+};
+
+// Method to transition ticket to "Completed"
+TicketSchema.methods.completed = async function () {
+  this.state = "Completed";
+  await this.save();
+  return this;
+};
+
+// Method to transition ticket to "In Backlog"
+TicketSchema.methods.inBacklog = async function () {
+  this.state = "In Backlog";
+  await this.save();
+  return this;
+};
+
+// Create the Ticket model
 export default mongoose.model("Ticket", TicketSchema);

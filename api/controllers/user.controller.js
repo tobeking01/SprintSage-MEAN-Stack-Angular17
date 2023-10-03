@@ -183,3 +183,50 @@ export const deleteUser = async (req, res, next) => {
     next(CreateError(500, error.message));
   }
 };
+
+// Controller to update a user's profile based on their role (Student or Professor).
+export const updateProfile = async (req, res, next) => {
+  try {
+    const userId = req.params.id;
+    const { role } = req.user; //Get user roles
+
+    if (!userId || !role) {
+      return next(CreateError(400, "User ID and role are required."));
+    }
+
+    let updates = req.body;
+
+    // Ensure that only allowed fields are updated based on the user's role.
+    if (role === "Student") {
+      updates = {
+        schoolYear: req.body.schoolYear,
+        expectedGraduation: req.body.expectedGraduation,
+      };
+    } else if (role === "Professor") {
+      updates = {
+        professorTitle: req.body.professorTitle,
+        professorDepartment: req.body.professorDepartment,
+      };
+    } else {
+      return next(CreateError(400, "Invalid user role."));
+    }
+
+    // Find and update the user's profile based on their role.
+    const updatedUser = await User.findByIdAndUpdate(userId, updates, {
+      new: true,
+      runValidators: true,
+    });
+
+    if (!updatedUser) {
+      return next(CreateError(404, "User not found."));
+    }
+
+    // Respond with the updated user profile.
+    res.json(
+      CreateSuccess(200, "User Profile Updated Successfully!", updatedUser)
+    );
+  } catch (error) {
+    console.error("Error updating user profile:", error);
+    next(CreateError(500, "Error updating user profile."));
+  }
+};
