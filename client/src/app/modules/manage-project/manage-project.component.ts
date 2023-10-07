@@ -1,100 +1,178 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+// Angular Imports
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatTableDataSource } from '@angular/material/table';
-import { Router } from '@angular/router'; // Imported Router
+import { Router } from '@angular/router';
+import {
+  trigger,
+  transition,
+  style,
+  animate,
+  query,
+  stagger,
+} from '@angular/animations';
+
+// Service Imports
 import { ProjectService } from 'src/app/services/project.service';
+import { UserService } from 'src/app/services/user.service';
+import { TeamService } from 'src/app/services/team.service';
+
+// Model Imports
+import {
+  MultipleProjectsResponseData,
+  Project,
+  SingleProjectResponseData,
+} from 'src/app/services/model/project.model';
+import {
+  Team,
+  SingleTeamResponseData,
+  MultipleTeamsResponseData,
+} from 'src/app/services/model/team.model';
+import { ResponseData, User } from 'src/app/services/model/user.model';
+
+// Component Imports
 import { AddProjectComponent } from './add-project/add-project.component';
-import { Project } from 'src/app/services/model/project.model';
-import { Team } from 'src/app/services/model/team.model';
-import { User } from 'src/app/services/model/user.model';
-import { UserService } from 'src/app/services/user.service'; // Import UserService
 import { TeamComponent } from '../team/team.component';
 
+// HttpErrorResponse for handling HTTP errors
+import { HttpErrorResponse } from '@angular/common/http';
+// Add Subject for unsubscribing from observables
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 @Component({
   selector: 'app-manage-project',
   templateUrl: './manage-project.component.html',
   styleUrls: ['./manage-project.component.scss'],
+  animations: [
+    trigger('listAnimation', [
+      transition('* <=> *', [
+        query(':enter', style({ opacity: 0 })),
+        query(
+          ':enter',
+          stagger('100ms', [animate('500ms ease-out', style({ opacity: 1 }))])
+        ),
+      ]),
+    ]),
+  ],
 })
-export class ManageProjectComponent implements OnInit {
+export class ManageProjectComponent implements OnInit, OnDestroy {
   isLoading = false;
   error: string | null = null;
-  teamMembersDetails: any = {};
+  teamMembersDetails: { [key: string]: string } = {};
   MyDataSource: MatTableDataSource<Project> = new MatTableDataSource<Project>();
+  teamDetails: { [key: string]: Team } = {};
+  users: User[] = [];
+  teams: Team[] = [];
 
   constructor(
-    private service: ProjectService,
+    private projectService: ProjectService,
     private userService: UserService,
+    private teamService: TeamService,
     private dialog: MatDialog,
-    private router: Router // Injected Router
+    private router: Router
   ) {}
-
+  // Add a private Subject to trigger unSubscription
+  private ngUnsubscribe = new Subject<void>();
   ngOnInit(): void {
-    this.getProjectList();
+    this.loadUsers();
+    this.loadTeams();
+    this.loadProject();
   }
-  getProjectList() {
-    this.isLoading = true;
-    this.service.getAllProjects().subscribe(
-      (response: any) => {
-        this.MyDataSource.data = Array.isArray(response.data)
-          ? (response.data as Project[])
-          : ((response.data?.projects || []) as Project[]);
+  ngOnDestroy(): void {
+    // Emit an event to trigger unSubscription
+    this.ngUnsubscribe.next();
+    this.ngUnsubscribe.complete();
+  }
 
-        // After fetching projects, load team members' details
-        this.MyDataSource.data.forEach((project) => {
-          project.teams?.forEach((team) => this.loadTeamMembersDetails(team));
-        });
-
-        console.log(this.MyDataSource.data);
-        this.isLoading = false;
+  private loadUsers(): void {
+    console.log('Fetching users...');
+    this.userService.getAllUsers().subscribe(
+      (response: ResponseData) => {
+        this.users = response.data.users;
+        console.log('Users fetched:', this.users);
       },
       (error: any) => {
-        this.error = 'An error occurred while fetching projects.';
-        this.isLoading = false;
+        console.error('Error:', error);
       }
     );
   }
-  // In your component class
-  openTeamDialog() {
+
+  private loadTeams(): void {
+    this.teamService.getAllTeams().subscribe(
+      (response: MultipleTeamsResponseData) => {
+        if (Array.isArray(response.data)) {
+          this.teams = response.data;
+        } else {
+          this.teams = [response.data];
+        }
+        console.log('Teams fetched:', this.teams);
+      },
+      (error: HttpErrorResponse) => {
+        console.error('Error fetching teams:', error);
+        this.teams = [];
+      }
+    );
+  }
+
+  private loadProject(): void {
+    this.isLoading = true;
+    this.projectService
+      .getAllProjects()
+      .pipe(takeUntil(this.ngUnsubscribe))
+      .subscribe(
+        (response) => {
+          if (Array.isArray(response.data)) {
+            this.MyDataSource.data = response.data;
+          } else {
+            this.MyDataSource.data = [response.data];
+          }
+          this.isLoading = false;
+        },
+        (error) => {
+          this.error = 'Error loading projects.';
+          console.error('Error occurred:', error);
+          this.isLoading = false;
+        }
+      );
+  }
+
+  openTeamDialog(): void {
     const dialogRef = this.dialog.open(TeamComponent);
     dialogRef.afterClosed().subscribe((result) => {
       console.log(`Dialog result: ${result}`);
     });
   }
-  loadTeamMembersDetails(team: Team) {
-    team.teamMembers.forEach((memberId) => {
-      this.userService.getUserById(memberId).subscribe(
-        (user: User) => {
-          this.teamMembersDetails[memberId] = user;
-        },
-        (error: any) => {
-          if (error.status === 404) {
-            console.error('User not found', error);
-            this.teamMembersDetails[memberId] = { name: 'User not found' };
-            this.error = `User with ID ${memberId} not found`;
-          } else {
-            console.error('Error fetching user details', error);
-            this.error = 'Error fetching user details';
-          }
-        }
-      );
-    });
+
+  getMemberDetail(memberId: string | undefined): string {
+    if (!memberId) {
+      return 'Loading...';
+    }
+    return this.teamMembersDetails[memberId] ?? 'Loading...';
   }
 
-  openAddEditProjectDialog() {
+  openAddEditProjectDialog(): void {
     const dialogRef = this.dialog.open(AddProjectComponent);
     dialogRef.afterClosed().subscribe({
       next: (val) => {
-        if (val) this.getProjectList();
+        if (val) this.loadProject();
       },
     });
   }
 
-  applyFilter(event: Event) {
+  applyFilter(event: Event): void {
     const filterValue = (event.target as HTMLInputElement).value;
     this.MyDataSource.filter = filterValue.trim().toLowerCase();
   }
-  navigateToProjectDetail(projectId: string) {
-    // Navigate to ProjectDetailComponent when a project is clicked
-    this.router.navigate(['/project-details', projectId]);
+
+  applyDateFilter(): void {
+    // Logic to filter projects between startDate and endDate
+  }
+
+  applyTeamFilter(event: any): void {
+    // Logic to filter projects by selected team
+  }
+
+  getMemberTooltip(member: User): string {
+    return `${member.firstName} ${member.lastName} - ${member.userName}`;
   }
 }

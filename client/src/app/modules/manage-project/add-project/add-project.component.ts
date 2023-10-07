@@ -4,7 +4,7 @@ import {
   FormGroup,
   Validators,
   FormArray,
-  AbstractControl,
+  FormControl,
 } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -17,17 +17,17 @@ import { ProjectService } from 'src/app/services/project.service';
 import { UserService } from 'src/app/services/user.service';
 import { TeamService } from 'src/app/services/team.service';
 
-import { User } from 'src/app/services/model/user.model';
-import { Team } from 'src/app/services/model/team.model';
-
-// Interfaces for the expected HTTP responses
-interface TeamResponse {
-  data: Team[];
-}
-
-interface UserResponse {
-  data: { users: User[] };
-}
+import { ResponseData, User } from 'src/app/services/model/user.model';
+import {
+  Team,
+  SingleTeamResponseData,
+  MultipleTeamsResponseData,
+} from 'src/app/services/model/team.model';
+import {
+  MultipleProjectsResponseData,
+  Project,
+  SingleProjectResponseData,
+} from 'src/app/services/model/project.model';
 
 @Component({
   selector: 'app-add-project',
@@ -38,8 +38,9 @@ export class AddProjectComponent implements OnInit, OnDestroy {
   projectForm!: FormGroup;
   users: User[] = [];
   teams: Team[] = [];
-  isExistingTeamSelected = false;
-  private onDestroy$ = new Subject<void>(); // For handling unsubscription when the component is destroyed
+  projects: Project[] = [];
+
+  private onDestroy$ = new Subject<void>(); // For handling unSubscription when the component is destroyed
 
   constructor(
     private fb: FormBuilder,
@@ -48,75 +49,87 @@ export class AddProjectComponent implements OnInit, OnDestroy {
     private teamService: TeamService,
     private snackBar: MatSnackBar,
     private dialogRef: MatDialogRef<AddProjectComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: any // Replace 'any' with appropriate type or interface
+    @Inject(MAT_DIALOG_DATA) public data: Project
   ) {}
 
   ngOnInit(): void {
     this.initializeForm();
     this.loadUsers();
     this.loadTeams();
+    this.loadProjects();
   }
 
   initializeForm() {
     this.projectForm = this.fb.group({
       projectName: ['', Validators.required],
-      existingTeam: [''],
-      newTeamName: [''],
-      teamMembers: this.fb.array([this.createMember()]),
+      description: [''],
+      startDate: [null],
+      endDate: [null],
+      existingTeam: ['', Validators.required],
     });
-
-    this.applyConditionalValidators();
   }
 
-  // Method to apply conditional validators to avoid redundancy
-  private applyConditionalValidators() {
-    this.projectForm
-      .get('existingTeam')!
-      .valueChanges.pipe(takeUntil(this.onDestroy$))
-      .subscribe((value) => {
-        this.toggleValidators('newTeamName', 'existingTeam');
-      });
-
-    this.projectForm
-      .get('newTeamName')!
-      .valueChanges.pipe(takeUntil(this.onDestroy$))
-      .subscribe((value) => {
-        this.toggleValidators('existingTeam', 'newTeamName');
-      });
-  }
-
-  // Helper method to toggle validators on form controls
-  private toggleValidators(controlToClear: string, controlToSet: string) {
-    this.projectForm.get(controlToClear)!.clearValidators();
-    this.projectForm.get(controlToClear)!.updateValueAndValidity();
-    this.projectForm.get(controlToSet)!.setValidators([Validators.required]);
-    this.projectForm.get(controlToSet)!.updateValueAndValidity();
-  }
-
-  get teamMembers(): FormArray {
+  get teamMembersFormArray(): FormArray {
     return this.projectForm.get('teamMembers') as FormArray;
   }
+  get teamMembersControls(): FormControl[] {
+    return this.teamMembersFormArray.controls as FormControl[];
+  }
+  addUser() {
+    this.teamMembersFormArray.push(new FormControl('', Validators.required));
+  }
 
-  loadTeams() {
-    this.teamService.getAllTeams().subscribe(
-      (response: any) => {
-        console.log('Received Teams:', response);
-        if (response && response.data && Array.isArray(response.data)) {
-          this.teams = response.data.map((team: Team) => team.teamName);
-        } else {
-          console.error('Invalid team data received:', response);
-        }
+  removeUser(index: number) {
+    this.teamMembersFormArray.removeAt(index);
+  }
+  loadUsers() {
+    console.log('Fetching users...');
+    this.userService.getAllUsers().subscribe(
+      (response: ResponseData) => {
+        this.users = response.data.users;
+        console.log('Users fetched:', this.users);
       },
-      (error: HttpErrorResponse) => {
-        console.error('Error Loading Teams:', error);
+      (error: any) => {
+        console.error('Error:', error);
       }
     );
   }
 
-  loadUsers() {
-    this.userService.getAllUsers().subscribe(
-      (response: { users: User[] }) => (this.users = response.users),
-      (error) => console.error('Error loading users:', error)
+  loadTeams(): void {
+    this.teamService.getAllTeams().subscribe(
+      (response: MultipleTeamsResponseData) => {
+        if (Array.isArray(response.data)) {
+          this.teams = response.data;
+        } else {
+          this.teams = [response.data]; // Convert the single team into an array
+        }
+        console.log('Teams fetched:', this.teams);
+      },
+      (error: HttpErrorResponse) => {
+        console.error('Error fetching teams:', error);
+        this.teams = [];
+      }
+    );
+  }
+
+  loadProjects() {
+    this.projectService.getAllProjects().subscribe(
+      (response: SingleProjectResponseData | MultipleProjectsResponseData) => {
+        if ('data' in response && Array.isArray(response.data)) {
+          // Handle the response as MultipleProjectsResponseData
+          const projectsArray: Project[] = response.data;
+        } else if ('data' in response && !Array.isArray(response.data)) {
+          // Handle the response as SingleProjectResponseData
+          const singleProject: Project = response.data;
+        } else {
+          // Handle unexpected response format
+          console.error('Unexpected response format:', response);
+        }
+      },
+      (error: HttpErrorResponse) => {
+        console.error('Error fetching projects:', error);
+        this.projects = [];
+      }
     );
   }
 
@@ -126,33 +139,64 @@ export class AddProjectComponent implements OnInit, OnDestroy {
     });
   }
 
-  addTeamMember() {
-    this.teamMembers.push(this.createMember());
-  }
-
-  removeMember(index: number) {
-    this.teamMembers.removeAt(index);
-  }
-
-  onTeamSelectionChange() {
-    // Using Nullish Coalescing Operator to ensure boolean assignment.
-    this.isExistingTeamSelected = !!this.projectForm.get('existingTeam')?.value;
-    if (this.isExistingTeamSelected) {
-      this.projectForm.get('newTeamName')?.reset();
-    }
-  }
-
-  onNewTeamNameEntered() {
-    if (this.projectForm.get('newTeamName')?.value) {
-      this.projectForm.get('existingTeam')?.reset();
-    }
-  }
-
   onSubmit() {
-    // Handle form submission logic here.
+    if (this.projectForm.valid) {
+      const { projectName, description, existingTeam, startDate, endDate } =
+        this.projectForm.value;
+
+      // Find the selected team
+      const selectedTeam = this.teams.find((team) => team._id === existingTeam);
+
+      let teamIds: string[] = [];
+      if (selectedTeam && selectedTeam._id) {
+        teamIds.push(selectedTeam._id);
+      }
+
+      const formData = {
+        projectName,
+        description,
+        teams: teamIds, // Send array of string IDs
+        startDate,
+        endDate,
+      };
+
+      if (this.data && this.data._id) {
+        this.projectService
+          .updateProjectById(this.data._id, formData)
+          .subscribe(
+            (response: SingleProjectResponseData) => {
+              this.snackBar.open(
+                `Project updated: ${response.data._id}`,
+                'Close',
+                {
+                  duration: 3000,
+                }
+              );
+              this.dialogRef.close(true); // Close the dialog with a success indicator
+            },
+            (error: HttpErrorResponse) =>
+              this.handleError('Error updating project:', error)
+          );
+      } else {
+        this.projectService.createProject(formData).subscribe(
+          (response: SingleProjectResponseData) => {
+            this.snackBar.open(response.message, 'Close', { duration: 3000 });
+            this.dialogRef.close(true); // Close the dialog with a success indicator
+          },
+          (error: HttpErrorResponse) =>
+            this.handleError('Error creating project:', error)
+        );
+      }
+    } else {
+      this.snackBar.open('Please fill in all required fields.', 'Close', {
+        duration: 3000,
+      });
+    }
   }
 
-  // Handle other component logic and methods here.
+  private handleError(prefix: string, error: HttpErrorResponse) {
+    this.snackBar.open(`${prefix} ${error.message}`, 'Close');
+  }
 
   ngOnDestroy(): void {
     // Cleaning up subscriptions.

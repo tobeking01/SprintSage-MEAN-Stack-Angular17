@@ -10,7 +10,6 @@ import {
 import {
   validateStudentProfessor,
   validateLogin,
-  validateAdminRegistration,
   verifyToken,
 } from "../utils/verify-validate.js";
 // Initialize the router from the express module.
@@ -25,7 +24,7 @@ router.post("/register", validateStudentProfessor, registerStudentProfessor);
 router.post("/login", verifyToken, validateLogin, login);
 
 // validate Admin
-router.post("/register-admin", validateAdminRegistration, registerAdmin);
+router.post("/register-admin", registerAdmin);
 
 // HTTP POST route for sending an email to reset password.
 // When a POST request is made to "/send-email", the sendEmail function is invoked.

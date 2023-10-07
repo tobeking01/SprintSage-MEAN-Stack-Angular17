@@ -1,50 +1,43 @@
-.example-spacer {
-  flex: 1 1 auto;
+/* Global Styles */
+.main-container {
+  margin: 0 auto;
+  padding: 0 16px;
 }
 
-.project-header {
-  color: rgb(47, 116, 180);
-}
-.mat-column-projectName {
-  width: 60px;
-  border-right: 1px solid currentColor;
-  padding-right: 60px;
-  text-align: center;
-}
 .main-body {
   max-width: 80%;
   margin: 20px auto;
 }
-.action-icon:hover {
-  opacity: 0.8;
-  cursor: pointer;
+
+.example-spacer {
+  flex: 1 1 auto;
 }
 
-table {
-  width: 100%;
+/* Header Styles */
+.project-header {
+  color: rgb(47, 116, 180);
 }
 
-th.mat-sort-header-sorted {
-  color: black;
-}
-
+/* Form Styles */
 mat-form-field {
+  width: 100%;
   max-width: 60%;
 }
-
-/*...existing styles...*/
-
-.main-container {
-  margin: 0 auto;
-  padding: 0 16px; /* Add padding if needed */
+.button-container {
+  display: flex;
+  justify-content: flex-start;
+  .action-button:not(:last-child) {
+    margin-right: 20px;
+  }
 }
 
-.filter-section {
-  margin-bottom: 16px; /* Adjust as needed */
-}
-
-mat-form-field {
-  width: 100%;
+.error-message {
+  color: red;
+  background-color: #ffe6e6;
+  padding: 10px;
+  margin-top: 10px;
+  border: 1px solid #ffcccc;
+  border-radius: 4px;
 }
 
 .project-item {
@@ -57,10 +50,18 @@ mat-form-field {
   &:hover {
     background-color: #94becf;
   }
+
   p {
     margin: 0;
     padding: 0.5rem 0;
   }
+}
+
+.mat-column-projectName {
+  width: 60px;
+  border-right: 1px solid currentColor;
+  padding-right: 60px;
+  text-align: center;
 }
 
 .no-projects {
@@ -68,12 +69,16 @@ mat-form-field {
   padding: 1rem;
   color: #999;
 }
-
-.error-message {
-  color: red;
-  background-color: #ffe6e6;
-  padding: 10px;
-  margin-top: 10px;
-  border: 1px solid #ffcccc;
-  border-radius: 4px;
+.filter-container {
+  display: flex;
+  justify-content: flex-start;
+  gap: 20px;
 }
+
+.filter-item {
+  flex-grow: 1;
+  padding: 20px;
+}
+
+/* Animation Styles */
+// (if there were any additional styles for animation, they would go here)

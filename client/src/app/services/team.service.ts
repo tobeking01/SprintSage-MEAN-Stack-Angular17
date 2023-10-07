@@ -1,9 +1,14 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, catchError, throwError } from 'rxjs';
+import { Observable, throwError } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
 import { apiUrls } from '../api.urls';
-import { Team } from './model/team.model';
+import {
+  Team,
+  SingleTeamResponseData,
+  MultipleTeamsResponseData,
+} from './model/team.model';
 
 @Injectable({
   providedIn: 'root',
@@ -13,39 +18,65 @@ export class TeamService {
 
   constructor(private http: HttpClient) {}
 
-  // Methods with updated URLs
-  addTeamMember(projectId: string, userId: string): Observable<Team> {
-    return this.http.post<Team>(`${this.apiUrl}addTeamMember`, {
-      projectId,
-      userId,
-    });
+  private handleError(error: any) {
+    console.error('An error occurred:', error);
+    return throwError(error);
   }
-  // Method to create a new team.
+
+  addTeamMember(
+    projectId: string,
+    userId: string
+  ): Observable<SingleTeamResponseData> {
+    return this.http
+      .post<SingleTeamResponseData>(`${this.apiUrl}addTeamMember`, {
+        projectId,
+        userId,
+      })
+      .pipe(catchError(this.handleError));
+  }
+
   createTeam(teamData: {
     teamName: string;
     teamMembers: string[];
-  }): Observable<Team> {
-    return this.http.post<Team>(`${this.apiUrl}createTeam`, teamData);
+  }): Observable<SingleTeamResponseData> {
+    return this.http
+      .post<SingleTeamResponseData>(`${this.apiUrl}createTeam`, teamData)
+      .pipe(catchError(this.handleError));
   }
 
-  getAllTeams(): Observable<Team[]> {
-    return this.http.get<Team[]>(`${this.apiUrl}getAllTeams`).pipe(
-      catchError((error) => {
-        // Handle or transform error before propagating it.
-        return throwError(error);
-      })
-    );
+  getAllTeams(): Observable<MultipleTeamsResponseData> {
+    return this.http
+      .get<MultipleTeamsResponseData>(`${this.apiUrl}getAllTeams`)
+      .pipe(catchError(this.handleError));
   }
 
-  getTeamById(id: string): Observable<Team> {
-    return this.http.get<Team>(`${this.apiUrl}getTeamById/${id}`);
+  getTeamById(id: string): Observable<SingleTeamResponseData> {
+    return this.http
+      .get<SingleTeamResponseData>(`${this.apiUrl}getTeamById/${id}`)
+      .pipe(catchError(this.handleError));
   }
 
-  updateTeamById(id: string, teamData: Team): Observable<Team> {
-    return this.http.put<Team>(`${this.apiUrl}updateTeamById/${id}`, teamData);
+  updateTeamById(
+    id: string,
+    teamData: Team
+  ): Observable<SingleTeamResponseData> {
+    return this.http
+      .put<SingleTeamResponseData>(
+        `${this.apiUrl}updateTeamById/${id}`,
+        teamData
+      )
+      .pipe(catchError(this.handleError));
   }
 
   deleteTeamById(id: string): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}deleteTeamById/${id}`);
+    return this.http
+      .delete<void>(`${this.apiUrl}deleteTeamById/${id}`)
+      .pipe(catchError(this.handleError));
+  }
+
+  getTeamByProjectId(projectId: string): Observable<SingleTeamResponseData> {
+    return this.http.get<SingleTeamResponseData>(
+      `${this.apiUrl}teamsByProject/${projectId}`
+    );
   }
 }

@@ -2,105 +2,93 @@
   <h1>{{ data ? "Edit" : "Add" }} Project Form</h1>
 </div>
 
-<form [formGroup]="projectForm" (ngSubmit)="onSubmit()">
-  <div mat-dialog-content class="content">
-    <!-- Project Name Field -->
-    <mat-form-field class="full-width">
-      <mat-label>Project Name</mat-label>
-      <input
-        matInput
-        type="text"
-        placeholder="Enter Project Name"
-        formControlName="projectName"
-      />
-      <mat-error
-        *ngIf="
-          projectForm.get('projectName')?.invalid &&
-          projectForm.get('projectName')?.touched
-        "
-      >
-        Please enter project name
-      </mat-error>
-    </mat-form-field>
+<div class="project-form">
+  <form [formGroup]="projectForm" (ngSubmit)="onSubmit()">
+    <div mat-dialog-content class="content">
+      <!-- Project Name Field -->
+      <mat-form-field class="full-width">
+        <mat-label>Project Name</mat-label>
+        <input
+          matInput
+          type="text"
+          placeholder="Enter Project Name"
+          formControlName="projectName"
+        />
+        <mat-error
+          *ngIf="
+            projectForm.get('projectName')?.invalid &&
+            projectForm.get('projectName')?.touched
+          "
+        >
+          Please enter project name
+        </mat-error>
+      </mat-form-field>
 
-    <!-- Existing Team Selection Field -->
-    <mat-form-field class="full-width">
-      <mat-label>Select Existing Team</mat-label>
-      <mat-select
-        formControlName="existingTeam"
-        (selectionChange)="onTeamSelectionChange()"
-      >
-        <mat-option *ngFor="let team of teams" [value]="team._id">
-          {{ team.teamName }}
-        </mat-option>
-      </mat-select>
-    </mat-form-field>
-    <ng-template #loading>Loading...</ng-template>
-    <!-- New Team Name Field -->
-    <mat-form-field
-      class="full-width"
-      matTooltip="Unselect the existing team to create a new one"
-      [matTooltipDisabled]="!isExistingTeamSelected"
-    >
-      <mat-label>Create New Team</mat-label>
-      <input
-        matInput
-        type="text"
-        formControlName="newTeamName"
-        [readonly]="isExistingTeamSelected"
-      />
-    </mat-form-field>
+      <!-- Description Field -->
+      <mat-form-field class="full-width">
+        <mat-label>Description</mat-label>
+        <textarea
+          matInput
+          formControlName="description"
+          placeholder="Enter Project Description"
+        ></textarea>
+      </mat-form-field>
 
-    <!-- Team Members Field Array -->
-    <div formArrayName="teamMembers">
-      <div
-        *ngFor="let memberControl of teamMembers.controls; let i = index"
-        class="member-row"
-      >
-        <div [formGroupName]="i">
-          <mat-form-field class="member-name">
-            <mat-label>Member Name</mat-label>
-            <mat-select formControlName="name" placeholder="Select Member Name">
-              <mat-option *ngFor="let user of users" [value]="user._id">
-                {{ user.firstName }} {{ user.lastName }}
-              </mat-option>
-            </mat-select>
+      <!-- Existing Team Selection Field -->
+      <mat-form-field class="full-width">
+        <mat-label>Select Existing Team</mat-label>
+        <mat-select formControlName="existingTeam">
+          <mat-option *ngFor="let team of teams" [value]="team._id">
+            {{ team.teamName }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
 
-            <!-- Error Display -->
-            <mat-error *ngIf="memberControl.get('name')?.hasError('required')">
-              Name is required!
-            </mat-error>
-          </mat-form-field>
+      <!-- Start Date Field -->
+      <mat-form-field class="full-width">
+        <mat-label>Start Date</mat-label>
+        <input
+          matInput
+          [matDatepicker]="startPicker"
+          formControlName="startDate"
+        />
+        <mat-datepicker-toggle
+          matSuffix
+          [for]="startPicker"
+        ></mat-datepicker-toggle>
+        <mat-datepicker #startPicker></mat-datepicker>
+      </mat-form-field>
 
-          <!-- Remove Member Button -->
-          <button mat-icon-button color="warn" (click)="removeMember(i)">
-            <mat-icon>remove_circle</mat-icon>
-          </button>
-        </div>
-      </div>
-
-      <!-- Add Member Button -->
-      <button mat-button (click)="addTeamMember()">+ Add Member</button>
+      <!-- End Date Field -->
+      <mat-form-field class="full-width">
+        <mat-label>End Date</mat-label>
+        <input matInput [matDatepicker]="endPicker" formControlName="endDate" />
+        <mat-datepicker-toggle
+          matSuffix
+          [for]="endPicker"
+        ></mat-datepicker-toggle>
+        <mat-datepicker #endPicker></mat-datepicker>
+      </mat-form-field>
     </div>
-  </div>
 
-  <!-- Action Buttons -->
-  <div mat-dialog-actions class="action-btns">
-    <button
-      mat-raised-button
-      color="accent"
-      type="submit"
-      [disabled]="projectForm.invalid"
-    >
-      {{ data ? "Update" : "Save" }}
-    </button>
-    <button
-      mat-raised-button
-      type="button"
-      color="warn"
-      [mat-dialog-close]="false"
-    >
-      Cancel
-    </button>
-  </div>
-</form>
+    <!-- Action Buttons -->
+    <div mat-dialog-actions class="action-btns">
+      <button
+        mat-raised-button
+        color="accent"
+        type="submit"
+        [disabled]="projectForm.invalid"
+      >
+        {{ data ? "Update" : "Save" }}
+      </button>
+      <button
+        mat-raised-button
+        type="button"
+        color="warn"
+        [mat-dialog-close]="false"
+      >
+        Cancel
+      </button>
+    </div>
+  </form>
+</div>

@@ -1,55 +1,52 @@
 import mongoose from "mongoose";
+import Ticket from "../../models/Ticket.js";
+import User from "../../models/User.js"; // Import User model if not already imported
 
-// Defining the Ticket schema
-const TicketSchema = new mongoose.Schema({
-  issueDescription: String,
-  status: String,
-  severity: String,
-  submittedByUser: String,
-  assignedToUser: String,
-  projectId: String,
-  ticketType: String,
-});
+import dotenv from "dotenv";
+dotenv.config();
 
-// Creating a mongoose model for tickets
-const Ticket = mongoose.model("Ticket", TicketSchema);
+async function seedTickets() {
+  // Replace these with valid user and project IDs from your database
+  const submittedByUserId = "651db23060ddea1a28c14c53"; // Replace with a valid user ID
+  const projectId = "651db4d235bb80ee0479fba3"; // Replace with a valid project ID
 
-const ticketsData = [
-  {
-    issueDescription:
-      "The application crashes when pressing the submit button on Project A's form",
-    status: "Open",
-    severity: "High",
-    submittedByUser: "651b4c8dbeabf075e72bbc57", // Sus1's ID
-    assignedToUser: "651b4c8dbeabf075e72bbc59", // Sus2's ID
-    projectId: "651b50446bb0f906e7182a91", // Project A's ID
-    ticketType: "Bug",
-  },
-  {
-    issueDescription: "Feature X is not loading properly on Project B",
-    status: "In Progress",
-    severity: "Medium",
-    submittedByUser: "651b4c8dbeabf075e72bbc59", // Sus2's ID
-    assignedToUser: "651b4c8dbeabf075e72bbc57", // Sus1's ID
-    projectId: "651b50446bb0f906e7182a8f", // Project B's ID
-    ticketType: "Feature Request",
-  },
-  {
-    issueDescription: "UI enhancement needed for Project C's dashboard",
-    status: "Open",
-    severity: "Low",
-    submittedByUser: "651b4c8dbeabf075e72bbc5b", // Sus3's ID
-    assignedToUser: "651b4c8dbeabf075e72bbc57", // Sus1's ID
-    projectId: "651b50446bb0f906e7182a93", // Project C's ID
-    ticketType: "Other",
-  },
-];
+  // Create tickets for the specified project
+  for (let i = 0; i < 3; i++) {
+    // Create the ticket
+    const ticket = new Ticket({
+      issueDescription: `Issue Description for Ticket ${i + 1} of ${projectId}`,
+      status: "Open", // You can set the status as needed
+      severity: "Medium", // You can set the severity as needed
+      submittedByUser: submittedByUserId,
+      projectId: projectId,
+      ticketType: "Bug", // You can set the ticket type as needed
+      state: "New", // You can set the initial state as needed
+    });
 
-export const seedTickets = async () => {
-  try {
-    await Ticket.insertMany(ticketsData);
-    console.log("Tickets seeded successfully!");
-  } catch (error) {
-    console.error("Error seeding tickets:", error);
+    try {
+      await ticket.save();
+      console.log(`Ticket ${i + 1} seeded for Project ${projectId}`);
+    } catch (error) {
+      console.error(`Error seeding ticket: ${error}`);
+    }
   }
-};
+
+  console.log("Tickets seeded!");
+}
+
+mongoose
+  .connect(process.env.MONGO_URL, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
+  .then(() => {
+    console.log("Connected to MongoDB!");
+    return seedTickets();
+  })
+  .then(() => {
+    console.log("Seeding completed!");
+    mongoose.disconnect();
+  })
+  .catch((error) => {
+    console.error("Error seeding database:", error);
+  });

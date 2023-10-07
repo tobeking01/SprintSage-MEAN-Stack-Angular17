@@ -1,9 +1,13 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
-
+import { Observable, throwError } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { apiUrls } from '../api.urls';
-import { Ticket } from './model/ticket.model';
+import {
+  Ticket,
+  SingleTicketResponseData,
+  MultipleTicketsResponseData,
+} from './model/ticket.model';
 
 @Injectable({
   providedIn: 'root',
@@ -13,28 +17,49 @@ export class TicketService {
 
   constructor(private http: HttpClient) {}
 
-  createTicket(ticket: Ticket): Observable<Ticket> {
-    return this.http.post<Ticket>(`${this.apiUrl}createTicket`, ticket);
+  private handleError(error: any) {
+    console.error('An error occurred:', error);
+    return throwError(error);
   }
 
-  getAllTickets(page: number = 1, limit: number = 10): Observable<any> {
-    return this.http.get<any>(
-      `${this.apiUrl}getAllTickets?page=${page}&limit=${limit}`
-    );
+  createTicket(ticket: Ticket): Observable<SingleTicketResponseData> {
+    return this.http
+      .post<SingleTicketResponseData>(`${this.apiUrl}createTicket`, ticket)
+      .pipe(catchError(this.handleError));
   }
 
-  getTicketById(id: string): Observable<Ticket> {
-    return this.http.get<Ticket>(`${this.apiUrl}getTicketById/${id}`);
+  getAllTickets(
+    page: number = 1,
+    limit: number = 10
+  ): Observable<MultipleTicketsResponseData> {
+    return this.http
+      .get<MultipleTicketsResponseData>(
+        `${this.apiUrl}getAllTickets?page=${page}&limit=${limit}`
+      )
+      .pipe(catchError(this.handleError));
   }
 
-  updateTicketById(id: string, ticket: Ticket): Observable<Ticket> {
-    return this.http.put<Ticket>(
-      `${this.apiUrl}updateTicketById/${id}`,
-      ticket
-    );
+  getTicketById(id: string): Observable<SingleTicketResponseData> {
+    return this.http
+      .get<SingleTicketResponseData>(`${this.apiUrl}getTicketById/${id}`)
+      .pipe(catchError(this.handleError));
+  }
+
+  updateTicketById(
+    id: string,
+    ticket: Ticket
+  ): Observable<SingleTicketResponseData> {
+    return this.http
+      .put<SingleTicketResponseData>(
+        `${this.apiUrl}updateTicketById/${id}`,
+        ticket
+      )
+      .pipe(catchError(this.handleError));
   }
 
   deleteTicketById(id: string): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}deleteTicketById/${id}`);
+    return this.http
+      .delete<void>(`${this.apiUrl}deleteTicketById/${id}`)
+      .pipe(catchError(this.handleError));
   }
 }

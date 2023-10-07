@@ -1,17 +1,22 @@
 import { Component, OnInit, Optional, Inject } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import {
-  MAT_DIALOG_DATA,
-  MatDialog,
-  MatDialogRef,
-} from '@angular/material/dialog';
-import { Project, ProjectService } from '../../services/project.service';
+  FormBuilder,
+  FormGroup,
+  Validators,
+  FormArray,
+  FormControl,
+} from '@angular/forms';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { TeamService } from 'src/app/services/team.service';
 import { UserService } from 'src/app/services/user.service';
 import { User } from 'src/app/services/model/user.model';
-import { Team } from 'src/app/services/model/team.model';
-import { FormArray, FormControl } from '@angular/forms';
+import {
+  Team,
+  SingleTeamResponseData,
+  MultipleTeamsResponseData,
+} from 'src/app/services/model/team.model';
 import { HttpErrorResponse } from '@angular/common/http';
+import { ResponseData } from 'src/app/services/model/user.model';
 
 @Component({
   selector: 'app-team',
@@ -21,100 +26,93 @@ import { HttpErrorResponse } from '@angular/common/http';
 export class TeamComponent implements OnInit {
   addTeamMemberForm!: FormGroup;
   isExistingTeamSelected = false;
-  projects: Project[] = [];
   users: User[] = [];
   teams: Team[] = [];
 
   constructor(
     private fb: FormBuilder,
-    private projectService: ProjectService,
     private userService: UserService,
     private teamService: TeamService,
     @Optional() private dialogRef: MatDialogRef<TeamComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: any
+    @Inject(MAT_DIALOG_DATA) public data: Team
   ) {}
 
   ngOnInit(): void {
     this.initializeForm();
-    this.loadProjects();
     this.loadUsers();
     this.loadTeams();
   }
 
-  // team.component.ts
   initializeForm() {
     this.addTeamMemberForm = this.fb.group({
       teamName: ['', Validators.required],
-      existingTeam: [''],
-      newTeamName: [{ value: '', disabled: this.isExistingTeamSelected }],
-      projects: [[]], // Optional and can be an array
-      users: this.fb.array([]),
+      teamMembers: this.fb.array([], Validators.minLength(1)),
     });
+    console.log(this.addTeamMemberForm);
   }
 
-  onTeamSelectionChange(event: any) {
-    this.isExistingTeamSelected = !!event.value;
-    if (this.isExistingTeamSelected) {
-      this.addTeamMemberForm.get('newTeamName')?.disable();
-    } else {
-      this.addTeamMemberForm.get('newTeamName')?.enable();
-    }
+  get teamMembersFormArray(): FormArray {
+    return this.addTeamMemberForm.get('teamMembers') as FormArray;
   }
 
-  getUsersControl(): FormControl[] {
-    return (this.addTeamMemberForm.get('users') as FormArray)
-      .controls as FormControl[];
+  get teamMembersControls(): FormControl[] {
+    return this.teamMembersFormArray.controls as FormControl[];
   }
 
   addUser() {
-    (this.addTeamMemberForm.get('users') as FormArray).push(
-      this.fb.control('', Validators.required)
-    );
+    this.teamMembersFormArray.push(new FormControl('', Validators.required));
   }
 
   removeUser(index: number) {
-    (this.addTeamMemberForm.get('users') as FormArray).removeAt(index);
+    this.teamMembersFormArray.removeAt(index);
   }
-  loadTeams() {
+
+  loadTeams(): void {
     this.teamService.getAllTeams().subscribe(
-      (teams: Team[]) => {
-        this.teams = teams; // this should always be an array
+      (response: MultipleTeamsResponseData) => {
+        if (Array.isArray(response.data)) {
+          this.teams = response.data;
+        } else {
+          this.teams = [response.data]; // Convert the single team into an array
+        }
+        console.log('Teams fetched:', this.teams);
       },
       (error: HttpErrorResponse) => {
-        console.error('Error:', error); // Handle the error properly
-        this.teams = []; // assign an empty array in case of an error
+        console.error('Error fetching teams:', error);
+        this.teams = [];
       }
     );
   }
 
-  loadProjects() {
-    this.projectService.getAllProjects().subscribe((projects) => {
-      console.log(projects); // Log the API response to verify
-      this.projects = projects;
-    });
-  }
-
   loadUsers() {
+    console.log('Fetching users...');
     this.userService.getAllUsers().subscribe(
-      (response: { users: User[] }) => {
-        this.users = response.users;
+      (response: ResponseData) => {
+        this.users = response.data.users;
+        console.log('Users fetched:', this.users);
       },
-      (error: any) => {
+      (error: HttpErrorResponse) => {
         console.error('Error:', error);
       }
     );
   }
+
   onSubmit() {
     if (this.addTeamMemberForm.valid) {
-      const { teamName, teamMembers } = this.addTeamMemberForm.value;
-      this.teamService.createTeam({ teamName, teamMembers }).subscribe({
-        next: (response: any) => {
-          if (this.dialogRef) this.dialogRef.close(true); // check if dialogRef exists
+      const teamData = {
+        teamName: this.addTeamMemberForm.value.teamName,
+        teamMembers: [].concat(...this.addTeamMemberForm.value.teamMembers), // Flatten the array
+      };
+
+      this.teamService.createTeam(teamData).subscribe(
+        (response: SingleTeamResponseData) => {
+          console.log('Newly created team:', response.data);
+          if (this.dialogRef) this.dialogRef.close(true);
         },
-        error: (error: any) => {
+        (error: any) => {
           console.error(error);
-        },
-      });
+        }
+      );
     }
   }
 }

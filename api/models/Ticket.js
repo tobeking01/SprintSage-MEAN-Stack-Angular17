@@ -1,14 +1,6 @@
 // Import necessary modules
 import mongoose, { Schema } from "mongoose";
-import AuditLog from "./AuditLog.js";
-
-/**
- * Ticket Schema Definition
- *
- * This schema represents tickets within the system. Tickets might be associated with
- * reported issues, feature requests, etc. Each ticket contains information about its
- * description, status, severity, the user who submitted it, and more.
- */
+import TicketState from "./TicketState.js";
 
 const TicketSchema = new Schema(
   {
@@ -16,13 +8,6 @@ const TicketSchema = new Schema(
     issueDescription: {
       type: String,
       required: true, // This field is mandatory for every ticket
-    },
-
-    // Status of the ticket (e.g., "Open," "In Progress," "Closed")
-    status: {
-      type: String,
-      enum: ["Open", "In Progress", "Closed"], // Allowed status values
-      default: "Open", // Default status when not specified
     },
 
     // Severity level of the ticket (e.g., "Low," "Medium," "High")
@@ -34,20 +19,20 @@ const TicketSchema = new Schema(
 
     // User who submitted the ticket (reference to User model)
     submittedByUser: {
-      type: Schema.Types.ObjectId,
+      type: mongoose.Schema.Types.ObjectId,
       ref: "User", // Reference to the User model
       required: true,
     },
 
     // User assigned to work on the ticket (reference to User model)
     assignedToUser: {
-      type: Schema.Types.ObjectId,
+      type: mongoose.Schema.Types.ObjectId,
       ref: "User", // Reference to the User model
     },
 
     // Project to which the ticket belongs (reference to Project model)
     projectId: {
-      type: Schema.Types.ObjectId,
+      type: mongoose.Schema.Types.ObjectId,
       ref: "Project", // Reference to the Project model
       required: true,
     },
@@ -69,47 +54,34 @@ const TicketSchema = new Schema(
         "In QC",
         "Completed",
         "In Backlog",
-      ], // Allowed state values
-      default: "New", // Default state when not specified
+      ],
+      default: "New",
     },
   },
   {
     timestamps: true, // Automatically add createdAt and updatedAt timestamps
+    // Enable automatic indexing for the schema
+    autoIndex: true,
   }
 );
 
-/**
- * Pre-save middleware to handle auditing for tickets.
- *
- * This function is triggered before a ticket is saved in the database. It checks if
- * the ticket's status has been modified and, if so, logs this change in an audit log.
- */
-
+// Middleware for subMitBy
 TicketSchema.pre("save", async function (next) {
-  try {
-    // Check if the "status" field is modified during save
-    if (this.isModified("status")) {
-      // Fetch the original document before the update
-      const originalDoc = await this.constructor.findOne(this._id);
-      const oldValue = originalDoc ? originalDoc.status : null;
-
-      // Create an audit log entry for the status change
-      const audit = new AuditLog({
-        action: "STATUS_CHANGE",
-        ticketId: this._id,
-        changedBy: this.submittedByUser,
-        oldValue: oldValue,
-        newValue: this.status,
-      });
-
-      // Save the audit log entry to the database
-      await audit.save();
-    }
-    next();
-  } catch (err) {
-    console.error("Error during audit log creation:", err);
-    next(err); // Pass any errors to the next middleware or operation
+  if (this.isNew) {
+    const audit = new TicketState({
+      action: "CREATION",
+      ticketId: this._id,
+      changedBy: this.submittedByUser,
+    });
+    await audit.save();
   }
+  next();
+});
+
+TicketSchema.pre("remove", async function (next) {
+  // Deleting all audit logs related to this ticket
+  await TicketState.deleteMany({ ticketId: this._id });
+  next();
 });
 
 // Methods to transition the ticket state

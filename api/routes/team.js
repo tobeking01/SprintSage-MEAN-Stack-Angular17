@@ -5,13 +5,10 @@ import {
   getTeamById,
   updateTeamById,
   deleteTeamById,
+  removeUserFromTeam,
+  addUserToTeam,
+  getTeamByProjectId,
 } from "../controllers/team.controller.js";
-
-import {
-  verifyToken,
-  verifyAdmin,
-  verifyProfessor,
-} from "../utils/verify-validate.js";
 
 const router = express.Router();
 
@@ -37,21 +34,27 @@ router.get("/getAllTeams", getAllTeams); // test
  * Route to get a specific team by its ID.
  * It uses 'getTeamById' method from Team Controller.
  */
-router.get("/getTeamById/:id", verifyToken, getTeamById);
+// Get team by its ID
+router.get("/getTeamById/:id", getTeamById);
 
-/**
- * PUT /teams/:id
- * Route to update a specific team by its ID. Requires admin privileges.
- * It uses 'updateTeamById' method from Team Controller.
- */
-router.put("/updateTeamById/:id", verifyToken, updateTeamById);
+// Update team by its ID
+router.put("/updateTeamById/:id", updateTeamById);
+
+// Remove a user from a team
+router.post("/team/:teamId/removeUser/:userId", removeUserFromTeam);
+
+// Add a user to a team
+router.post("/team/:teamId/addUser/:userId", addUserToTeam);
+
+// Get teams associated with a specific project
+router.get("/teamsByProject/:projectId", getTeamByProjectId);
 
 /**
  * DELETE /teams/:id
  * Route to delete a specific team by its ID. Requires admin privileges.
  * It uses 'deleteTeamById' method from Team Controller.
  */
-router.delete("/deleteTeamById/:id", verifyToken, deleteTeamById);
+router.delete("/deleteTeamById/:id", deleteTeamById);
 
 // Export the configured routes to be used in the application.
 export default router;

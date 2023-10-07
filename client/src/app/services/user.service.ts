@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { User } from './model/user.model';
+import { ResponseData, User } from './model/user.model';
 
 import { apiUrls } from '../api.urls';
 
@@ -13,8 +13,9 @@ export class UserService {
 
   constructor(private http: HttpClient) {}
 
-  getAllUsers(): Observable<{ users: User[] }> {
-    return this.http.get<{ users: User[] }>(`${this.apiUrl}getAllUsers`);
+  getAllUsers(): Observable<ResponseData> {
+    console.log(`Fetching users from URL: ${this.apiUrl}getAllUsers`); // Add this line
+    return this.http.get<ResponseData>(`${this.apiUrl}getAllUsers`);
   }
 
   getUserById(id: string): Observable<User> {

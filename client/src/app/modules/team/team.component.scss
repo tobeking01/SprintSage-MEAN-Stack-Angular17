@@ -1,27 +1,69 @@
-// Full-width class styling
-.full-width {
-  width: 100%;
-  margin-bottom: 10px; // Adds a bit of margin between form fields for better spacing
+[mat-dialog-title] h1 {
+  font-size: 1.5rem;
+  margin: 0;
+  padding: 10px 0;
 }
 
-// Styling mat-dialog-actions
-.mat-dialog-actions {
-  justify-content: space-between; // Distributes action buttons evenly
-
-  .action-btns {
+mat-dialog-content {
+  .content {
     display: flex;
-    gap: 10px; // Adds a bit of gap between buttons for better spacing
+    flex-direction: column;
+    mat-form-field {
+      margin-bottom: 20px;
+    }
   }
 }
 
-// Styling mat-raised-button
-::ng-deep .mat-raised-button {
-  min-width: 100px; // Ensure buttons have a minimum width
+mat-dialog-actions {
+  display: flex;
+  justify-content: space-between;
+  button {
+    margin: 20px; // Added 20px padding all around the buttons
+    padding: 20px;
+  }
+}
+.team-form {
+  width: 500px;
+}
+.content {
+  .full-width {
+    width: 100%;
+  }
+
+  .member-row {
+    display: flex;
+    align-items: center;
+
+    .member-name {
+      flex-grow: 1;
+    }
+  }
+
+  button {
+    margin-left: 10px;
+  }
 }
 
-// Styling mat-select
-::ng-deep .mat-select {
-  .mat-select-value {
-    padding-right: 30px; // adjust the padding as you see fit
+.action-btns {
+  button {
+    margin: 20px;
+  }
+}
+
+.full-width {
+  width: 100%;
+}
+
+.member-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  .member-name {
+    flex-grow: 1;
+  }
+
+  button {
+    margin-left: 10px;
   }
 }

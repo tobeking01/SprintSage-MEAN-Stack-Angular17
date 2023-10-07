@@ -1,6 +1,6 @@
 // Import the mongoose library to interact with MongoDB
 import mongoose from "mongoose";
-
+import Team from "./Team.js";
 /**
  * User Schema Definition
  *
@@ -31,8 +31,12 @@ const UserSchema = new mongoose.Schema(
     // Enable the creation of 'createdAt' and 'updatedAt' timestamps.
     // 'createdAt' denotes when the user was registered, and 'updatedAt' indicates the last update time.
     timestamps: true,
+    // Enable automatic indexing for the schema
+    autoIndex: true,
   }
 );
+
+UserSchema.index({ email: 1, userName: 1 });
 
 /**
  * User Model Definition
@@ -43,6 +47,19 @@ const UserSchema = new mongoose.Schema(
  *
  * Note: In MongoDB, the collection will be named 'users' due to mongoose's pluralization behavior.
  */
+
+UserSchema.pre("remove", async function (next) {
+  try {
+    // Remove this user from all teams they're a part of
+    await Team.updateMany(
+      { teamMembers: this._id },
+      { $pull: { teamMembers: this._id } }
+    );
+  } catch (error) {
+    next(error);
+  }
+});
+
 const User = mongoose.model("User", UserSchema);
 
 export default User;

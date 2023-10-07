@@ -1,7 +1,7 @@
 /**
  * A base interface that represents the shared user attributes.
  */
-interface BaseUserPayload {
+export interface BaseUserPayload {
   firstName: string; // User's first name
   lastName: string; // User's last name
   userName: string; // Username chosen by the user
@@ -35,4 +35,11 @@ export type RegisterProfessorPayload = BaseUserPayload & ProfessorSpecific;
 export interface LoginPayload {
   userName: string; // Username of the user
   password: string; // Password for authentication
+}
+
+// Define the ResponseData type
+export interface ResponseData {
+  success: boolean;
+  data?: any;
+  error?: string;
 }

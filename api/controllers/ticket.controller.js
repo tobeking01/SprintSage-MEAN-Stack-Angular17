@@ -1,7 +1,8 @@
 // Importing the necessary modules and utilities
 import Ticket from "../models/Ticket.js";
 import Project from "../models/Project.js";
-import { sendError, sendSuccess } from "../utils/responseUtility.js";
+import { sendError, sendSuccess } from "../utils/createResponse.js";
+import User from "../models/User.js";
 
 // An array to represent possible statuses a ticket can have
 const TICKET_STATUSES = ["OPEN", "IN_PROGRESS", "CLOSED", "REJECTED"];
@@ -28,20 +29,23 @@ export const createTicket = async (req, res, next) => {
       !projectId ||
       !ticketType
     ) {
-      return sendError(400, "Mandatory ticket data missing or invalid.");
+      return sendError(res, 400, "Mandatory ticket data missing or invalid.");
     }
 
     // Validating the status of the ticket against predefined statuses
     if (!TICKET_STATUSES.includes(status)) {
-      return sendError(400, "Invalid ticket status.");
+      return sendError(res, 400, "Invalid ticket status.");
     }
 
     // Validating the project ID against stored projects in the database
     const project = await Project.findById(projectId);
     if (!project) {
-      return sendError(400, "Invalid project ID.");
+      return sendError(res, 400, "Invalid project ID.");
     }
-
+    const assignedUser = await User.findById(assignedToUser);
+    if (!assignedToUser) {
+      return sendError(res, 400, "Assigned user does not exist.");
+    }
     // Creating a new ticket instance using the Ticket model
     const newTicket = new Ticket({
       issueDescription,
@@ -56,14 +60,10 @@ export const createTicket = async (req, res, next) => {
     // Saving the newly created ticket instance to the database
     await newTicket.save();
 
-    sendSuccess(201, "Ticket successfully created.", newTicket);
+    sendSuccess(res, 201, "Ticket successfully created.", [newTicket]);
   } catch (error) {
     console.error("Error encountered while creating a ticket:", error);
-    const errorResponse = sendError(
-      500,
-      "Internal Server Error while creating a ticket!"
-    );
-    next(errorResponse);
+    sendError(res, 500, "Internal Server Error while creating a ticket!");
   }
 };
 
@@ -99,11 +99,7 @@ export const getAllTickets = async (req, res, next) => {
     sendSuccess(res, 200, "Tickets successfully retrieved.", responseData);
   } catch (error) {
     console.error("Error encountered while fetching all tickets:", error);
-    const errorResponse = sendError(
-      500,
-      "Internal Server Error while fetching tickets!"
-    );
-    next(errorResponse);
+    sendError(res, 500, "Internal Server Error while fetching tickets!");
   }
 };
 
@@ -120,17 +116,13 @@ export const getTicketById = async (req, res, next) => {
 
     // If the ticket with the given ID is not found, an error is returned
     if (!ticket) {
-      return sendError(404, "Ticket not found.");
+      return sendError(res, 404, "Ticket not found.");
     }
 
-    sendSuccess(200, "Ticket successfully retrieved.", ticket);
+    sendSuccess(res, 200, "Ticket successfully retrieved.", [ticket]);
   } catch (error) {
     console.error("Error encountered while fetching ticket by ID:", error);
-    const errorResponse = sendError(
-      500,
-      "Internal Server Error while fetching tickets by ID!"
-    );
-    next(errorResponse);
+    sendError(res, 500, "Internal Server Error while fetching tickets by ID!");
   }
 };
 
@@ -138,6 +130,11 @@ export const getTicketById = async (req, res, next) => {
 export const updateTicketById = async (req, res, next) => {
   try {
     const ticketId = req.params.id;
+
+    const project = await Project.findById(projectId);
+    if (!project) {
+      return sendError(res, 400, "Invalid project ID.");
+    }
     // Updating the ticket in the database using provided data
     // and returning the updated ticket details with populated fields
     const updatedTicket = await Ticket.findByIdAndUpdate(ticketId, req.body, {
@@ -149,17 +146,13 @@ export const updateTicketById = async (req, res, next) => {
 
     // If the ticket with the given ID is not found, an error is returned
     if (!updatedTicket) {
-      return next(sendError(404, "Ticket not found for update."));
+      return next(sendError(res, 404, "Ticket not found for update."));
     }
 
-    sendSuccess(200, "Ticket successfully updated.", updatedTicket);
+    sendSuccess(res, 200, "Ticket successfully updated.", [updatedTicket]);
   } catch (error) {
     console.error("Error encountered while updating the ticket:", error);
-    const errorResponse = sendError(
-      500,
-      "Internal Server Error while updating the ticket!"
-    );
-    next(errorResponse);
+    sendError(res, 500, "Internal Server Error while updating the ticket!");
   }
 };
 
@@ -172,16 +165,12 @@ export const deleteTicketById = async (req, res, next) => {
 
     // If the ticket with the given ID is not found, an error is returned
     if (!deletedTicket) {
-      return sendError(404, "Ticket not found for deletion.");
+      return sendError(res, 404, "Ticket not found for deletion.");
     }
 
-    sendSuccess(200, "Ticket successfully deleted.", deletedTicket);
+    sendSuccess(res, 200, "Ticket successfully deleted.", [deletedTicket]);
   } catch (error) {
     console.error("Error encountered while deleting the ticket:", error);
-    const errorResponse = sendError(
-      500,
-      "Internal Server Error while deleting the ticket!"
-    );
-    next(errorResponse);
+    sendError(res, 500, "Internal Server Error while deleting the ticket!");
   }
 };

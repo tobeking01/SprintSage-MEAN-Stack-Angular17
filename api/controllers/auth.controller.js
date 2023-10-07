@@ -4,8 +4,9 @@ import User from "../models/User.js";
 import bcrypt from "bcryptjs"; // Used for password hashing.
 import jwt from "jsonwebtoken"; // Used for token creation.
 import nodemailer from "nodemailer"; // Used for sending email.
-import { sendError, sendSuccess } from "../utils/responseUtility.js";
+import { sendError, sendSuccess } from "../utils/createResponse.js";
 import UserToken from "../models/UserToken.js";
+import { createStudentProfessorUser } from "./user.controller.js";
 
 /**
  * Controller for Authentication.
@@ -19,83 +20,12 @@ import UserToken from "../models/UserToken.js";
 // `registerStudentProfessor` function handles the process of registering a new Student or Professor.
 export const registerStudentProfessor = async (req, res, next) => {
   try {
-    // Extract relevant fields from request body
-    const {
-      firstName,
-      lastName,
-      userName,
-      email,
-      password,
-      role,
-      schoolYear,
-      expectedGraduation,
-      professorTitle,
-      professorDepartment,
-    } = req.body;
-
-    // Validate required fields
-    if (!firstName || !lastName || !userName || !email || !password || !role) {
-      return sendError(res, 400, "All fields are required.");
-    }
-
-    // Check role and validate accordingly
-    if (!["Student", "Professor"].includes(role)) {
-      return sendError(res, 400, "Invalid role.");
-    }
-
-    // For 'Student' role, validate student-specific fields
-    if (role === "Student" && (!schoolYear || !expectedGraduation)) {
-      return sendError(res, 400, "Student-specific fields are required.");
-    }
-
-    // For 'Professor' role, validate professor-specific fields
-    if (role === "Professor" && (!professorTitle || !professorDepartment)) {
-      return sendError(res, 400, "Professor-specific fields are required.");
-    }
-
-    // Find role in the Role collection
-    const roleDoc = await Role.findOne({ name: role });
-    if (!roleDoc) {
-      return sendError(res, 400, `${role} role not found.`);
-    }
-
-    // Check if user with same email or username already exists
-    const userExists = await User.findOne({
-      $or: [{ email }, { userName }],
-    });
-    if (userExists) {
-      return sendError(res, 409, "Email or Username already exists.");
-    }
-
-    // Encrypt password for security
-    const salt = await bcrypt.genSalt(10);
-    const hashPassword = await bcrypt.hash(password, salt);
-
-    // Create a new user instance and populate fields
-    const newUser = new User({
-      firstName,
-      lastName,
-      userName,
-      email,
-      password: hashPassword,
-      roles: [roleDoc._id],
-      schoolYear: role === "Student" ? schoolYear : undefined,
-      expectedGraduation: role === "Student" ? expectedGraduation : undefined,
-      professorTitle: role === "Professor" ? professorTitle : undefined,
-      professorDepartment:
-        role === "Professor" ? professorDepartment : undefined,
-    });
-
-    // Save the new user to the database
-    await newUser.save();
-
-    // Send success response
+    const createdUser = await createStudentProfessorUser(req.body);
+    // Continue with other logic if any...
     return sendSuccess(res, 200, "Registration Successfully!");
   } catch (error) {
     console.error("Error registering user:", error);
-    // Handle errors and send them to the next middleware
-    const errorResponse = sendError(500, "Error registering user!");
-    next(errorResponse);
+    sendError(res, 500, "Error registering user!");
   }
 };
 
@@ -104,6 +34,7 @@ export const login = async (req, res, next) => {
   try {
     const { userName, password } = req.body;
 
+    console.debug("Attempting login for user:", userName);
     if (!userName || !password) {
       return sendError(res, 400, "Username and password are required.");
     }
@@ -152,13 +83,13 @@ export const login = async (req, res, next) => {
       roles: user.roles.map((role) => role.name),
     };
 
+    console.debug(`User ${userName} logged in successfully.`);
     // Send the response using sendSuccess
     sendSuccess(res, 200, "Login Success", userData, cookieDetails);
   } catch (error) {
     // Log and return any errors that occur during the login process.
-    console.error("Error during login:", error);
-    const errorResponse = sendError(500, "Error during login!");
-    next(errorResponse);
+    console.error("Error during login:", userName, error);
+    sendError(res, 500, "Error during login!");
   }
 };
 
@@ -170,7 +101,9 @@ export const registerAdmin = async (req, res, next) => {
     console.log("Processing registration for role:", role); // Logging the received role
 
     if (!firstName || !lastName || !userName || !email || !password || !role) {
-      return next(sendError(400, "All fields including role are required."));
+      return next(
+        sendError(res, 400, "All fields including role are required.")
+      );
     }
 
     // More detailed log about the values received
@@ -187,7 +120,7 @@ export const registerAdmin = async (req, res, next) => {
 
     const userExists = await User.findOne({ $or: [{ email }, { userName }] });
     if (userExists)
-      return next(sendError(409, "Email or Username already exists."));
+      return next(sendError(res, 409, "Email or Username already exists."));
 
     const newAdminUser = new User({
       firstName,
@@ -202,8 +135,7 @@ export const registerAdmin = async (req, res, next) => {
     return sendSuccess(res, 200, "Admin Registration Successfully!");
   } catch (error) {
     console.error("Error registering Admin:", error);
-    const errorResponse = sendError(500, "Error registering Admin!");
-    next(errorResponse);
+    sendError(res, 500, "Error registering Admin!");
   }
 };
 

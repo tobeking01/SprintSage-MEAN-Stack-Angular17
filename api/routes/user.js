@@ -6,14 +6,21 @@ import {
   createUser,
   updateUser,
   deleteUser,
+  getUsersForTeam,
 } from "../controllers/user.controller.js";
-import {
-  verifyToken,
-  verifyAdmin,
-  verifyUser,
-} from "../utils/verify-validate.js";
+
 // Initialize a new instance of the express router.
 const router = express.Router();
+
+function noCache(req, res, next) {
+  res.setHeader(
+    "Cache-Control",
+    "no-store, no-cache, must-revalidate, proxy-revalidate"
+  );
+  res.setHeader("Pragma", "no-cache");
+  res.setHeader("Expires", "0");
+  next();
+}
 
 // POST / createUser;
 // Route for creating a new user.
@@ -26,7 +33,7 @@ router.post("/createUser", createUser);
 // Setup the GET route for retrieving all users.
 // Before accessing this route, there are two middlewares that run:
 // 1. verifyToken - Checks if a valid token is provided in the request.
-router.get("/getAllUsers", getAllUsers);
+router.get("/getAllUsers", noCache, getAllUsers);
 
 // OR
 // router.get("/", verifyToken, getAllUsers);
@@ -47,6 +54,9 @@ router.get("/getUserById/:id", getUserById);
 // router.put("/updateUser/:id", verifyToken, updateUser);
 
 router.put("/updateUser/:id", updateUser);
+
+// get user for teams
+router.get("/getUsersForTeam", getUsersForTeam);
 
 // DELETE /deleteUser/:id
 // Route for deleting an existing user by ID.

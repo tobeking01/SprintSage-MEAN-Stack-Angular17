@@ -5,9 +5,9 @@
  * @param {Object} [data=null] - Data to be returned in the response.
  * @returns {Object} Response object.
  */
-export const CreateSuccess = (statusCode, message, data = null) => {
+export const createSuccess = (statusCode, message, data = []) => {
   return {
-    success: statusCode >= 200 && statusCode < 300, // Success is based on the HTTP status code range
+    success: statusCode >= 200 && statusCode < 300, // Check if status code indicates success
     status: statusCode,
     message: message,
     data: data,

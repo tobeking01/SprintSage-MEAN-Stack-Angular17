@@ -7,12 +7,6 @@ import {
   deleteTicketById,
 } from "../controllers/ticket.controller.js";
 
-import {
-  verifyToken,
-  verifyAdmin,
-  verifyUser,
-} from "../utils/verify-validate.js";
-
 const router = express.Router();
 
 /**

@@ -1,108 +1,80 @@
-// Importing necessary modules and utilities
 import Team from "../models/Team.js";
-import { sendError, sendSuccess } from "../utils/responseUtility.js";
+import Project from "../models/Project.js";
+import { sendError, sendSuccess } from "../utils/createResponse.js";
 import mongoose from "mongoose";
+import User from "../models/User.js";
 
-// Utility function to check if a given string is a valid MongoDB Object ID
-const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
-
-// Utility function to handle the population of certain fields if requested
-const handlePopulation = (query, req) => {
-  if (req.query.populate === "true") {
-    return query.populate("teamMembers").populate("projects");
-  }
-  return query;
+const validateObjectIds = (ids) => {
+  return ids.every((id) => mongoose.Types.ObjectId.isValid(id));
 };
 
-/**
- * Controller to create a new team.
- * @async
- * @function
- * @param {Object} req - Express request object.
- * @param {Object} res - Express response object.
- * @param {function} next - Express next middleware function.
- */
+const isValidObjectId = (id) => {
+  return mongoose.Types.ObjectId.isValid(id);
+};
 
-// Controller to create a new team
 export const createTeam = async (req, res, next) => {
-  const { teamName, teamMembers, projects } = req.body;
+  const { teamName, teamMembers } = req.body;
 
-  // Validate teamMembers to ensure they are valid ObjectIDs
-  if (
-    !Array.isArray(teamMembers) ||
-    teamMembers.some((id) => !isValidObjectId(id))
-  ) {
-    return sendError(res, 400, "Invalid team members.");
+  // Check if teamName is provided
+  if (!teamName) {
+    return sendError(res, 400, "Team name is required.");
   }
 
-  // Check if team members are already part of another team
-  const membersInAnotherTeam = await Team.findOne({
-    teamMembers: { $in: teamMembers },
-  });
-  if (membersInAnotherTeam) {
+  // Check if teamName already exists (assuming Team has a unique constraint on teamName)
+  const existingTeam = await Team.findOne({ teamName });
+  if (existingTeam) {
+    return sendError(res, 400, "Team name already exists.");
+  }
+
+  // Validate the Object IDs
+  if (!validateObjectIds(teamMembers)) {
     return sendError(
       res,
       400,
-      `One or more members are already in another team.`
+      "Invalid team members. Check the format of member IDs."
     );
   }
 
-  // If provided, validate the projects to ensure they are valid ObjectIDs
-  if (
-    projects &&
-    (!Array.isArray(projects) || projects.some((id) => !isValidObjectId(id)))
-  ) {
-    return sendError(400, "Invalid projects.");
-  }
-
-  // Check if the projects are already associated with another team
-  if (projects) {
-    const projectInAnotherTeam = await Team.findOne({
-      projects: { $in: projects },
-    });
-    if (projectInAnotherTeam) {
+  try {
+    const users = await User.find({ _id: { $in: teamMembers } });
+    if (users.length !== teamMembers.length) {
       return sendError(
         res,
         400,
-        `One or more projects are already associated with another team.`
+        "One or more team members are not valid users."
       );
     }
-  }
 
-  // Create a new team and save it to the database
-  const newTeam = new Team({ teamName, teamMembers, projects });
-  await newTeam.save();
-  sendSuccess(201, "Team Created!", newTeam);
+    const newTeam = new Team({ teamName, teamMembers });
+    await newTeam.save();
+    // When a new team is created, ensure the response contains the team in an array. important!!!
+    sendSuccess(res, 201, "Team Created!", [newTeam]);
+  } catch (error) {
+    console.error("Error creating team:", error);
+    return sendError(res, 500, "Internal Server Error");
+  }
 };
 
-// Controller to fetch all teams, with optional pagination and filtering
 export const getAllTeams = async (req, res, next) => {
   try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
-    const skip = (page - 1) * limit;
-
     const searchQuery = {};
+
     if (req.query.name) {
-      // Case-insensitive search for team name
       searchQuery.teamName = new RegExp(req.query.name, "i");
     }
+
     if (req.query.memberId) {
       searchQuery.teamMembers = mongoose.Types.ObjectId(req.query.memberId);
     }
 
-    // Construct and execute the query to fetch the teams
-    const query = Team.find(searchQuery).skip(skip).limit(limit);
-    const teams = await handlePopulation(query, req).exec();
-    sendSuccess(200, "Teams fetched successfully!", teams);
+    const teams = await Team.find(searchQuery);
+    sendSuccess(res, 200, "Teams fetched successfully!", teams);
   } catch (error) {
     console.error("Error fetching teams:", error);
-    const errorResponse = sendError(500, "Internal Server Error!");
-    next(errorResponse);
+    sendError(res, 500, "Internal Server Error!");
   }
 };
 
-// Controller to fetch a specific team by its ID
 export const getTeamById = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -111,59 +83,137 @@ export const getTeamById = async (req, res, next) => {
       return sendError(res, 400, "Invalid ID format.");
     }
 
-    const query = Team.findById(id);
-    const team = await handlePopulation(query, req).exec();
-    if (!team) return sendSuccess(404, "Team not found!");
-
-    sendSuccess(200, "Team fetched successfully!", team);
+    const team = await Team.findById(id);
+    if (!team) return sendError(res, 404, "Team not found!");
+    // When a new team is created, ensure the response contains the team in an array.
+    sendSuccess(res, 200, "Team fetched successfully!", [team]);
   } catch (error) {
     console.error("Error fetching team:", error);
-    const errorResponse = sendError(500, "Internal Server Error!");
-    next(errorResponse);
+    sendError(res, 500, "Internal Server Error!");
   }
 };
 
-// Controller to update a team by its ID
 export const updateTeamById = async (req, res, next) => {
   try {
     const { id } = req.params;
     const updates = req.body;
-    const allowedUpdates = ["teamName", "teamMembers", "projects"];
+    const allowedUpdates = ["teamName", "teamMembers"];
 
-    // Validate that only permissible fields are being updated
     const isValidOperation = Object.keys(updates).every((update) =>
       allowedUpdates.includes(update)
     );
     if (!isValidOperation) {
-      return sendError(400, "Invalid updates!");
+      return sendError(res, 400, "Invalid updates!");
     }
 
-    // Update the team in the database
     const updatedTeam = await Team.findByIdAndUpdate(id, req.body, {
       new: true,
-    })
-      .populate("teamMembers")
-      .populate("projects");
-    if (!updatedTeam) return sendError(404, "Team not found!");
-
-    sendSuccess(200, "Team updated successfully!", updatedTeam);
+    }).populate("teamMembers");
+    if (!updatedTeam) return sendError(res, 404, "Team not found!");
+    // When a new team is created, ensure the response contains the team in an array.
+    sendSuccess(res, 200, "Team updated successfully!", [updatedTeam]);
   } catch (error) {
     console.error("Error updating team:", error);
-    const errorResponse = sendError(500, "Internal Server Error!");
-    next(errorResponse);
+    sendError(res, 500, "Internal Server Error!");
   }
 };
 
-// Controller to delete a team by its ID
 export const deleteTeamById = async (req, res, next) => {
   try {
     const { id } = req.params;
     const deletedTeam = await Team.findByIdAndDelete(id);
-    if (!deletedTeam) return sendError(404, "Team not found!");
-    sendSuccess(200, "Team deleted successfully!", deletedTeam);
+    if (!deletedTeam) return sendError(res, 404, "Team not found!");
+    // When a new team is created, ensure the response contains the team in an array.
+    sendSuccess(res, 200, "Team deleted successfully!", [deletedTeam]);
   } catch (error) {
     console.error("Error deleting team:", error);
-    const errorResponse = sendError(500, "Internal Server Error!");
-    next(errorResponse);
+    sendError(res, 500, "Internal Server Error!");
+  }
+};
+
+export const removeUserFromTeam = async (req, res, next) => {
+  try {
+    const { teamId, userId } = req.params;
+
+    if (!isValidObjectId(teamId) || !isValidObjectId(userId)) {
+      return sendError(res, 400, "Invalid ID format.");
+    }
+
+    const team = await Team.findById(teamId);
+    if (!team) return sendError(res, 404, "Team not found!");
+
+    // Wrap in try-catch in case of unexpected errors
+    try {
+      await team.removeUser(userId);
+    } catch (err) {
+      console.error("Error in removeUser:", err);
+      return sendError(res, 500, "Failed to remove user from team.");
+    }
+
+    sendSuccess(res, 200, "User removed from team successfully!", [team]);
+  } catch (error) {
+    console.error("Error removing user from team:", error);
+    sendError(res, 500, error.message);
+  }
+};
+
+export const addUserToTeam = async (req, res, next) => {
+  try {
+    const { teamId, userId } = req.params;
+
+    // Validate ObjectIds
+    if (!isValidObjectId(teamId) || !isValidObjectId(userId)) {
+      return sendError(res, 400, "Invalid ID format.");
+    }
+
+    // Check for the existence of User
+    const user = await User.findById(userId);
+    if (!user) return sendError(res, 404, "User not found!");
+
+    // Check for the existence of Team
+    const team = await Team.findById(teamId);
+    if (!team) return sendError(res, 404, "Team not found!");
+
+    // Try adding user to the team
+    try {
+      await team.addUser(userId);
+    } catch (error) {
+      console.error("Error in addUser:", error);
+      return sendError(res, 500, "Failed to add user to team.");
+    }
+
+    sendSuccess(res, 200, "User added to team successfully!", [team]);
+  } catch (error) {
+    console.error("Error adding user to team:", error);
+    sendError(res, 500, "Internal Server Error!");
+  }
+};
+
+// Controller to get teams by a specific project ID.
+export const getTeamByProjectId = async (req, res, next) => {
+  try {
+    const { projectId } = req.params;
+
+    // Find project by ID to get its associated teams
+    const project = await Project.findById(projectId).populate("teams");
+
+    if (!project) {
+      return sendError(res, 404, "Project not found.");
+    }
+
+    // Check if project has teams
+    if (!project.teams || project.teams.length === 0) {
+      return sendError(res, 404, "No teams associated with this project.");
+    }
+
+    // Now, fetch team details
+    const teams = await Team.find({ _id: { $in: project.teams } }).populate(
+      "teamMembers"
+    );
+
+    return sendSuccess(res, 200, "Teams fetched successfully!", teams);
+  } catch (error) {
+    console.error("Error fetching teams by project ID:", error);
+    sendError(res, 500, "Internal Server Error!");
   }
 };

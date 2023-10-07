@@ -13,7 +13,7 @@ import mongoose, { Schema } from "mongoose";
 const TokenSchema = mongoose.Schema({
   // Reference to the User to whom the token belongs
   userId: {
-    type: Schema.Types.ObjectId,
+    type: mongoose.Schema.Types.ObjectId,
     required: true,
     ref: "User", // This establishes a relationship with the User model
   },

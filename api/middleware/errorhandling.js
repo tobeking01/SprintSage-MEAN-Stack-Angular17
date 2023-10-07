@@ -1,4 +1,4 @@
-import { sendError } from "../utils/responseUtility.js";
+import { sendError } from "../utils/createResponse.js";
 
 // Error Handling Middleware to handle all errors
 const errorHandlingMiddleware = (app) => {

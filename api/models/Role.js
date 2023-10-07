@@ -24,6 +24,8 @@ const RoleSchema = mongoose.Schema(
     // This provides metadata about when a role was initially added and
     // the last time it was updated in the database.
     timestamps: true,
+    // Enable automatic indexing for the schema
+    autoIndex: true,
   }
 );
 

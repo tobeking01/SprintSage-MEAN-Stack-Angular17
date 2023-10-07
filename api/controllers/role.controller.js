@@ -5,7 +5,7 @@ import Role from "../models/Role.js";
 import User from "../models/User.js"; // Assuming User model is in the models directory
 
 // Importing utility functions to create standardized error and success responses.
-import { sendError, sendSuccess } from "../utils/responseUtility.js";
+import { sendError, sendSuccess } from "../utils/createResponse.js";
 
 /**
  * Utility function to validate the role.
@@ -36,13 +36,13 @@ export const initializeRoles = async () => {
       // If the role does not already exist, create it.
       if (!existingRole) {
         await Role.create({ name: roleName });
-        console.log(`${roleName} role created successfully.`);
+        console.log(`[Initialization] ${roleName} role created.`);
       } else {
-        console.log(`${roleName} role already exists.`);
+        console.log(`[Initialization] ${roleName} role already exists.`);
       }
     }
   } catch (error) {
-    console.error("Error initializing roles:", error);
+    console.error("[Initialization Error] Error initializing roles:", error);
   }
 };
 
@@ -57,22 +57,21 @@ export const initializeRoles = async () => {
 export const updateRole = async (req, res, next) => {
   try {
     if (!isValidRole(req.body.name)) {
-      return sendError(400, "Invalid role!");
+      return sendError(res, 400, "Invalid role!");
     }
 
     const role = await Role.findById(req.params.id);
-    if (!role) return next(sendError(404, "Role not found!"));
+    if (!role) return next(sendError(res, 404, "Role not found!"));
 
     const updatedRole = await Role.findByIdAndUpdate(
       req.params.id,
       { $set: req.body },
       { new: true }
     );
-    sendSuccess(200, "Role Updated!", updatedRole);
+    sendSuccess(res, 200, "Role Updated!", updatedRole);
   } catch (error) {
     console.error("Error updating role:", error);
-    const errorResponse = sendError(500, "Internal Server Error!");
-    next(errorResponse);
+    sendError(res, 500, "Internal Server Error!");
   }
 };
 
@@ -90,11 +89,10 @@ export const getAllRoles = async (req, res, next) => {
     const roles = await Role.find({});
 
     // Respond with the retrieved roles.
-    sendSuccess(200, "Roles fetched successfully!", roles);
+    sendSuccess(res, 200, "Roles fetched successfully!", roles);
   } catch (error) {
     console.error("Error fetching roles:", error); // Log the error for debugging.
-    const errorResponse = sendError(500, "Internal Server Error!");
-    next(errorResponse);
+    sendError(res, 500, "Internal Server Error!");
   }
 };
 
@@ -110,7 +108,7 @@ export const deleteRole = async (req, res, next) => {
   try {
     const role = await Role.findById(req.params.id);
 
-    if (!role) return next(sendError(404, "Role not found!"));
+    if (!role) return next(sendError(res, 404, "Role not found!"));
 
     // Example: Assuming you have a User model with a role field
     const userWithRole = await User.findOne({ role: req.params.id });
@@ -119,10 +117,9 @@ export const deleteRole = async (req, res, next) => {
     }
 
     await Role.findByIdAndDelete(req.params.id);
-    sendSuccess(200, "Role deleted!");
+    sendSuccess(res, 200, "Role deleted!");
   } catch (error) {
     console.error("Error deleting role:", error);
-    const errorResponse = sendError(500, "Internal Server Error!");
-    next(errorResponse);
+    sendError(res, 500, "Internal Server Error!");
   }
 };

@@ -2,87 +2,74 @@
   <h1>{{ data ? "Edit" : "Add" }} Team Form</h1>
 </div>
 
-<form [formGroup]="addTeamMemberForm" (ngSubmit)="onSubmit()">
-  <div mat-dialog-content class="content">
-    <mat-form-field class="full-width">
-      <mat-label>Team Name</mat-label>
-      <input
-        matInput
-        formControlName="teamName"
-        placeholder="Enter Team Name"
-      />
-      <mat-error
-        *ngIf="
-          addTeamMemberForm.get('teamName')?.invalid &&
-          addTeamMemberForm.get('teamName')?.touched
-        "
-      >
-        Please enter team name
-      </mat-error>
-    </mat-form-field>
+<div class="team-form">
+  <form [formGroup]="addTeamMemberForm" (ngSubmit)="onSubmit()">
+    <div mat-dialog-content class="content">
+      <!-- Team Name Input -->
+      <mat-form-field class="full-width">
+        <mat-label>Team Name</mat-label>
+        <input
+          matInput
+          type="text"
+          formControlName="teamName"
+          placeholder="Enter Team Name"
+        />
+        <mat-error
+          *ngIf="
+            addTeamMemberForm.get('teamName')?.invalid &&
+            addTeamMemberForm.get('teamName')?.touched
+          "
+        >
+          Please enter team name
+        </mat-error>
+      </mat-form-field>
 
-    <mat-form-field class="full-width">
-      <mat-label>Select Existing Team</mat-label>
-      <mat-select
-        formControlName="existingTeam"
-        (selectionChange)="onTeamSelectionChange($event)"
-      >
-        <mat-option *ngFor="let team of teams" [value]="team._id">{{
-          team.teamName
-        }}</mat-option>
-      </mat-select>
-    </mat-form-field>
-
-    <mat-form-field class="full-width">
-      <mat-label>Create New Team</mat-label>
-      <input
-        matInput
-        formControlName="newTeamName"
-        [readonly]="isExistingTeamSelected"
-        placeholder="Enter New Team Name"
-      />
-    </mat-form-field>
-
-    <div formArrayName="users">
-      <div
-        *ngFor="let userCtrl of getUsersControl(); let i = index"
-        class="member-row"
-      >
-        <mat-form-field class="full-width">
-          <mat-label>Team Members</mat-label>
-          <mat-select
-            [formControl]="userCtrl"
-            placeholder="Select Team Members"
-          >
-            <mat-option *ngFor="let user of users" [value]="user._id"
-              >{{ user.firstName }} {{ user.lastName }}</mat-option
+      <!-- Team Members Selection -->
+      <div formArrayName="teamMembers">
+        <div
+          *ngFor="let memberCtrl of teamMembersControls; let i = index"
+          class="member-row"
+        >
+          <mat-form-field class="full-width">
+            <mat-label>Team Members</mat-label>
+            <mat-select
+              [formControl]="memberCtrl"
+              placeholder="Select Member Name"
             >
-          </mat-select>
-        </mat-form-field>
-        <button mat-icon-button color="warn" (click)="removeUser(i)">
-          <mat-icon>remove_circle</mat-icon>
-        </button>
+              <mat-option *ngFor="let user of users" [value]="user._id">
+                {{ user.firstName }} {{ user.lastName }}
+              </mat-option>
+            </mat-select>
+            <mat-error *ngIf="memberCtrl.hasError('required')">
+              Name is required!
+            </mat-error>
+          </mat-form-field>
+          <button mat-icon-button color="warn" (click)="removeUser(i)">
+            <mat-icon>remove_circle</mat-icon>
+          </button>
+        </div>
+        <button mat-button (click)="addUser()">+ Add Member</button>
       </div>
-      <button mat-button (click)="addUser()">+ Add Member</button>
     </div>
-  </div>
 
-  <div mat-dialog-actions class="action-btns">
-    <button
-      mat-raised-button
-      color="accent"
-      type="submit"
-      [disabled]="addTeamMemberForm.invalid"
-    >
-      {{ data ? "Update" : "Add" }}
-    </button>
-    <button
-      mat-raised-button
-      type="button"
-      color="warn"
-      [mat-dialog-close]="false"
-    >
-      Cancel
-    </button>
-  </div>
-</form>
+    <!-- Action Buttons -->
+    <div mat-dialog-actions class="action-btns">
+      <button
+        mat-raised-button
+        color="accent"
+        type="submit"
+        [disabled]="addTeamMemberForm.invalid"
+      >
+        {{ data ? "Update" : "Add" }}
+      </button>
+      <button
+        mat-raised-button
+        type="button"
+        color="warn"
+        [mat-dialog-close]="false"
+      >
+        Cancel
+      </button>
+    </div>
+  </form>
+</div>

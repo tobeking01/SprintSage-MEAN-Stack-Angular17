@@ -21,6 +21,8 @@ import { MatListModule } from '@angular/material/list';
 import { ModulesModule } from '../modules.module';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatSelectModule } from '@angular/material/select';
+import { MatTooltipModule } from '@angular/material/tooltip';
+
 // routes
 const routes: Routes = [
   {
@@ -63,6 +65,7 @@ const routes: Routes = [
     MatListModule,
     MatSelectModule,
     MatDialogModule,
+    MatTooltipModule,
   ],
   imports: [
     CommonModule,
@@ -85,6 +88,7 @@ const routes: Routes = [
     ModulesModule,
     MatSelectModule,
     MatDialogModule,
+    MatTooltipModule,
   ],
 })
 export class ManageProjectModule {}

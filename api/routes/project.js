@@ -12,13 +12,6 @@ import {
   deleteProjectById,
 } from "../controllers/project.controller.js";
 
-// Importing any middlewares
-import {
-  verifyToken,
-  verifyAdmin,
-  verifyUser,
-} from "../utils/verify-validate.js";
-
 // Initialize a new instance of express router.
 const router = express.Router();
 

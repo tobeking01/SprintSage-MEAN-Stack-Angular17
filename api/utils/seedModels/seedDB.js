@@ -1,32 +1,54 @@
 import mongoose from "mongoose";
-import { seedProjects } from "./seedProject.js";
-import { seedTeams } from "./seedTeam.js";
-import { seedTickets } from "./seedTicket.js";
-import { seedUsers } from "./seedUser.js";
 import dotenv from "dotenv";
+import seedUsers from "./seedUser.js";
+import seedTeams from "./seedTeam.js";
+import seedProjects from "./seedProject.js";
+import seedTickets from "./seedTicket.js";
 
 dotenv.config();
-const MONGO_URI = process.env.MONGO_URL;
 
-async function seedDB() {
+async function seedAll() {
+  let isConnected = false;
+
   try {
-    await mongoose.connect(MONGO_URI, {
+    // Connect to MongoDB
+    await mongoose.connect(process.env.MONGO_URL, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });
-    console.log("Connected to MongoDB");
+    isConnected = true;
+    console.log("Connected to MongoDB!");
 
-    await seedProjects();
-    await seedTeams();
-    await seedTickets();
+    // Seed Users
     await seedUsers();
+    console.log("Users seeded!");
 
-    console.log("Database seeded successfully!");
+    // Seed Teams
+    await seedTeams();
+    console.log("Teams seeded!");
 
-    mongoose.disconnect();
+    // Seed Projects
+    await seedProjects();
+    console.log("Projects seeded!");
+
+    // Seed Tickets
+    await seedTickets();
+    console.log("Tickets seeded!");
+
+    console.log("Seeding completed!");
   } catch (error) {
-    console.error("Error seeding the database:", error);
+    console.error("Error during seeding:", error);
+
+    // Depending on your requirements, handle errors and potentially rollback data here
+    // Be cautious with data rollback in MongoDB, as it's not as straightforward as in relational databases
+  } finally {
+    // Disconnect from MongoDB
+    if (isConnected) {
+      mongoose.disconnect();
+      console.log("Disconnected from MongoDB.");
+    }
   }
 }
 
-seedDB();
+// Execute the seedAll function
+seedAll();
