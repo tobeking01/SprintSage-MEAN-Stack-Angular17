@@ -26,6 +26,9 @@ export class AuthService {
   constructor(private http: HttpClient) {
     this.loadUserFromStorage();
   }
+  get currentUserValue(): User | null {
+    return this.currentUserSubject.value;
+  }
 
   private loadUserFromStorage(): void {
     const user = sessionStorage.getItem(USER_KEY);

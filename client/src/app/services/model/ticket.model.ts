@@ -25,7 +25,7 @@ export interface Ticket {
   severity: TicketSeverity;
   submittedByUser: string;
   assignedToUser?: string;
-  projectId: string;
+  project: string;
   ticketType: TicketType;
   state?: TicketState;
   createdAt?: Date;

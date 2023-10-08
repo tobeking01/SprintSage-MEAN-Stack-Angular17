@@ -50,11 +50,24 @@ UserSchema.index({ email: 1, userName: 1 });
 
 UserSchema.pre("remove", async function (next) {
   try {
-    // Remove this user from all teams they're a part of
+    // Check for tickets associated with the user
+    const userTickets = await mongoose.model("Ticket").find({
+      $or: [{ submittedByUser: this._id }, { assignedToUser: this._id }],
+    });
+
+    if (userTickets.length > 0) {
+      throw new Error(
+        "User has associated tickets. Resolve those before deletion."
+      );
+    }
+
+    // Remove the user from teams
     await Team.updateMany(
       { teamMembers: this._id },
       { $pull: { teamMembers: this._id } }
     );
+
+    next();
   } catch (error) {
     next(error);
   }

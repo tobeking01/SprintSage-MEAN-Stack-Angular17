@@ -1,50 +1,36 @@
-// Import the mongoose library to enable database interactions
 import mongoose, { Schema } from "mongoose";
-import Project from "./Project.js";
-import User from "./User.js"; // Add this import
 
-/**
- * Team Schema Definition
- *
- * Represents the blueprint for a team within the system.
- * Each team has a unique name, a list of team members, and the projects they are associated with.
- */
+// Models
+import Project from "./Project.js";
+import User from "./User.js";
+
 const TeamSchema = new Schema(
   {
-    // The unique name associated with the team
     teamName: {
       type: String,
       unique: true,
       required: true,
     },
-
-    // An array of team members, which are references to users.
-    // Each entry in the array points to a user who is a member of the team.
     teamMembers: [
       {
-        type: mongoose.Schema.Types.ObjectId, // This is a special ID data type in mongoose to reference other models
-        ref: "User", // Points to the "User" model, indicating that a team member is a User
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
+    projects: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Project",
       },
     ],
   },
   {
-    // Enable automatic generation of 'createdAt' and 'updatedAt' timestamps.
-    // 'createdAt' indicates when the team was formed, and 'updatedAt' indicates the last update time.
-    timestamps: true, // Enable automatic indexing for the schema
+    timestamps: true,
     autoIndex: true,
   }
 );
 
-/**
- * Team Model Definition
- *
- * With the defined TeamSchema, this model facilitates interactions
- * with the Team data in the database. Operations like creating a team,
- * listing teams, updating team information, etc., can be performed using this model.
- *
- * Note: In MongoDB, the collection will be named 'teams' due to mongoose's pluralization behavior.
- */
-
+// Middleware to handle the removal of a team and its associated references in Project model
 TeamSchema.pre("remove", async function (next) {
   try {
     await Project.updateMany(
@@ -57,31 +43,50 @@ TeamSchema.pre("remove", async function (next) {
   }
 });
 
+// Instance method to add a user to the team
 TeamSchema.methods.addUser = async function (userId) {
-  // Check if user is already a member of this team
   const isAlreadyAMember = this.teamMembers.some(
     (id) => id.toString() === userId.toString()
   );
 
-  // If not already a member, add to the team
   if (!isAlreadyAMember) {
     this.teamMembers.push(userId);
 
-    // Optionally, update the user document to reflect this association if needed
-    const user = await User.findById(userId);
-    // Update user's document with the relevant data, for example:
-    // user.teams.push(this._id);
+    // If you have a reference in the User model to keep track of teams
+    // const user = await User.findById(userId);  // Uncomment this if needed
+    // user.teams.push(this._id);  // Uncomment this line if there's a teams array in User model
 
-    // Save both documents
     await this.save();
-    await user.save();
+    // await user.save(); // Also uncomment this line if updating User
   }
 };
 
+// Instance method to remove a user from the team
 TeamSchema.methods.removeUser = async function (userId) {
   const index = this.teamMembers.indexOf(userId);
   if (index > -1) {
     this.teamMembers.splice(index, 1);
+    await this.save();
+  }
+};
+
+// Instance method to add a project to the team
+TeamSchema.methods.addProject = async function (projectId) {
+  const isAlreadyAssociated = this.projects.some(
+    (id) => id.toString() === projectId.toString()
+  );
+
+  if (!isAlreadyAssociated) {
+    this.projects.push(projectId);
+    await this.save();
+  }
+};
+
+// Instance method to remove a project from the team
+TeamSchema.methods.removeProject = async function (projectId) {
+  const index = this.projects.indexOf(projectId);
+  if (index > -1) {
+    this.projects.splice(index, 1);
     await this.save();
   }
 };

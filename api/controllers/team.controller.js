@@ -83,12 +83,44 @@ export const getTeamById = async (req, res, next) => {
       return sendError(res, 400, "Invalid ID format.");
     }
 
-    const team = await Team.findById(id);
+    const team = await Team.findById(id).populate({
+      path: "projects", // Assuming you add this field in the Team model
+      model: "Project",
+    });
+
     if (!team) return sendError(res, 404, "Team not found!");
-    // When a new team is created, ensure the response contains the team in an array.
+
     sendSuccess(res, 200, "Team fetched successfully!", [team]);
   } catch (error) {
     console.error("Error fetching team:", error);
+    sendError(res, 500, "Internal Server Error!");
+  }
+};
+
+export const getTeamsByUserId = async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+
+    if (!isValidObjectId(userId)) {
+      return sendError(res, 400, "Invalid User ID format.");
+    }
+
+    const teams = await Team.find({
+      teamMembers: mongoose.Types.ObjectId(userId),
+    })
+      .populate("teamMembers")
+      .populate({
+        path: "projects",
+        model: "Project",
+      });
+
+    if (!teams.length) {
+      return sendError(res, 404, "No teams found for this user.");
+    }
+
+    sendSuccess(res, 200, "Teams fetched successfully!", teams);
+  } catch (error) {
+    console.error("Error fetching teams by user ID:", error);
     sendError(res, 500, "Internal Server Error!");
   }
 };
@@ -142,12 +174,13 @@ export const removeUserFromTeam = async (req, res, next) => {
     const team = await Team.findById(teamId);
     if (!team) return sendError(res, 404, "Team not found!");
 
-    // Wrap in try-catch in case of unexpected errors
-    try {
-      await team.removeUser(userId);
-    } catch (err) {
-      console.error("Error in removeUser:", err);
-      return sendError(res, 500, "Failed to remove user from team.");
+    // Assuming teamMembers is an array of ObjectIds
+    const index = team.teamMembers.indexOf(userId);
+    if (index > -1) {
+      team.teamMembers.splice(index, 1);
+      await team.save();
+    } else {
+      return sendError(res, 400, "User not found in the team.");
     }
 
     sendSuccess(res, 200, "User removed from team successfully!", [team]);
@@ -174,13 +207,14 @@ export const addUserToTeam = async (req, res, next) => {
     const team = await Team.findById(teamId);
     if (!team) return sendError(res, 404, "Team not found!");
 
-    // Try adding user to the team
-    try {
-      await team.addUser(userId);
-    } catch (error) {
-      console.error("Error in addUser:", error);
-      return sendError(res, 500, "Failed to add user to team.");
+    // Check if user is already part of the team
+    if (team.teamMembers.includes(userId)) {
+      return sendError(res, 400, "User already in the team.");
     }
+
+    // Add user to the team
+    team.teamMembers.push(userId);
+    await team.save();
 
     sendSuccess(res, 200, "User added to team successfully!", [team]);
   } catch (error) {

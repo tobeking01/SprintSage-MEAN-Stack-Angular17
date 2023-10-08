@@ -46,11 +46,10 @@ import { takeUntil } from 'rxjs/operators';
   animations: [
     trigger('listAnimation', [
       transition('* <=> *', [
-        query(':enter', style({ opacity: 0 })),
-        query(
-          ':enter',
-          stagger('100ms', [animate('500ms ease-out', style({ opacity: 1 }))])
-        ),
+        query(':enter', [
+          style({ opacity: 0 }),
+          stagger('50ms', [animate('300ms ease-in', style({ opacity: 1 }))]),
+        ]),
       ]),
     ]),
   ],

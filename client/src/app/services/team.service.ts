@@ -79,4 +79,10 @@ export class TeamService {
       `${this.apiUrl}teamsByProject/${projectId}`
     );
   }
+
+  getTeamsByUserId(userId: string): Observable<MultipleTeamsResponseData> {
+    return this.http
+      .get<MultipleTeamsResponseData>(`${this.apiUrl}teamsByUser/${userId}`)
+      .pipe(catchError(this.handleError));
+  }
 }

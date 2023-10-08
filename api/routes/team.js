@@ -8,6 +8,7 @@ import {
   removeUserFromTeam,
   addUserToTeam,
   getTeamByProjectId,
+  getTeamsByUserId,
 } from "../controllers/team.controller.js";
 
 const router = express.Router();
@@ -28,6 +29,7 @@ router.post("/createTeam", createTeam); // test
 // router.get("/getAllTeams", verifyToken, getAllTeams);
 
 router.get("/getAllTeams", getAllTeams); // test
+router.get("/teamsByUser/:userId", getTeamsByUserId);
 
 /**
  * GET /teams/:id

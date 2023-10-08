@@ -11,7 +11,7 @@
       </mat-list-item>
     </mat-list>
   </mat-toolbar>
-
+  <br />
   <!-- Body -->
   <div class="main-body">
     <!-- Left Section: Team Details -->
@@ -22,13 +22,16 @@
         <p><strong>Current Projects:</strong> {{ currentProjects }}</p>
         <!-- Add any other team details you want to display here -->
       </div>
+      <div *ngIf="errorMessage" class="error-message">{{ errorMessage }}</div>
     </section>
 
     <!-- Right Section: Team Members -->
     <section class="team-members">
       <h4>Team Members</h4>
       <ul>
-        <li *ngFor="let member of teamMembers">{{ member.name }}</li>
+        <li *ngFor="let user of users">
+          {{ user.firstName }} {{ user.lastName }}
+        </li>
       </ul>
     </section>
   </div>

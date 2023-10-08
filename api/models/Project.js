@@ -1,7 +1,7 @@
 // Import required modules from the mongoose library
 import mongoose, { Schema } from "mongoose";
 import TicketState from "./TicketState.js";
-
+import Team from "./Team.js";
 /**
  * Defines the schema for the Project model in the application.
  *
@@ -56,14 +56,19 @@ ProjectSchema.path("endDate").validate(function (value) {
 
 ProjectSchema.pre("remove", async function (next) {
   try {
-    // Remove associated tickets
-    const ticketIds = await this.model("Ticket")
-      .find({ projectId: this._id })
-      .select("_id");
-    await this.model("Ticket").deleteMany({ projectId: this._id });
+    // Remove associated tickets and their audit logs
+    const tickets = await this.model("Ticket").find({ project: this._id });
+    for (let ticket of tickets) {
+      await ticket.remove();
+    }
 
-    // Remove associated audit logs
-    await TicketState.deleteMany({ ticketId: { $in: ticketIds } });
+    // Dissociate the project from its teams
+    await Team.updateMany(
+      { projects: this._id },
+      { $pull: { projects: this._id } }
+    );
+
+    next();
   } catch (error) {
     next(error);
   }

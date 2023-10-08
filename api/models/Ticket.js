@@ -31,7 +31,7 @@ const TicketSchema = new Schema(
     },
 
     // Project to which the ticket belongs (reference to Project model)
-    projectId: {
+    project: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Project", // Reference to the Project model
       required: true,
@@ -79,9 +79,19 @@ TicketSchema.pre("save", async function (next) {
 });
 
 TicketSchema.pre("remove", async function (next) {
-  // Deleting all audit logs related to this ticket
-  await TicketState.deleteMany({ ticketId: this._id });
-  next();
+  try {
+    // Deleting all audit logs related to this ticket
+    await TicketState.deleteMany({ ticketId: this._id });
+
+    // Remove this ticket from its associated project's ticket list
+    await mongoose
+      .model("Project")
+      .updateOne({ tickets: this._id }, { $pull: { tickets: this._id } });
+
+    next();
+  } catch (error) {
+    next(error);
+  }
 });
 
 // Methods to transition the ticket state
