@@ -51,6 +51,13 @@ export const createProject = async (req, res, next) => {
       return sendError(res, 400, "Invalid start or end date format.");
     }
 
+    if (tickets && Array.isArray(tickets)) {
+      const validTickets = await Ticket.find({ _id: { $in: tickets } });
+      if (validTickets.length !== tickets.length) {
+        return sendError(res, 400, "One or more tickets are invalid.");
+      }
+    }
+
     const newProject = new Project({
       projectName,
       description,
@@ -168,7 +175,15 @@ export const updateProjectById = async (req, res, next) => {
       }
       existingProject.tickets = projectUpdates.tickets;
     }
-
+    if (projectUpdates.description) {
+      existingProject.description = projectUpdates.description;
+    }
+    if (projectUpdates.startDate) {
+      existingProject.startDate = new Date(projectUpdates.startDate);
+    }
+    if (projectUpdates.endDate) {
+      existingProject.endDate = new Date(projectUpdates.endDate);
+    }
     await existingProject.save();
 
     return sendSuccess(res, 200, "Project updated successfully!", [

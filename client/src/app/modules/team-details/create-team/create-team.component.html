@@ -1,9 +1,9 @@
 <div mat-dialog-title>
-  <h1>{{ data ? "Edit" : "Add" }} Team Form</h1>
+  <h1>{{ data ? "Edit" : "Create" }} Team Form</h1>
 </div>
 
 <div class="team-form">
-  <form [formGroup]="addTeamMemberForm" (ngSubmit)="onSubmit()">
+  <form [formGroup]="createTeamMemberForm" (ngSubmit)="onSubmit()">
     <div mat-dialog-content class="content">
       <!-- Team Name Input -->
       <mat-form-field class="full-width">
@@ -16,8 +16,8 @@
         />
         <mat-error
           *ngIf="
-            addTeamMemberForm.get('teamName')?.invalid &&
-            addTeamMemberForm.get('teamName')?.touched
+            createTeamMemberForm.get('teamName')?.invalid &&
+            createTeamMemberForm.get('teamName')?.touched
           "
         >
           Please enter team name
@@ -58,7 +58,7 @@
         mat-raised-button
         color="accent"
         type="submit"
-        [disabled]="addTeamMemberForm.invalid"
+        [disabled]="createTeamMemberForm.invalid"
       >
         {{ data ? "Update" : "Add" }}
       </button>

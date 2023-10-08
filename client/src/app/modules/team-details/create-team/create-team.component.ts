@@ -14,6 +14,7 @@ import {
   Team,
   SingleTeamResponseData,
   MultipleTeamsResponseData,
+  TeamPopulated,
 } from 'src/app/services/model/team.model';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ResponseData } from 'src/app/services/model/user.model';
@@ -24,17 +25,17 @@ import { ResponseData } from 'src/app/services/model/user.model';
   styleUrls: ['./create-team.component.scss'],
 })
 export class CreateTeamComponent implements OnInit {
-  addTeamMemberForm!: FormGroup;
+  createTeamMemberForm!: FormGroup;
   isExistingTeamSelected = false;
   users: User[] = [];
-  teams: Team[] = [];
+  teams: TeamPopulated[] = [];
 
   constructor(
     private fb: FormBuilder,
     private userService: UserService,
     private teamService: TeamService,
     @Optional() private dialogRef: MatDialogRef<CreateTeamComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: Team
+    @Inject(MAT_DIALOG_DATA) public data: TeamPopulated
   ) {}
 
   ngOnInit(): void {
@@ -44,15 +45,15 @@ export class CreateTeamComponent implements OnInit {
   }
 
   initializeForm() {
-    this.addTeamMemberForm = this.fb.group({
+    this.createTeamMemberForm = this.fb.group({
       teamName: ['', Validators.required],
       teamMembers: this.fb.array([], Validators.minLength(1)),
     });
-    console.log(this.addTeamMemberForm);
+    console.log(this.createTeamMemberForm);
   }
 
   get teamMembersFormArray(): FormArray {
-    return this.addTeamMemberForm.get('teamMembers') as FormArray;
+    return this.createTeamMemberForm.get('teamMembers') as FormArray;
   }
 
   get teamMembersControls(): FormControl[] {
@@ -88,7 +89,8 @@ export class CreateTeamComponent implements OnInit {
     console.log('Fetching users...');
     this.userService.getAllUsers().subscribe(
       (response: ResponseData) => {
-        this.users = response.data.users;
+        // Access the first element from the nested array.
+        this.users = response.data[0];
         console.log('Users fetched:', this.users);
       },
       (error: HttpErrorResponse) => {
@@ -98,10 +100,10 @@ export class CreateTeamComponent implements OnInit {
   }
 
   onSubmit() {
-    if (this.addTeamMemberForm.valid) {
+    if (this.createTeamMemberForm.valid) {
       const teamData = {
-        teamName: this.addTeamMemberForm.value.teamName,
-        teamMembers: [].concat(...this.addTeamMemberForm.value.teamMembers), // Flatten the array
+        teamName: this.createTeamMemberForm.value.teamName,
+        teamMembers: [].concat(...this.createTeamMemberForm.value.teamMembers), // Flatten the array
       };
 
       this.teamService.createTeam(teamData).subscribe(

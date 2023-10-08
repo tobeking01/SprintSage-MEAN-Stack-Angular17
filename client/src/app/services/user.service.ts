@@ -14,7 +14,7 @@ export class UserService {
   constructor(private http: HttpClient) {}
 
   getAllUsers(): Observable<ResponseData> {
-    console.log(`Fetching users from URL: ${this.apiUrl}getAllUsers`); // Add this line
+    console.log(`Fetching users from URL in User: ${this.apiUrl}getAllUsers`);
     return this.http.get<ResponseData>(`${this.apiUrl}getAllUsers`);
   }
 

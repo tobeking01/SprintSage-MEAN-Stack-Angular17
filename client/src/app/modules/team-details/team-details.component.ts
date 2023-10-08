@@ -6,6 +6,7 @@ import {
   Team,
   SingleTeamResponseData,
   MultipleTeamsResponseData,
+  TeamPopulated,
 } from 'src/app/services/model/team.model';
 import { HttpErrorResponse } from '@angular/common/http';
 import { AuthService } from 'src/app/services/auth.service';
@@ -16,9 +17,9 @@ import { AuthService } from 'src/app/services/auth.service';
 })
 export class TeamDetailsComponent implements OnInit {
   teamName: string = ''; // Placeholder until you fetch the actual data
-  currentProjects: string[] = []; // Placeholder array, replace with actual data fetching
+  currentProjects: string = ''; // Placeholder array, replace with actual data fetching
   users: User[] = [];
-  teams: Team[] = [];
+  teams: TeamPopulated[] = [];
   loggedInUserId!: string;
   errorMessage: string = '';
 
@@ -52,7 +53,7 @@ export class TeamDetailsComponent implements OnInit {
           const projectNames =
             this.teams[0].projects?.map((proj) => proj.projectName) || [];
 
-          // this.currentProjects = projectNames.join(', ');
+          this.currentProjects = projectNames.join(', ');
         }
       },
       (error: HttpErrorResponse) => {
@@ -67,7 +68,7 @@ export class TeamDetailsComponent implements OnInit {
     console.log('Fetching users...');
     this.userService.getAllUsers().subscribe(
       (response: ResponseData) => {
-        this.users = response.data.users;
+        this.users = response.data[0];
         console.log('Users fetched:', this.users);
       },
       (error: HttpErrorResponse) => {

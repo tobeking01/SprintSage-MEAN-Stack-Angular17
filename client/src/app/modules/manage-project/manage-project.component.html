@@ -84,7 +84,6 @@
               <div *ngFor="let team of project.teams">
                 <h4>{{ team.teamName }}</h4>
 
-                <!-- Members Section -->
                 <ng-container
                   *ngIf="
                     team.teamMembers && team.teamMembers.length;

@@ -8,6 +8,7 @@ import {
   Team,
   SingleTeamResponseData,
   MultipleTeamsResponseData,
+  TeamPopulated,
 } from './model/team.model';
 
 @Injectable({
@@ -58,7 +59,7 @@ export class TeamService {
 
   updateTeamById(
     id: string,
-    teamData: Team
+    teamData: TeamPopulated
   ): Observable<SingleTeamResponseData> {
     return this.http
       .put<SingleTeamResponseData>(

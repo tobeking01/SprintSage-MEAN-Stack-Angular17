@@ -22,11 +22,14 @@ import {
   Team,
   SingleTeamResponseData,
   MultipleTeamsResponseData,
+  TeamPopulated,
 } from 'src/app/services/model/team.model';
 import {
-  MultipleProjectsResponseData,
-  Project,
-  SingleProjectResponseData,
+  MultipleProjectsFullResponseData,
+  ProjectFull,
+  ProjectRef,
+  SingleProjectFullResponseData,
+  SingleProjectRefResponseData,
 } from 'src/app/services/model/project.model';
 
 @Component({
@@ -37,8 +40,8 @@ import {
 export class AddProjectComponent implements OnInit, OnDestroy {
   projectForm!: FormGroup;
   users: User[] = [];
-  teams: Team[] = [];
-  projects: Project[] = [];
+  teams: TeamPopulated[] = [];
+  projects: ProjectFull[] = [];
 
   private onDestroy$ = new Subject<void>(); // For handling unSubscription when the component is destroyed
 
@@ -49,7 +52,7 @@ export class AddProjectComponent implements OnInit, OnDestroy {
     private teamService: TeamService,
     private snackBar: MatSnackBar,
     private dialogRef: MatDialogRef<AddProjectComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: Project
+    @Inject(MAT_DIALOG_DATA) public data: ProjectFull
   ) {}
 
   ngOnInit(): void {
@@ -86,7 +89,7 @@ export class AddProjectComponent implements OnInit, OnDestroy {
     console.log('Fetching users...');
     this.userService.getAllUsers().subscribe(
       (response: ResponseData) => {
-        this.users = response.data.users;
+        this.users = response.data[0];
         console.log('Users fetched:', this.users);
       },
       (error: any) => {
@@ -114,13 +117,17 @@ export class AddProjectComponent implements OnInit, OnDestroy {
 
   loadProjects() {
     this.projectService.getAllProjects().subscribe(
-      (response: SingleProjectResponseData | MultipleProjectsResponseData) => {
+      (
+        response:
+          | SingleProjectFullResponseData
+          | MultipleProjectsFullResponseData
+      ) => {
         if ('data' in response && Array.isArray(response.data)) {
           // Handle the response as MultipleProjectsResponseData
-          const projectsArray: Project[] = response.data;
+          const projectsArray: ProjectFull[] = response.data;
         } else if ('data' in response && !Array.isArray(response.data)) {
           // Handle the response as SingleProjectResponseData
-          const singleProject: Project = response.data;
+          const singleProject: ProjectFull = response.data;
         } else {
           // Handle unexpected response format
           console.error('Unexpected response format:', response);
@@ -164,7 +171,7 @@ export class AddProjectComponent implements OnInit, OnDestroy {
         this.projectService
           .updateProjectById(this.data._id, formData)
           .subscribe(
-            (response: SingleProjectResponseData) => {
+            (response: SingleProjectRefResponseData) => {
               this.snackBar.open(
                 `Project updated: ${response.data._id}`,
                 'Close',
@@ -179,7 +186,7 @@ export class AddProjectComponent implements OnInit, OnDestroy {
           );
       } else {
         this.projectService.createProject(formData).subscribe(
-          (response: SingleProjectResponseData) => {
+          (response: SingleProjectRefResponseData) => {
             this.snackBar.open(response.message, 'Close', { duration: 3000 });
             this.dialogRef.close(true); // Close the dialog with a success indicator
           },

@@ -136,7 +136,7 @@ export const getAllUsers = async (req, res, next) => {
 
     // If there are no users in the database, return a 404 error.
     if (!users.length) return sendError(res, 404, "No users found!");
-    sendSuccess(res, 200, "All Users Retrieved Successfully", users); // Send array of users
+    sendSuccess(res, 200, "All Users Retrieved Successfully", [users]); // Send array of users
   } catch (error) {
     console.error("Error fetching users:", error);
     return next(sendError(res, 500, "Internal Server Error!"));
@@ -174,7 +174,7 @@ export const getUserById = async (req, res, next) => {
     if (!user) return sendError(res, 404, "User not found!");
 
     // If a user is found, return the user in the response.
-    return sendSuccess(res, 200, "Single User", user);
+    return sendSuccess(res, 200, "Single User", [user]);
   } catch (error) {
     console.error(`Error fetching user with ID ${id} :`, error); // Log error details for debugging
     sendError(res, 500, "Internal Server Error while fetching user!");
@@ -251,7 +251,7 @@ export const updateProfile = async (req, res, next) => {
     }
 
     // Respond with the updated user.
-    sendSuccess(res, 200, "User Profile Updated Successfully!", updatedUser);
+    sendSuccess(res, 200, "User Profile Updated Successfully!", [updatedUser]);
   } catch (error) {
     console.error("Error updating user profile:", error);
     next(sendError(res, 500, "Error updating user profile."));

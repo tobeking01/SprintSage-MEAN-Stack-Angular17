@@ -67,7 +67,7 @@ export const getAllTeams = async (req, res, next) => {
       searchQuery.teamMembers = mongoose.Types.ObjectId(req.query.memberId);
     }
 
-    const teams = await Team.find(searchQuery);
+    const teams = await Team.find(searchQuery).populate("teamMembers");
     sendSuccess(res, 200, "Teams fetched successfully!", teams);
   } catch (error) {
     console.error("Error fetching teams:", error);
@@ -83,10 +83,13 @@ export const getTeamById = async (req, res, next) => {
       return sendError(res, 400, "Invalid ID format.");
     }
 
-    const team = await Team.findById(id).populate({
-      path: "projects", // Assuming you add this field in the Team model
-      model: "Project",
-    });
+    const team = await Team.findById(id).populate([
+      "teamMembers",
+      {
+        path: "projects",
+        model: "Project",
+      },
+    ]);
 
     if (!team) return sendError(res, 404, "Team not found!");
 
@@ -141,6 +144,7 @@ export const updateTeamById = async (req, res, next) => {
     const updatedTeam = await Team.findByIdAndUpdate(id, req.body, {
       new: true,
     }).populate("teamMembers");
+
     if (!updatedTeam) return sendError(res, 404, "Team not found!");
     // When a new team is created, ensure the response contains the team in an array.
     sendSuccess(res, 200, "Team updated successfully!", [updatedTeam]);

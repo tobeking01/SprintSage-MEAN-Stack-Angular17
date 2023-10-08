@@ -15,14 +15,14 @@ const TeamSchema = new Schema(
     teamMembers: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
+        ref: "User", // ref userIDs for team
       },
     ],
     // List of projects associated with the team. Each project is a reference to an entry in the "Project" collection
     projects: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Project",
+        ref: "Project", // ref projectIDs for team
       },
     ],
   },

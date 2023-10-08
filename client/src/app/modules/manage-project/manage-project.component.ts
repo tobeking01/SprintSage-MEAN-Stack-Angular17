@@ -18,15 +18,12 @@ import { UserService } from 'src/app/services/user.service';
 import { TeamService } from 'src/app/services/team.service';
 
 // Model Imports
-import {
-  MultipleProjectsResponseData,
-  Project,
-  SingleProjectResponseData,
-} from 'src/app/services/model/project.model';
+import { ProjectFull } from 'src/app/services/model/project.model';
 import {
   Team,
   SingleTeamResponseData,
   MultipleTeamsResponseData,
+  TeamPopulated,
 } from 'src/app/services/model/team.model';
 import { ResponseData, User } from 'src/app/services/model/user.model';
 
@@ -58,10 +55,11 @@ export class ManageProjectComponent implements OnInit, OnDestroy {
   isLoading = false;
   error: string | null = null;
   teamMembersDetails: { [key: string]: string } = {};
-  MyDataSource: MatTableDataSource<Project> = new MatTableDataSource<Project>();
+  MyDataSource: MatTableDataSource<ProjectFull> =
+    new MatTableDataSource<ProjectFull>();
   teamDetails: { [key: string]: Team } = {};
   users: User[] = [];
-  teams: Team[] = [];
+  teams: TeamPopulated[] = [];
 
   constructor(
     private projectService: ProjectService,
@@ -84,10 +82,10 @@ export class ManageProjectComponent implements OnInit, OnDestroy {
   }
 
   private loadUsers(): void {
-    console.log('Fetching users...');
+    console.log('Fetching users... manageSide');
     this.userService.getAllUsers().subscribe(
       (response: ResponseData) => {
-        this.users = response.data.users;
+        this.users = response.data[0];
         console.log('Users fetched:', this.users);
       },
       (error: any) => {
@@ -97,6 +95,7 @@ export class ManageProjectComponent implements OnInit, OnDestroy {
   }
 
   private loadTeams(): void {
+    console.log('Fetching teams... manageSide');
     this.teamService.getAllTeams().subscribe(
       (response: MultipleTeamsResponseData) => {
         if (Array.isArray(response.data)) {
@@ -114,6 +113,7 @@ export class ManageProjectComponent implements OnInit, OnDestroy {
   }
 
   private loadProject(): void {
+    console.log('Fetching project... manageSide');
     this.isLoading = true;
     this.projectService
       .getAllProjects()
