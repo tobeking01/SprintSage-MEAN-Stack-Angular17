@@ -1,50 +1,57 @@
-// Import necessary modules
-import mongoose, { Schema } from "mongoose";
-import TicketState from "./TicketState.js";
+// Import the mongoose library to interact with MongoDB
+import mongoose from "mongoose";
+const { Schema } = mongoose;
 
+// Define the schema for the "Ticket" collection, which represents issues, bugs, or tasks within a system.
 const TicketSchema = new Schema(
   {
-    // Description of the issue associated with the ticket
+    // Description of the ticketed issue, bug, or task.
     issueDescription: {
       type: String,
-      required: true, // This field is mandatory for every ticket
+      required: true,
     },
 
-    // Severity level of the ticket (e.g., "Low," "Medium," "High")
+    // Indicates the importance or impact of the ticketed issue.
     severity: {
       type: String,
-      enum: ["Low", "Medium", "High"], // Allowed severity values
-      required: true, // Severity level is required
+      enum: ["Low", "Medium", "High"],
+      required: true,
     },
 
-    // User who submitted the ticket (reference to User model)
+    // User who reported the issue.
     submittedByUser: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User", // Reference to the User model
+      ref: "User",
       required: true,
     },
 
-    // User assigned to work on the ticket (reference to User model)
+    // User who is assigned to resolve the issue.
     assignedToUser: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User", // Reference to the User model
+      ref: "User",
     },
 
-    // Project to which the ticket belongs (reference to Project model)
+    // Team associated with the ticket, if any.
+    team: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Team",
+    },
+
+    // Project in which the ticketed issue occurs or is related to.
     project: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Project", // Reference to the Project model
+      ref: "Project",
       required: true,
     },
 
-    // Type of the ticket (e.g., "Bug," "Feature Request," "Other")
+    // Categorization of the ticket, for organizational purposes.
     ticketType: {
       type: String,
-      enum: ["Bug", "Feature Request", "Other"], // Allowed ticket types
+      enum: ["Bug", "Feature Request", "Other"],
       required: true,
     },
 
-    // Current state of the ticket (e.g., "New," "In Progress," "Completed")
+    // Current status or phase of the ticket in its lifecycle.
     state: {
       type: String,
       enum: [
@@ -59,13 +66,30 @@ const TicketSchema = new Schema(
     },
   },
   {
-    timestamps: true, // Automatically add createdAt and updatedAt timestamps
-    // Enable automatic indexing for the schema
+    // Automatic management of creation and modification timestamps for each ticket.
+    timestamps: true,
     autoIndex: true,
   }
 );
 
-// Middleware for subMitBy
+// Middleware to validate that the user submitting the ticket is associated with the related project.
+TicketSchema.pre("save", async function (next) {
+  const user = await mongoose.model("User").findById(this.submittedByUser);
+  const project = await mongoose.model("Project").findById(this.project);
+
+  // Check if user is part of any team that's associated with the project
+  const isUserAssociatedWithProject = user.teams.some((teamId) =>
+    project.teams.includes(teamId)
+  );
+
+  if (!isUserAssociatedWithProject) {
+    throw new Error("User not associated with the project through any team");
+  }
+
+  next();
+});
+
+// Middleware to log the creation of a new ticket.
 TicketSchema.pre("save", async function (next) {
   if (this.isNew) {
     const audit = new TicketState({
@@ -78,6 +102,7 @@ TicketSchema.pre("save", async function (next) {
   next();
 });
 
+// Middleware to handle deletions and cleanup related references when a ticket is removed.
 TicketSchema.pre("remove", async function (next) {
   try {
     // Deleting all audit logs related to this ticket
@@ -94,7 +119,22 @@ TicketSchema.pre("remove", async function (next) {
   }
 });
 
-// Methods to transition the ticket state
+// Middleware to log ticket status changes.
+TicketSchema.pre("save", async function (next) {
+  if (this.isModified("state")) {
+    const audit = new TicketState({
+      action: "STATUS_CHANGE",
+      ticketId: this._id,
+      changedBy: this.submittedByUser,
+      oldValue: this.previous("state"),
+      newValue: this.state,
+    });
+    await audit.save();
+  }
+  next();
+});
+
+// Instance methods to easily change the state/status of a ticket.
 TicketSchema.methods.inProgress = async function () {
   // Update the state to "In Progress" and save
   this.state = "In Progress";
@@ -130,5 +170,5 @@ TicketSchema.methods.inBacklog = async function () {
   return this; // Return the updated ticket
 };
 
-// Create the Ticket model using the schema
-export default mongoose.model("Ticket", TicketSchema);
+// Export the defined schema as the "Ticket" model.
+export default mongoose.model("Ticket", TicketSchema, "Ticket");

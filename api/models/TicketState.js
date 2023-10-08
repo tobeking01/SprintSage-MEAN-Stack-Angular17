@@ -1,5 +1,6 @@
-// Import required modules from the mongoose library
-import mongoose, { Schema } from "mongoose";
+// Import the mongoose library to interact with MongoDB
+import mongoose from "mongoose";
+const { Schema } = mongoose;
 
 /**
  * Defines the schema for the Audit Log model in the application.
@@ -41,5 +42,5 @@ const TicketStateSchema = new Schema({
   },
 });
 
-// Export the model based on the schema for use in the application
-export default mongoose.model("TicketState", TicketStateSchema);
+// Explicitly setting the collection name to 'TicketState'
+export default mongoose.model("TicketState", TicketStateSchema, "TicketState");

@@ -52,7 +52,7 @@ export class TeamDetailsComponent implements OnInit {
           const projectNames =
             this.teams[0].projects?.map((proj) => proj.projectName) || [];
 
-          this.currentProjects = projectNames.join(', ');
+          // this.currentProjects = projectNames.join(', ');
         }
       },
       (error: HttpErrorResponse) => {
