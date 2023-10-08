@@ -117,7 +117,7 @@ export class AuthService {
       );
   }
 
-  setCurrentUser(user: User | null): void {
+  setCurrentUser(user: User): void {
     this.currentUserSubject.next(user);
     this.isLoggedIn$.next(!!user);
   }

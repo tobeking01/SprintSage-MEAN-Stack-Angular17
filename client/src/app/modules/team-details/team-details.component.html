@@ -1,0 +1,35 @@
+<!-- Main container -->
+<div class="main-container">
+  <!-- Header -->
+  <mat-toolbar class="team-header">
+    <mat-list>
+      <mat-list-item>
+        <span matListItemTitle>Team Details</span>
+        <span matListItemLine
+          >View and manage team-specific details and team members.</span
+        >
+      </mat-list-item>
+    </mat-list>
+  </mat-toolbar>
+
+  <!-- Body -->
+  <div class="main-body">
+    <!-- Left Section: Team Details -->
+    <section class="team-details">
+      <h4>Team Details</h4>
+      <div>
+        <p><strong>Team Name:</strong> {{ teamName }}</p>
+        <p><strong>Current Projects:</strong> {{ currentProjects }}</p>
+        <!-- Add any other team details you want to display here -->
+      </div>
+    </section>
+
+    <!-- Right Section: Team Members -->
+    <section class="team-members">
+      <h4>Team Members</h4>
+      <ul>
+        <li *ngFor="let member of teamMembers">{{ member.name }}</li>
+      </ul>
+    </section>
+  </div>
+</div>

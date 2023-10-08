@@ -6,8 +6,8 @@ import { FullwidthComponent } from './layouts/fullwidth/fullwidth.component';
 import { HomeComponent } from './modules/home/home.component';
 import { LoginComponent } from './modules/login/login.component';
 import { RegisterComponent } from './modules/register/register.component';
-import { ProjectTicketComponent } from './modules/project-ticket/project-ticket.component';
-import { TeamComponent } from './modules/team/team.component';
+import { TicketDetailsComponent } from './modules/ticket-details/ticket-details.component';
+import { CreateTeamComponent } from './modules/team-details/create-team/create-team.component';
 import { ProfileComponent } from './modules/profile/profile.component';
 import { Routes } from '@angular/router';
 import { ForgetPasswordComponent } from './modules/forget-password/forget-password.component';
@@ -16,6 +16,7 @@ import { RoleGuard } from './services/role.guard';
 import { AdminDashboardComponent } from './modules/admin-dashboard/admin-dashboard.component';
 import { ResetComponent } from './modules/reset/reset.component';
 import { NotFoundComponent } from './modules/not-found/not-found.component';
+import { TeamDetailsComponent } from './modules/team-details/team-details.component';
 
 const routes: Routes = [
   {
@@ -35,12 +36,16 @@ const routes: Routes = [
         // component: ManageProjectComponent,
       },
       {
-        path: 'project-ticket',
-        component: ProjectTicketComponent,
+        path: 'ticket-details',
+        component: TicketDetailsComponent,
       },
       {
-        path: 'team',
-        component: TeamComponent,
+        path: 'create-team',
+        component: CreateTeamComponent,
+      },
+      {
+        path: 'team-details',
+        component: TeamDetailsComponent,
       },
       {
         path: 'profile',

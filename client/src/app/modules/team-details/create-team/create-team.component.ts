@@ -19,11 +19,11 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { ResponseData } from 'src/app/services/model/user.model';
 
 @Component({
-  selector: 'app-team',
-  templateUrl: './team.component.html',
-  styleUrls: ['./team.component.scss'],
+  selector: 'app-create-team',
+  templateUrl: './create-team.component.html',
+  styleUrls: ['./create-team.component.scss'],
 })
-export class TeamComponent implements OnInit {
+export class CreateTeamComponent implements OnInit {
   addTeamMemberForm!: FormGroup;
   isExistingTeamSelected = false;
   users: User[] = [];
@@ -33,7 +33,7 @@ export class TeamComponent implements OnInit {
     private fb: FormBuilder,
     private userService: UserService,
     private teamService: TeamService,
-    @Optional() private dialogRef: MatDialogRef<TeamComponent>,
+    @Optional() private dialogRef: MatDialogRef<CreateTeamComponent>,
     @Inject(MAT_DIALOG_DATA) public data: Team
   ) {}
 

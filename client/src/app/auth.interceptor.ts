@@ -21,7 +21,7 @@ export class AuthInterceptor implements HttpInterceptor {
   ): Observable<HttpEvent<any>> {
     // Clone the request to add the "withCredentials" flag
     const authenticatedRequest = req.clone({ withCredentials: true });
-
+    console.log(authenticatedRequest);
     // Pass the modified request to the next interceptor in the chain
     return next.handle(authenticatedRequest);
   }

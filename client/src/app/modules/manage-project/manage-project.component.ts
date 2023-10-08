@@ -32,7 +32,7 @@ import { ResponseData, User } from 'src/app/services/model/user.model';
 
 // Component Imports
 import { AddProjectComponent } from './add-project/add-project.component';
-import { TeamComponent } from '../team/team.component';
+import { CreateTeamComponent } from '../team-details/create-team/create-team.component';
 
 // HttpErrorResponse for handling HTTP errors
 import { HttpErrorResponse } from '@angular/common/http';
@@ -137,7 +137,7 @@ export class ManageProjectComponent implements OnInit, OnDestroy {
   }
 
   openTeamDialog(): void {
-    const dialogRef = this.dialog.open(TeamComponent);
+    const dialogRef = this.dialog.open(CreateTeamComponent);
     dialogRef.afterClosed().subscribe((result) => {
       console.log(`Dialog result: ${result}`);
     });

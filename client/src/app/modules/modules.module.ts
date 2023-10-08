@@ -10,8 +10,8 @@ import { RegisterComponent } from './register/register.component';
 import { ResetComponent } from './reset/reset.component';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
-import { ProjectTicketComponent } from './project-ticket/project-ticket.component';
-import { TeamComponent } from './team/team.component';
+import { TicketDetailsComponent } from './ticket-details/ticket-details.component';
+import { CreateTeamComponent } from './team-details/create-team/create-team.component';
 import { ProfileComponent } from './profile/profile.component';
 import { ProfessorDashboardComponent } from './professor-dashboard/professor-dashboard.component';
 import { AdminDashboardComponent } from './admin-dashboard/admin-dashboard.component';
@@ -23,6 +23,9 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatIconModule } from '@angular/material/icon';
+import { TeamDetailsComponent } from './team-details/team-details.component';
+import { MatListModule } from '@angular/material/list';
+import { MatToolbarModule } from '@angular/material/toolbar';
 
 @NgModule({
   declarations: [
@@ -32,12 +35,13 @@ import { MatIconModule } from '@angular/material/icon';
     LoginComponent,
     RegisterComponent,
     ResetComponent,
-    ProjectTicketComponent,
-    TeamComponent,
+    TicketDetailsComponent,
+    CreateTeamComponent,
     ProfileComponent,
     ProfessorDashboardComponent,
     AdminDashboardComponent,
     NotFoundComponent,
+    TeamDetailsComponent,
   ],
   imports: [
     CommonModule,
@@ -52,6 +56,8 @@ import { MatIconModule } from '@angular/material/icon';
     MatDialogModule,
     MatInputModule,
     MatIconModule,
+    MatListModule,
+    MatToolbarModule,
   ],
   exports: [
     StudentDashboardComponent,
@@ -60,12 +66,13 @@ import { MatIconModule } from '@angular/material/icon';
     LoginComponent,
     RegisterComponent,
     ResetComponent,
-    ProjectTicketComponent,
-    TeamComponent,
+    TicketDetailsComponent,
+    CreateTeamComponent,
     ProfileComponent,
     ProfessorDashboardComponent,
     NotFoundComponent,
     AdminDashboardComponent,
+    TeamDetailsComponent,
   ],
 })
 export class ModulesModule {}
