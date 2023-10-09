@@ -28,8 +28,8 @@
     <a
       mat-list-item
       [routerLinkActive]="['list-item-active']"
-      routerLink="manage-project"
-      ><mat-icon>create_new_folder</mat-icon> Projects</a
+      routerLink="manage-project/manage"
+      ><mat-icon>create_new_folder</mat-icon> Manage Projects</a
     >
     <a
       mat-list-item
@@ -41,7 +41,10 @@
   <mat-divider> </mat-divider>
   <mat-card>
     <h2 matSubheader>Teams</h2>
-    <a mat-list-item [routerLinkActive]="['list-item-active']" routerLink="team-details"
+    <a
+      mat-list-item
+      [routerLinkActive]="['list-item-active']"
+      routerLink="team-details"
       ><mat-icon>groups</mat-icon> My Team</a
     >
     <a

@@ -14,6 +14,7 @@ import { FlexLayoutModule } from '@angular/flex-layout';
 import { DefaultModule } from './layouts/default/default.module';
 import { FullwidthModule } from './layouts/fullwidth/fullwidth.module';
 import { ModulesModule } from './modules/modules.module';
+import { Router } from '@angular/router';
 
 @NgModule({
   declarations: [AppComponent],
@@ -35,4 +36,10 @@ import { ModulesModule } from './modules/modules.module';
   ],
   bootstrap: [AppComponent],
 })
-export class AppModule {}
+export class AppModule {
+  constructor(router: Router) {
+    router.events.subscribe((e) => {
+      console.log(e);
+    });
+  }
+}

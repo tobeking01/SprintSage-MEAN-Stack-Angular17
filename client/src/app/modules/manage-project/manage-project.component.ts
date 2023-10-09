@@ -2,7 +2,14 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatTableDataSource } from '@angular/material/table';
-import { Router } from '@angular/router';
+import {
+  NavigationCancel,
+  NavigationEnd,
+  NavigationError,
+  NavigationSkipped,
+  NavigationStart,
+  Router,
+} from '@angular/router';
 import {
   trigger,
   transition,
@@ -11,6 +18,7 @@ import {
   query,
   stagger,
 } from '@angular/animations';
+import { Event as RouterEvent } from '@angular/router';
 
 // Service Imports
 import { ProjectService } from 'src/app/services/project.service';
@@ -30,7 +38,6 @@ import { ResponseData, User } from 'src/app/services/model/user.model';
 // Component Imports
 import { CreateProjectComponent } from './create-project/create-project.component';
 import { CreateTeamComponent } from '../team-details/create-team/create-team.component';
-import { ProjectDetailsComponent } from './project-details/project-details.component';
 // HttpErrorResponse for handling HTTP errors
 import { HttpErrorResponse } from '@angular/common/http';
 // Add Subject for unsubscribing from observables
@@ -43,10 +50,14 @@ import { takeUntil } from 'rxjs/operators';
   animations: [
     trigger('listAnimation', [
       transition('* <=> *', [
-        query(':enter', [
-          style({ opacity: 0 }),
-          stagger('50ms', [animate('300ms ease-in', style({ opacity: 1 }))]),
-        ]),
+        query(
+          ':enter',
+          [
+            style({ opacity: 0 }),
+            stagger('50ms', [animate('300ms ease-in', style({ opacity: 1 }))]),
+          ],
+          { optional: true }
+        ),
       ]),
     ]),
   ],
@@ -70,17 +81,37 @@ export class ManageProjectComponent implements OnInit, OnDestroy {
     private dialog: MatDialog,
     private router: Router
   ) {}
-  // Add a private Subject to trigger unSubscription
+  // Private Subject to trigger unSubscription
   private ngUnsubscribe = new Subject<void>();
   ngOnInit(): void {
     this.loadUsers();
     this.loadTeams();
     this.loadProject();
+    this.listenToRouterEvents();
   }
   ngOnDestroy(): void {
     // Emit an event to trigger unSubscription
     this.ngUnsubscribe.next();
     this.ngUnsubscribe.complete();
+  }
+
+  // Test events
+  listenToRouterEvents(): void {
+    this.router.events
+      .pipe(takeUntil(this.ngUnsubscribe))
+      .subscribe((event: RouterEvent) => {
+        if (event instanceof NavigationStart) {
+          console.log('NavigationStart:', event);
+        } else if (event instanceof NavigationEnd) {
+          console.log('NavigationEnd:', event);
+        } else if (event instanceof NavigationCancel) {
+          console.log('NavigationCancel:', event);
+        } else if (event instanceof NavigationError) {
+          console.log('NavigationError:', event);
+        } else if (event instanceof NavigationSkipped) {
+          console.log('NavigationSkipped:', event);
+        }
+      });
   }
 
   private loadUsers(): void {
@@ -161,8 +192,7 @@ export class ManageProjectComponent implements OnInit, OnDestroy {
   }
 
   openProjectDetails(project: ProjectFull): void {
-    this.showProjectDetails = true;
-    this.selectedProject = project;
+    this.router.navigate([`/student-dashboard/project-details/${project._id}`]);
   }
 
   closeProjectDetails(): void {

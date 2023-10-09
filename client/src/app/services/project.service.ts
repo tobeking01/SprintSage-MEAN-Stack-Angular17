@@ -46,9 +46,9 @@ export class ProjectService {
       .pipe(catchError(this.handleError));
   }
 
-  getProjectById(id: string): Observable<SingleProjectRefResponseData> {
+  getProjectById(id: string): Observable<SingleProjectFullResponseData> {
     return this.http
-      .get<SingleProjectRefResponseData>(`${this.apiUrl}getProjectById/${id}`)
+      .get<SingleProjectFullResponseData>(`${this.apiUrl}getProjectById/${id}`)
       .pipe(catchError(this.handleError));
   }
 

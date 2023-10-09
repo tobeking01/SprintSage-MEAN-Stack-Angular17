@@ -53,4 +53,4 @@ const routes: Routes = [
   ],
   exports: [RouterModule],
 })
-export class AddProjectModule {}
+export class CreateProjectModule {}

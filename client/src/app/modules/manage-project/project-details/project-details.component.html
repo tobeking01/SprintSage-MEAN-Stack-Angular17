@@ -1,26 +1,40 @@
-<div class="backdrop" (click)="onClose()"></div>
-
-<div class="project-details-modal">
-  <div class="modal-header">
-    <h2>{{ selectedProject?.projectName }}</h2>
-    <button (click)="onClose()">Close</button>
-  </div>
-  <div class="modal-body">
-    <p>{{ selectedProject?.description }}</p>
-
-    <!-- Teams Section -->
-    <div *ngFor="let team of selectedProject?.teams">
-      <h4>{{ team.teamName }}</h4>
-      <ul>
-        <li *ngFor="let member of team.teamMembers">
-          {{ member.firstName }} {{ member.lastName }}
-        </li>
-      </ul>
+<div class="project-detail">
+  <!-- Top Section -->
+  <div class="top-section">
+    <div class="project-info">
+      <div>
+        Project Name<br />
+        <strong>{{ selectedProject?.projectName }}</strong>
+      </div>
+      <div>
+        Created By: {{ loggedInUser?.userName }}<br />
+        Created At: {{ selectedProject?.createdAt | date }}
+      </div>
     </div>
 
-    <!-- Additional Details -->
-    <p>Number of Tickets: {{ selectedProject?.tickets?.length || 0 }}</p>
-    <p>Start Date: {{ selectedProject?.startDate | date : "MMM d, y" }}</p>
-    <p>End Date: {{ selectedProject?.endDate | date : "MMM d, y" }}</p>
+    <div class="project-actions">
+      <button mat-raised-button (click)="viewMembers()">VIEW MEMBERS</button>
+      <button mat-raised-button (click)="addMembers()">ADD MEMBERS</button>
+      <button mat-raised-button color="warn" (click)="deleteProject()">
+        DELETE PROJECT
+      </button>
+    </div>
+  </div>
+
+  <!-- Second Section -->
+  <div class="ticket-section">
+    <h2>Tickets</h2>
+    <div class="ticket-actions">
+      <mat-form-field class="search-ticket">
+        <mat-icon matPrefix>search</mat-icon>
+        <input matInput placeholder="Search Tickets" />
+      </mat-form-field>
+
+      <mat-form-field class="sort-ticket">
+        <mat-select placeholder="Sort Tickets By"></mat-select>
+      </mat-form-field>
+    </div>
+
+    <button mat-raised-button color="accent">ADD TICKET</button>
   </div>
 </div>

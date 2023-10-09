@@ -1,7 +1,6 @@
 import { NgModule } from '@angular/core';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Routes } from '@angular/router';
 import { DefaultComponent } from './layouts/default/default.component';
-import { StudentDashboardComponent } from './modules/student-dashboard/student-dashboard.component';
 import { FullwidthComponent } from './layouts/fullwidth/fullwidth.component';
 import { HomeComponent } from './modules/home/home.component';
 import { LoginComponent } from './modules/login/login.component';
@@ -9,7 +8,6 @@ import { RegisterComponent } from './modules/register/register.component';
 import { TicketDetailsComponent } from './modules/ticket-details/ticket-details.component';
 import { CreateTeamComponent } from './modules/team-details/create-team/create-team.component';
 import { ProfileComponent } from './modules/profile/profile.component';
-import { Routes } from '@angular/router';
 import { ForgetPasswordComponent } from './modules/forget-password/forget-password.component';
 import { ProfessorDashboardComponent } from './modules/professor-dashboard/professor-dashboard.component';
 import { RoleGuard } from './services/role.guard';
@@ -24,16 +22,18 @@ const routes: Routes = [
     component: DefaultComponent,
     children: [
       {
-        path: 'student-dashboard',
-        component: StudentDashboardComponent,
-      },
-      {
         path: 'manage-project',
         loadChildren: () =>
           import('./modules/manage-project/manage-project.module').then(
             (m) => m.ManageProjectModule
           ),
-        // component: ManageProjectComponent,
+      },
+      {
+        path: 'project-details/:projectId',
+        loadChildren: () =>
+          import(
+            './modules/manage-project/project-details/project-details.module'
+          ).then((m) => m.ProjectDetailsModule),
       },
       {
         path: 'ticket-details',
@@ -89,7 +89,6 @@ const routes: Routes = [
         path: 'reset',
         component: ResetComponent,
       },
-      { path: '', redirectTo: 'home', pathMatch: 'full' }, // redirect to `first-component`
       {
         path: '**',
         component: NotFoundComponent,
@@ -99,8 +98,8 @@ const routes: Routes = [
 ];
 
 @NgModule({
-  // imports: [RouterModule.forRoot(routes, { enableTracing: true })], // for debugging
-  imports: [RouterModule.forRoot(routes)],
+  imports: [RouterModule.forRoot(routes, { enableTracing: true })], // for debugging
+  // imports: [RouterModule.forRoot(routes)],
 
   exports: [RouterModule],
 })

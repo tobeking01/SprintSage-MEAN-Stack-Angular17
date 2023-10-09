@@ -23,51 +23,19 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ProjectDetailsModule } from './project-details/project-details.module';
+import { CreateProjectModule } from './create-project/create-project.module';
 
 // routes
 const routes: Routes = [
   {
-    path: '',
+    path: 'manage',
     component: ManageProjectComponent,
-    children: [
-      {
-        path: 'add-project',
-        loadChildren: () =>
-          import('./create-project/create-project.module').then(
-            (m) => m.AddProjectModule
-          ),
-      },
-      {
-        path: 'project-details',
-        loadChildren: () =>
-          import('./project-details/project-details.module').then(
-            (m) => m.ProjectDetailsModule
-          ),
-      },
-    ],
   },
 ];
 
 @NgModule({
   declarations: [ManageProjectComponent],
-  exports: [
-    MatCardModule,
-    MatToolbarModule,
-    MatButtonModule,
-    MatMenuModule,
-    MatFormFieldModule,
-    MatTableModule,
-    MatPaginatorModule,
-    MatInputModule,
-    ReactiveFormsModule,
-    MatDatepickerModule,
-    MatNativeDateModule,
-    MatSortModule,
-    MatListModule,
-    MatSelectModule,
-    MatDialogModule,
-    MatTooltipModule,
-  ],
+  exports: [],
   imports: [
     CommonModule,
     RouterModule.forChild(routes),
@@ -91,6 +59,7 @@ const routes: Routes = [
     MatDialogModule,
     MatTooltipModule,
     ProjectDetailsModule,
+    CreateProjectModule,
   ],
 })
 export class ManageProjectModule {}
