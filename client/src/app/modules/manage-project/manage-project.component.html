@@ -71,6 +71,7 @@
               *ngFor="let project of MyDataSource.data"
               class="project-item"
               @listAnimation
+              (click)="openProjectDetails(project)"
             >
               <h3>{{ project.projectName }}</h3>
               <p>{{ project.description }}</p>
@@ -121,4 +122,10 @@
       </div>
     </div>
   </div>
+  <!-- display project -->
+  <app-project-details
+    *ngIf="showProjectDetails"
+    [selectedProject]="selectedProject"
+    (close)="closeProjectDetails()"
+  ></app-project-details>
 </div>

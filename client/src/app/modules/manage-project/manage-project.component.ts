@@ -30,7 +30,7 @@ import { ResponseData, User } from 'src/app/services/model/user.model';
 // Component Imports
 import { CreateProjectComponent } from './create-project/create-project.component';
 import { CreateTeamComponent } from '../team-details/create-team/create-team.component';
-
+import { ProjectDetailsComponent } from './project-details/project-details.component';
 // HttpErrorResponse for handling HTTP errors
 import { HttpErrorResponse } from '@angular/common/http';
 // Add Subject for unsubscribing from observables
@@ -60,6 +60,8 @@ export class ManageProjectComponent implements OnInit, OnDestroy {
   teamDetails: { [key: string]: Team } = {};
   users: User[] = [];
   teams: TeamPopulated[] = [];
+  showProjectDetails: boolean = false;
+  selectedProject: ProjectFull | null = null;
 
   constructor(
     private projectService: ProjectService,
@@ -156,6 +158,16 @@ export class ManageProjectComponent implements OnInit, OnDestroy {
         if (val) this.loadProject();
       },
     });
+  }
+
+  openProjectDetails(project: ProjectFull): void {
+    this.showProjectDetails = true;
+    this.selectedProject = project;
+  }
+
+  closeProjectDetails(): void {
+    this.showProjectDetails = false;
+    this.selectedProject = null;
   }
 
   applyFilter(event: Event): void {

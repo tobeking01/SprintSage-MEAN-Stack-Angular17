@@ -1,8 +1,26 @@
-<div class="project-details-container">
-  <div class="project-header">
-    <!-- Display project details and options to Add Members, Delete Project etc. -->
+<div class="backdrop" (click)="onClose()"></div>
+
+<div class="project-details-modal">
+  <div class="modal-header">
+    <h2>{{ selectedProject?.projectName }}</h2>
+    <button (click)="onClose()">Close</button>
   </div>
-  <div class="ticket-section">
-    <!-- Ticket Header, Search Bar, Add Ticket Button and Ticket List -->
+  <div class="modal-body">
+    <p>{{ selectedProject?.description }}</p>
+
+    <!-- Teams Section -->
+    <div *ngFor="let team of selectedProject?.teams">
+      <h4>{{ team.teamName }}</h4>
+      <ul>
+        <li *ngFor="let member of team.teamMembers">
+          {{ member.firstName }} {{ member.lastName }}
+        </li>
+      </ul>
+    </div>
+
+    <!-- Additional Details -->
+    <p>Number of Tickets: {{ selectedProject?.tickets?.length || 0 }}</p>
+    <p>Start Date: {{ selectedProject?.startDate | date : "MMM d, y" }}</p>
+    <p>End Date: {{ selectedProject?.endDate | date : "MMM d, y" }}</p>
   </div>
 </div>

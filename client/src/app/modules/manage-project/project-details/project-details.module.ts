@@ -13,5 +13,6 @@ const routes: Routes = [
 @NgModule({
   declarations: [ProjectDetailsComponent],
   imports: [CommonModule],
+  exports: [ProjectDetailsComponent],
 })
 export class ProjectDetailsModule {}
