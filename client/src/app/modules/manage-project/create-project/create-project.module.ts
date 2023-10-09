@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Routes } from '@angular/router';
-import { AddProjectComponent } from './add-project.component';
+import { CreateProjectComponent } from './create-project.component';
 
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -24,12 +24,12 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 const routes: Routes = [
   {
     path: '',
-    component: AddProjectComponent,
+    component: CreateProjectComponent,
   },
 ];
 
 @NgModule({
-  declarations: [AddProjectComponent],
+  declarations: [CreateProjectComponent],
   imports: [
     CommonModule,
     RouterModule.forChild(routes),

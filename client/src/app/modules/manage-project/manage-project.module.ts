@@ -32,7 +32,7 @@ const routes: Routes = [
       {
         path: 'add-project',
         loadChildren: () =>
-          import('./add-project/add-project.module').then(
+          import('./create-project/create-project.module').then(
             (m) => m.AddProjectModule
           ),
       },

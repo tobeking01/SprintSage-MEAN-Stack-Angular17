@@ -28,7 +28,7 @@ import {
 import { ResponseData, User } from 'src/app/services/model/user.model';
 
 // Component Imports
-import { AddProjectComponent } from './add-project/add-project.component';
+import { CreateProjectComponent } from './create-project/create-project.component';
 import { CreateTeamComponent } from '../team-details/create-team/create-team.component';
 
 // HttpErrorResponse for handling HTTP errors
@@ -150,7 +150,7 @@ export class ManageProjectComponent implements OnInit, OnDestroy {
   }
 
   openAddEditProjectDialog(): void {
-    const dialogRef = this.dialog.open(AddProjectComponent);
+    const dialogRef = this.dialog.open(CreateProjectComponent);
     dialogRef.afterClosed().subscribe({
       next: (val) => {
         if (val) this.loadProject();

@@ -6,8 +6,6 @@ import {
   FormArray,
   FormControl,
 } from '@angular/forms';
-import { Subscription } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
 import { Subject } from 'rxjs';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
@@ -19,25 +17,22 @@ import { TeamService } from 'src/app/services/team.service';
 
 import { ResponseData, User } from 'src/app/services/model/user.model';
 import {
-  Team,
-  SingleTeamResponseData,
   MultipleTeamsResponseData,
   TeamPopulated,
 } from 'src/app/services/model/team.model';
 import {
   MultipleProjectsFullResponseData,
   ProjectFull,
-  ProjectRef,
   SingleProjectFullResponseData,
   SingleProjectRefResponseData,
 } from 'src/app/services/model/project.model';
 
 @Component({
-  selector: 'app-add-project',
-  templateUrl: './add-project.component.html',
-  styleUrls: ['./add-project.component.scss'],
+  selector: 'app-create-project',
+  templateUrl: './create-project.component.html',
+  styleUrls: ['./create-project.component.scss'],
 })
-export class AddProjectComponent implements OnInit, OnDestroy {
+export class CreateProjectComponent implements OnInit, OnDestroy {
   projectForm!: FormGroup;
   users: User[] = [];
   teams: TeamPopulated[] = [];
@@ -51,7 +46,7 @@ export class AddProjectComponent implements OnInit, OnDestroy {
     private userService: UserService,
     private teamService: TeamService,
     private snackBar: MatSnackBar,
-    private dialogRef: MatDialogRef<AddProjectComponent>,
+    private dialogRef: MatDialogRef<CreateProjectComponent>,
     @Inject(MAT_DIALOG_DATA) public data: ProjectFull
   ) {}
 
