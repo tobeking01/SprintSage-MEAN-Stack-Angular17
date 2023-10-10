@@ -9,6 +9,7 @@ import {
   addUserToTeam,
   getTeamByProjectId,
   getTeamsByUserId,
+  getProjectsByTeamId,
 } from "../controllers/team.controller.js";
 
 const router = express.Router();
@@ -21,6 +22,9 @@ const router = express.Router();
 // router.post("/createTeam", verifyToken, createTeam);
 
 router.post("/createTeam", createTeam); // test
+
+// Get projects associated with a specific team
+router.get("/projectsByTeam/:teamId", getProjectsByTeamId);
 
 /**
  * GET /teams

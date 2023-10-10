@@ -17,21 +17,4 @@ body {
 // added
 @import "~@angular/material/prebuilt-themes/deeppurple-amber.css";
 
-// mat-dialog
-.confirmation-dialog .mat-dialog-content {
-  color: #333;
-  font-size: 16px;
-}
-
-.confirmation-dialog .mat-dialog-actions {
-  justify-content: flex-end;
-}
-.cdk-overlay-dark-backdrop {
-  background: rgba(
-    0,
-    0,
-    0,
-    0.8
-  ); /* you can change rgba values to change overlay color and transparency */
-}
 /* End Table Class */

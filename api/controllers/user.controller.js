@@ -257,3 +257,18 @@ export const updateProfile = async (req, res, next) => {
     next(sendError(res, 500, "Error updating user profile."));
   }
 };
+
+export const getRoleMappings = async (req, res, next) => {
+  try {
+    const roles = await Role.find();
+    const mappings = {};
+    roles.forEach((role) => {
+      mappings[role._id] = role.name;
+    });
+    console.log("Role mappings:", mappings);
+    sendSuccess(res, 200, "Role Mappings Retrieved Successfully!", mappings);
+  } catch (error) {
+    console.error("Error fetching role mappings:", error);
+    sendError(res, 500, "Internal Server Error while fetching role mappings!");
+  }
+};

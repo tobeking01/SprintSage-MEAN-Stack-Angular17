@@ -20,7 +20,7 @@ export interface Team {
 }
 
 export interface TeamPopulated {
-  _id?: string;
+  _id: string;
   teamName: string;
   teamMembers: User[];
   projects?: ProjectRef[]; // Assuming you have a Project interface, you can replace this with the appropriate type

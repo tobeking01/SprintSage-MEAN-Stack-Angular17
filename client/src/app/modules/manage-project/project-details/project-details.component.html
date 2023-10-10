@@ -3,25 +3,100 @@
   <div class="top-section">
     <div class="project-info">
       <div>
-        Project Name<br />
-        <strong>{{ selectedProject?.projectName }}</strong>
+        <strong>Project Name</strong>
+        <p>{{ selectedProject?.projectName }}</p>
       </div>
       <div>
-        Created By: {{ loggedInUser?.userName }}<br />
-        Created At: {{ selectedProject?.createdAt | date }}
+        <strong>Created By:</strong> {{ loggedInUser?.userName }}
+        <br />
+        <strong>Created At:</strong> {{ selectedProject?.createdAt | date }}
       </div>
     </div>
-
     <div class="project-actions">
-      <button mat-raised-button (click)="viewMembers()">VIEW MEMBERS</button>
-      <button mat-raised-button (click)="addMembers()">ADD MEMBERS</button>
+      <button
+        mat-raised-button
+        color="accent"
+        (click)="toggleMembersVisibility()"
+      >
+        {{ membersVisible ? "HIDE MEMBERS" : "VIEW MEMBERS" }}
+      </button>
+
+      <button mat-raised-button color="accent" (click)="addMembers()">
+        ADD MEMBERS
+      </button>
       <button mat-raised-button color="warn" (click)="deleteProject()">
         DELETE PROJECT
       </button>
     </div>
   </div>
 
-  <!-- Second Section -->
+  <!-- Members Section -->
+  <div *ngIf="membersVisible && projectMembers.length > 0 && roleNames">
+    <h3>Members of {{ selectedProject?.projectName }}</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>First Name</th>
+          <th>Last Name</th>
+          <th>Username</th>
+          <th>Role</th>
+          <th>Date Added to Project</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let member of projectMembers">
+          <td>{{ member.firstName }}</td>
+          <td>{{ member.lastName }}</td>
+          <td>{{ member.userName }}</td>
+          <td>{{ getRoleName(member.roles) }}</td>
+          <!-- Assuming a user can have multiple roles -->
+          <td>{{ selectedProject?.createdAt | date }}</td>
+          <!-- Assuming you added a dateAdded property to each member in the project -->
+          <td>
+            <button (click)="removeMemberFromProject(member)">Remove</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Team Members Selection -->
+  <form [formGroup]="addMemberForm" (ngSubmit)="saveTeamsToProject()">
+    <div formArrayName="teamMembers">
+      <div
+        *ngFor="let memberCtrl of teamMembersControls; let i = index"
+        class="member-row"
+      >
+        <mat-form-field class="full-width">
+          <mat-label>Team Members</mat-label>
+          <mat-select
+            [formControl]="memberCtrl"
+            placeholder="Select Member Name"
+          >
+            <mat-option *ngFor="let user of users" [value]="user.id">
+              {{ user.firstName }} {{ user.lastName }}
+            </mat-option>
+          </mat-select>
+          <mat-error *ngIf="memberCtrl.hasError('required')">
+            Name is required!
+          </mat-error>
+        </mat-form-field>
+        <button
+          mat-icon-button
+          color="warn"
+          (click)="removeMembers(i)"
+          aria-label="Remove member"
+        >
+          <mat-icon>delete</mat-icon>
+        </button>
+      </div>
+      <button mat-button (click)="addMembers()">+ Add Another Member</button>
+    </div>
+    <button mat-raised-button color="accent" type="submit">Save Members</button>
+  </form>
+
+  <!-- Tickets Section -->
   <div class="ticket-section">
     <h2>Tickets</h2>
     <div class="ticket-actions">
@@ -29,12 +104,10 @@
         <mat-icon matPrefix>search</mat-icon>
         <input matInput placeholder="Search Tickets" />
       </mat-form-field>
-
       <mat-form-field class="sort-ticket">
         <mat-select placeholder="Sort Tickets By"></mat-select>
       </mat-form-field>
     </div>
-
     <button mat-raised-button color="accent">ADD TICKET</button>
   </div>
 </div>

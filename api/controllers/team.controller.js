@@ -3,6 +3,7 @@ import Project from "../models/Project.js";
 import { sendError, sendSuccess } from "../utils/createResponse.js";
 import mongoose from "mongoose";
 import User from "../models/User.js";
+const ObjectId = mongoose.Types.ObjectId;
 
 const validateObjectIds = (ids) => {
   return ids.every((id) => mongoose.Types.ObjectId.isValid(id));
@@ -109,7 +110,7 @@ export const getTeamsByUserId = async (req, res, next) => {
     }
 
     const teams = await Team.find({
-      teamMembers: mongoose.Types.ObjectId(userId),
+      teamMembers: new ObjectId(userId),
     })
       .populate("teamMembers")
       .populate({
@@ -252,6 +253,35 @@ export const getTeamByProjectId = async (req, res, next) => {
     return sendSuccess(res, 200, "Teams fetched successfully!", teams);
   } catch (error) {
     console.error("Error fetching teams by project ID:", error);
+    sendError(res, 500, "Internal Server Error!");
+  }
+};
+
+// Controller to get projects by a specific team ID.
+export const getProjectsByTeamId = async (req, res, next) => {
+  try {
+    const { teamId } = req.params;
+
+    // Find team by ID to get its associated projects
+    const team = await Team.findById(teamId).populate("projects");
+
+    if (!team) {
+      return sendError(res, 404, "Team not found.");
+    }
+
+    // Check if team has projects
+    if (!team.projects || team.projects.length === 0) {
+      return sendError(res, 404, "No projects associated with this team.");
+    }
+
+    return sendSuccess(
+      res,
+      200,
+      "Projects fetched successfully!",
+      team.projects
+    );
+  } catch (error) {
+    console.error("Error fetching projects by team ID:", error);
     sendError(res, 500, "Internal Server Error!");
   }
 };

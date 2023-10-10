@@ -68,3 +68,7 @@ export interface MultipleProjectsFullResponseData {
   message: string;
   data: ProjectFull[];
 }
+
+export interface projectAddTeamsData {
+  teams: string[];
+}

@@ -15,12 +15,17 @@ import { AdminDashboardComponent } from './modules/admin-dashboard/admin-dashboa
 import { ResetComponent } from './modules/reset/reset.component';
 import { NotFoundComponent } from './modules/not-found/not-found.component';
 import { TeamDetailsComponent } from './modules/team-details/team-details.component';
+import { StudentDashboardComponent } from './modules/student-dashboard/student-dashboard.component';
 
 const routes: Routes = [
   {
-    path: 'student-dashboard',
+    path: '',
     component: DefaultComponent,
     children: [
+      {
+        path: 'student-dashboard', // This empty path represents the default child route
+        component: StudentDashboardComponent,
+      },
       {
         path: 'manage-project',
         loadChildren: () =>

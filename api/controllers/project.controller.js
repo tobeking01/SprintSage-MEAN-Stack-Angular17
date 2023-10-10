@@ -4,6 +4,25 @@ import Team from "../models/Team.js";
 import Ticket from "../models/Ticket.js"; // Import the Ticket model at the top of your file
 import { sendError, sendSuccess } from "../utils/createResponse.js";
 
+// validate date format
+const isValidDate = (dateString) => {
+  const date = new Date(dateString);
+  return date instanceof Date && !isNaN(date);
+};
+
+// populate 1
+const getProjectByIdHelper = async (id) => {
+  return await Project.findById(id)
+    .populate({
+      path: "teams",
+      populate: {
+        path: "teamMembers",
+        model: "User",
+      },
+    })
+    .populate("tickets");
+};
+
 /**
  * Controller to create a new project.
  * @async
@@ -38,7 +57,6 @@ export const createProject = async (req, res, next) => {
       return sendError(res, 400, "A project with this name already exists.");
     }
 
-    // Validate teams. Ensure they are valid IDs and exist in the database.
     if (!Array.isArray(teams)) {
       return sendError(res, 400, "Teams must be an array.");
     }
@@ -71,20 +89,13 @@ export const createProject = async (req, res, next) => {
     sendSuccess(res, 201, "Project Created!", [newProject]);
   } catch (error) {
     console.error("Error creating project:", error);
-    sendError(res, 500, "Internal Server Error!");
+    next(sendError(res, 500, "Internal Server Error!"));
   }
 };
-
-// Function to validate date format
-function isValidDate(dateString) {
-  const date = new Date(dateString);
-  return date instanceof Date && !isNaN(date);
-}
 
 // Controller to get all projects
 export const getAllProjects = async (req, res, next) => {
   try {
-    // Find projects and populate the "teams" field, as well as "teamMembers" within each team
     const projects = await Project.find().populate({
       path: "teams",
       populate: {
@@ -94,16 +105,13 @@ export const getAllProjects = async (req, res, next) => {
     });
 
     if (!projects.length) {
-      console.warn("Warning: No projects found!"); // Logging the absence of projects
       return sendError(res, 404, "No projects found!");
     }
 
-    console.info(`Fetched all projects successfully.`); // Logging success in retrieval
-
     sendSuccess(res, 200, "Projects fetched successfully!", projects);
   } catch (error) {
-    console.error("Error fetching projects:", error); // Detailed error logging
-    return next(sendError(res, 500, "Internal Server Error!"));
+    console.error("Error fetching projects:", error);
+    next(sendError(res, 500, "Internal Server Error!"));
   }
 };
 
@@ -111,16 +119,7 @@ export const getAllProjects = async (req, res, next) => {
 export const getProjectById = async (req, res, next) => {
   try {
     const { id } = req.params;
-
-    const project = await Project.findById(id)
-      .populate({
-        path: "teams",
-        populate: {
-          path: "teamMembers",
-          model: "User",
-        },
-      })
-      .populate("tickets");
+    const project = await getProjectByIdHelper(id);
 
     if (!project) {
       return sendError(res, 404, "Project not found!");
@@ -129,10 +128,11 @@ export const getProjectById = async (req, res, next) => {
     sendSuccess(res, 200, "Project fetched successfully!", [project]);
   } catch (error) {
     console.error("Error fetching project:", error);
-    sendError(res, 500, "Internal Server Error!");
+    next(sendError(res, 500, "Internal Server Error!"));
   }
 };
 
+// function
 export const updateProjectById = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -208,6 +208,47 @@ export const deleteProjectById = async (req, res, next) => {
     ]);
   } catch (error) {
     console.error("Error deleting project:", error);
+    sendError(res, 500, "Internal Server Error!");
+  }
+};
+
+// Controller to add members (via teams) to a specific project by its ID.
+export const addMembersToProject = async (req, res, next) => {
+  try {
+    const { id } = req.params; // Extract project ID from route parameters.
+    const { teamIds } = req.body; // Extract the team IDs from the request body.
+
+    if (!Array.isArray(teamIds)) {
+      return sendError(res, 400, "Team IDs must be an array.");
+    }
+
+    // Fetch the existing project.
+    const existingProject = await Project.findById(id);
+    if (!existingProject) {
+      return sendError(res, 404, "Project not found!");
+    }
+
+    // Fetch all provided teams.
+    const teams = await Team.find({ _id: { $in: teamIds } });
+    if (teams.length !== teamIds.length) {
+      return sendError(res, 400, "One or more teams are invalid.");
+    }
+
+    // Add teams to the project, ensuring there are no duplicates.
+    existingProject.teams = [
+      ...new Set([...existingProject.teams, ...teamIds]),
+    ];
+
+    await existingProject.save();
+
+    return sendSuccess(
+      res,
+      200,
+      "Teams (and their members) added to project successfully!",
+      [existingProject]
+    );
+  } catch (error) {
+    console.error("Error adding teams to project:", error);
     sendError(res, 500, "Internal Server Error!");
   }
 };

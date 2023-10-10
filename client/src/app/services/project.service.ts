@@ -8,6 +8,7 @@ import {
   MultipleProjectsFullResponseData,
   SingleProjectFullResponseData,
   SingleProjectRefResponseData,
+  projectAddTeamsData,
 } from './model/project.model';
 
 @Injectable({
@@ -48,7 +49,7 @@ export class ProjectService {
 
   getProjectById(id: string): Observable<SingleProjectFullResponseData> {
     return this.http
-      .get<SingleProjectFullResponseData>(`${this.apiUrl}getProjectById/${id}`)
+      .get<SingleProjectFullResponseData>(`${this.apiUrl}project/${id}`)
       .pipe(catchError(this.handleError));
   }
 
@@ -67,6 +68,15 @@ export class ProjectService {
   deleteProjectById(id: string): Observable<void> {
     return this.http
       .delete<void>(`${this.apiUrl}deleteProjectById/${id}`)
+      .pipe(catchError(this.handleError));
+  }
+  addTeamsToProject(
+    projectId: string,
+    teamIds: string[]
+  ): Observable<SingleProjectRefResponseData> {
+    const endpointUrl = `${this.apiUrl}project/${projectId}/addTeams`;
+    return this.http
+      .put<SingleProjectRefResponseData>(endpointUrl, { teams: teamIds })
       .pipe(catchError(this.handleError));
   }
 }

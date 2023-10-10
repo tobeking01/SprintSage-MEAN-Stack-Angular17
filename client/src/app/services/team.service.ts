@@ -10,6 +10,7 @@ import {
   MultipleTeamsResponseData,
   TeamPopulated,
 } from './model/team.model';
+import { MultipleProjectsFullResponseData } from './model/project.model';
 
 @Injectable({
   providedIn: 'root',
@@ -79,6 +80,16 @@ export class TeamService {
     return this.http.get<SingleTeamResponseData>(
       `${this.apiUrl}teamsByProject/${projectId}`
     );
+  }
+
+  getProjectsByTeamId(
+    teamId: string
+  ): Observable<MultipleProjectsFullResponseData> {
+    return this.http
+      .get<MultipleProjectsFullResponseData>(
+        `${this.apiUrl}projectsByTeam/${teamId}`
+      )
+      .pipe(catchError(this.handleError));
   }
 
   getTeamsByUserId(userId: string): Observable<MultipleTeamsResponseData> {

@@ -10,6 +10,7 @@ import {
   getProjectById,
   updateProjectById,
   deleteProjectById,
+  addMembersToProject,
 } from "../controllers/project.controller.js";
 
 // Initialize a new instance of express router.
@@ -62,6 +63,9 @@ router.put("/project/:id", updateProjectById);
 // );
 
 router.delete("/project/:id", deleteProjectById);
+
+// New route for adding members to a project
+router.put("/project/:id/addTeams", addMembersToProject);
 
 // Exporting the router.
 export default router;

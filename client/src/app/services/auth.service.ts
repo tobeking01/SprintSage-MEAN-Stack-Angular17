@@ -29,6 +29,9 @@ export class AuthService {
   get currentUserValue(): User | null {
     return this.currentUserSubject.value;
   }
+  getCurrentUserId(): string | null {
+    return this.currentUserValue?.id || null;
+  }
 
   private loadUserFromStorage(): void {
     const user = sessionStorage.getItem(USER_KEY);

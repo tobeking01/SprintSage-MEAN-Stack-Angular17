@@ -36,7 +36,7 @@
               [formControl]="memberCtrl"
               placeholder="Select Member Name"
             >
-              <mat-option *ngFor="let user of users" [value]="user._id">
+              <mat-option *ngFor="let user of users" [value]="user.id">
                 {{ user.firstName }} {{ user.lastName }}
               </mat-option>
             </mat-select>

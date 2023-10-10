@@ -7,6 +7,7 @@ import {
   updateUser,
   deleteUser,
   getUsersForTeam,
+  getRoleMappings,
 } from "../controllers/user.controller.js";
 
 // Initialize a new instance of the express router.
@@ -65,6 +66,8 @@ router.get("/getUsersForTeam", getUsersForTeam);
 // router.delete("/deleteUser/:id", verifyToken, deleteUser);
 
 router.delete("/deleteUser/:id", deleteUser);
+
+router.get("/role-mappings", getRoleMappings);
 
 // Export the router for use in other parts of the application.
 export default router;
