@@ -1,6 +1,6 @@
 // Interface to define the structure of User
 export interface User {
-  id?: string;
+  _id?: string;
   firstName: string;
   lastName: string;
   userName: string;
@@ -16,6 +16,7 @@ export interface User {
   professorTitle?: string;
   professorDepartment?: string;
 
+  token?: string;
   // Timestamps
   createdAt?: Date;
   updatedAt?: Date;

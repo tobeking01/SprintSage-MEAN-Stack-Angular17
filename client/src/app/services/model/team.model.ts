@@ -9,7 +9,7 @@ export interface Team {
 
   // An array of user IDs referencing team members
   teamMembers: (string | mongoose.Types.ObjectId)[];
-
+  createdBy: string | mongoose.Types.ObjectId; // User who created the Team
   // An array of project IDs referencing associated projects
   projects?: (string | mongoose.Types.ObjectId)[];
 
@@ -23,7 +23,8 @@ export interface TeamPopulated {
   _id: string;
   teamName: string;
   teamMembers: User[];
-  projects?: ProjectRef[]; // Assuming you have a Project interface, you can replace this with the appropriate type
+  createdBy: User; // User who created the Team
+  projects?: ProjectRef[];
   createdAt?: Date;
   updatedAt?: Date;
   __v?: number;

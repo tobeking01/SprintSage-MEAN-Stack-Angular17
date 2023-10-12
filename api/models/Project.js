@@ -29,7 +29,12 @@ const ProjectSchema = new Schema(
         type: mongoose.Schema.Types.ObjectId,
         ref: "Ticket", // Reference to the "Ticket" ObjectIds
       },
-    ],
+    ], // user who created the project
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
     // Start date for the project with default as the current date
     startDate: {
       type: Date,
@@ -61,7 +66,7 @@ ProjectSchema.path("endDate").validate(function (value) {
 //   try {
 //     // If you had logic to delete associated tickets when a project is deleted, it would be here
 //     // Example: Removing all tickets associated with this project
-//     // const tickets = await this.model("Ticket").find({ project: this._id });
+//     // const tickets = await mongoose.model("Ticket").find({ project: this._id });
 //     // for (let ticket of tickets) {
 //     //   await ticket.remove();
 //     // }
@@ -90,7 +95,7 @@ ProjectSchema.path("endDate").validate(function (value) {
 //       // If the ticket's user is not part of any of the new project teams
 //       const user = await mongoose
 //         .model("User")
-//         .findById(ticket.submittedByUser);
+//         .findById(ticket.user);
 //       if (!user.teams.some((team) => this.teams.includes(team))) {
 //         // Logic to notify the user, team, or the project manager about this ticket would go here
 //       }

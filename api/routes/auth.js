@@ -6,12 +6,14 @@ import {
   registerAdmin,
   sendEmail,
   resetPassword,
+  getAuthenticatedUserProfile,
+  logout,
 } from "../controllers/auth.controller.js";
 import {
   validateStudentProfessor,
   validateLogin,
   verifyToken,
-} from "../utils/verify-validate.js";
+} from "../middleware/verify-validate.js";
 // Initialize the router from the express module.
 const router = express.Router();
 
@@ -21,7 +23,7 @@ router.post("/register", validateStudentProfessor, registerStudentProfessor);
 
 // Setup the POST route for user login.
 // The validateLogin middleware is called first to ensure the request data is valid.
-router.post("/login", verifyToken, validateLogin, login);
+router.post("/login", validateLogin, login);
 
 // validate Admin
 router.post("/register-admin", registerAdmin);
@@ -31,6 +33,9 @@ router.post("/register-admin", registerAdmin);
 router.post("/send-email", sendEmail);
 
 router.post("/reset", resetPassword);
+router.post("/logout", logout);
 
+// ... in your route
+router.get("/profile", verifyToken, getAuthenticatedUserProfile);
 // Export the router for use in other parts of the application.
 export default router;

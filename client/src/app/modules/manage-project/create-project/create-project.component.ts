@@ -82,7 +82,7 @@ export class CreateProjectComponent implements OnInit, OnDestroy {
   }
   loadUsers() {
     console.log('Fetching users...');
-    this.userService.getAllUsers().subscribe(
+    this.userService.getLoggedInUserDetails().subscribe(
       (response: ResponseData) => {
         this.users = response.data[0];
         console.log('Users fetched:', this.users);
@@ -94,7 +94,7 @@ export class CreateProjectComponent implements OnInit, OnDestroy {
   }
 
   loadTeams(): void {
-    this.teamService.getAllTeams().subscribe(
+    this.teamService.getTeamsByUserId().subscribe(
       (response: MultipleTeamsResponseData) => {
         if (Array.isArray(response.data)) {
           this.teams = response.data;
@@ -111,7 +111,7 @@ export class CreateProjectComponent implements OnInit, OnDestroy {
   }
 
   loadProjects() {
-    this.projectService.getAllProjects().subscribe(
+    this.projectService.getProjectsByUserId().subscribe(
       (
         response:
           | SingleProjectFullResponseData

@@ -1,8 +1,6 @@
 import express from "express";
 import {
   createTeam,
-  getAllTeams,
-  getTeamById,
   updateTeamById,
   deleteTeamById,
   removeUserFromTeam,
@@ -11,56 +9,61 @@ import {
   getTeamsByUserId,
   getProjectsByTeamId,
 } from "../controllers/team.controller.js";
+import {
+  verifyToken,
+  requireRoles,
+  ROLES,
+} from "../middleware/verify-validate.js";
 
 const router = express.Router();
 
-/**
- * POST /teams
- * Route to create a new team. Requires admin privileges.
- * It uses 'createTeam' method from Team Controller.
- */
-// router.post("/createTeam", verifyToken, createTeam);
+// Middleware for verifying tokens
+// Middleware for verifying tokens
+const selfRoles = requireRoles([ROLES.STUDENT, ROLES.PROFESSOR, ROLES.ADMIN]);
+const selfRoleAdmin = requireRoles([ROLES.ADMIN]);
 
-router.post("/createTeam", createTeam); // test
+// Route to create a new team. Requires self/Admin privileges.
+router.post("/createTeam", verifyToken, selfRoles, createTeam);
 
-// Get projects associated with a specific team
-router.get("/projectsByTeam/:teamId", getProjectsByTeamId);
+// Get all teams
+router.get("/getTeamsByUserId", verifyToken, getTeamsByUserId);
 
-/**
- * GET /teams
- * Route to get all teams. It uses 'getAllTeams' method from Team Controller.
- */
-// router.get("/getAllTeams", verifyToken, getAllTeams);
+// Update a team by its ID
+router.put("/updateTeamById/:id", verifyToken, updateTeamById);
 
-router.get("/getAllTeams", getAllTeams); // test
-router.get("/teamsByUser/:userId", getTeamsByUserId);
-
-/**
- * GET /teams/:id
- * Route to get a specific team by its ID.
- * It uses 'getTeamById' method from Team Controller.
- */
-// Get team by its ID
-router.get("/getTeamById/:id", getTeamById);
-
-// Update team by its ID
-router.put("/updateTeamById/:id", updateTeamById);
-
-// Remove a user from a team
-router.post("/team/:teamId/removeUser/:userId", removeUserFromTeam);
+// Delete a team by its ID. Requires self/Admin privileges.
+router.delete(
+  "/deleteTeamById/:id",
+  verifyToken,
+  selfRoleAdmin,
+  deleteTeamById
+);
 
 // Add a user to a team
-router.post("/team/:teamId/addUser/:userId", addUserToTeam);
+router.post(
+  "/addUserToTeam/:teamId/addUser/:userId",
+  verifyToken,
+  addUserToTeam
+);
+
+// Remove a user from a team
+router.post(
+  "/removeUserFromTeam/:teamId/removeUser/:userId",
+  verifyToken,
+  removeUserFromTeam
+);
 
 // Get teams associated with a specific project
-router.get("/teamsByProject/:projectId", getTeamByProjectId);
+router.get("/getTeamByProjectId/:projectId", verifyToken, getTeamByProjectId);
 
-/**
- * DELETE /teams/:id
- * Route to delete a specific team by its ID. Requires admin privileges.
- * It uses 'deleteTeamById' method from Team Controller.
- */
-router.delete("/deleteTeamById/:id", deleteTeamById);
+// Get projects associated with a specific team
+router.get(
+  "/getProjectsByTeamId/:teamId/projects",
+  verifyToken,
+  getProjectsByTeamId
+);
 
-// Export the configured routes to be used in the application.
+// Get teams associated with a specific user
+router.get("/getTeamsByUserId/:userId", verifyToken, getTeamsByUserId);
+
 export default router;

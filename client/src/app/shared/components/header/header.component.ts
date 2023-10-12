@@ -18,7 +18,17 @@ export class HeaderComponent implements OnInit {
     }, 300);
   }
   onLogout() {
-    this.authService.logout(); // Call the logout method from AuthService
-    this.router.navigate(['/login']); // Navigate to login page
+    this.authService.logout().subscribe(
+      () => {
+        // Handle successful logout
+        this.router.navigate(['/login']); // Navigate to login page
+      },
+      (error) => {
+        // Handle error during logout.
+        console.error('Error during logout:', error);
+        //  navigate to the login page.
+        this.router.navigate(['/login']);
+      }
+    );
   }
 }

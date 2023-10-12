@@ -9,6 +9,7 @@ export interface ProjectRef {
   description?: string;
   teams: (string | mongoose.Types.ObjectId)[];
   tickets?: (string | mongoose.Types.ObjectId)[];
+  createdBy: string | mongoose.Types.ObjectId; // User who created the project
   startDate?: Date;
   endDate?: Date;
   createdAt?: Date;
@@ -22,6 +23,7 @@ export interface ProjectFull {
   description?: string;
   teams: TeamPopulated[];
   tickets?: Ticket[];
+  createdBy: string | mongoose.Types.ObjectId; // User who created the project
   startDate?: Date;
   endDate?: Date;
   createdAt?: Date;

@@ -80,5 +80,14 @@ mat-form-field {
   padding: 20px;
 }
 
+.project-card a {
+  color: #007bff; // or any other color
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
 /* Animation Styles */
 // (if there were any additional styles for animation, they would go here)

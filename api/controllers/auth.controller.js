@@ -266,18 +266,44 @@ export const resetPassword = (req, res, next) => {
   });
 };
 
-// signOut
-export const signOut = async (req, res) => {
+// logout
+export const logout = async (req, res) => {
   try {
-    req.session.destroy((err) => {
-      if (err) {
-        console.error("Error destroying session:", err); // Log the error for debugging.
-        return sendError(res, 500, "Error destroying session!");
-      }
-      return res.status(204).send(); // No content to send.
-    });
+    res.clearCookie("access_token");
+    if (req.session) {
+      req.session.destroy((err) => {
+        if (err) {
+          console.error("Error destroying session:", err); // Log the error for debugging.
+          return sendError(res, 500, "Error destroying session!");
+        }
+        return res.status(204).send(); // No content to send.
+      });
+    } else {
+      // If no session is found, still consider it as a successful logout.
+      return res.status(204).send();
+    }
   } catch (err) {
     console.error("Error during sign out:", err); // Log the error for debugging.
     return sendError(res, 500, "Error Signing out!");
+  }
+};
+
+export const getAuthenticatedUserProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.userId);
+    if (!user) {
+      return sendError(res, 404, "User not found");
+    }
+    const userResponse = {
+      firstName: user.firstName,
+      lastName: user.lastName,
+      userName: user.userName,
+      email: user.email,
+      // add any other relevant details
+    };
+    res.json(userResponse);
+  } catch (error) {
+    console.error("Error fetching authenticated user's profile:", error);
+    sendError(res, 500, "Error fetching user profile");
   }
 };

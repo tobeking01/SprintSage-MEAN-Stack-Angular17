@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, map, of, tap } from 'rxjs';
+import { Observable, map, of, tap, throwError } from 'rxjs';
 import { ResponseData, User } from './model/user.model';
+import { catchError } from 'rxjs/operators';
 
 import { apiUrls } from '../api.urls';
 
@@ -14,28 +15,42 @@ export class UserService {
 
   constructor(private http: HttpClient) {}
 
-  getAllUsers(): Observable<ResponseData> {
-    console.log(`Fetching users from URL in User: ${this.apiUrl}getAllUsers`);
-    return this.http.get<ResponseData>(`${this.apiUrl}getAllUsers`);
+  private handleError(error: any): Observable<never> {
+    console.error('An error occurred:', error); // Log to console instead
+    return throwError(error.message || 'Unknown server error in user service');
   }
-
-  getUserById(id: string): Observable<User> {
-    return this.http.get<User>(`${this.apiUrl}getUserById/${id}`);
+  getLoggedInUserDetails(): Observable<ResponseData> {
+    console.log(
+      `Fetching users from URL in User: ${this.apiUrl}getLoggedInUserDetails`
+    );
+    return this.http
+      .get<ResponseData>(`${this.apiUrl}getLoggedInUserDetails`)
+      .pipe(catchError(this.handleError));
   }
 
   createUser(user: User): Observable<User> {
-    return this.http.post<User>(`${this.apiUrl}createUser`, user);
+    return this.http
+      .post<User>(`${this.apiUrl}createUser`, user)
+      .pipe(catchError(this.handleError));
   }
 
   updateUser(id: string, updates: Partial<User>): Observable<User> {
-    return this.http.put<User>(`${this.apiUrl}updateUser/${id}`, updates);
+    return this.http
+      .put<User>(`${this.apiUrl}updateUser/${id}`, updates)
+      .pipe(catchError(this.handleError));
+  }
+  updateProfile(id: string, updates: Partial<User>): Observable<User> {
+    return this.http
+      .put<User>(`${this.apiUrl}updateProfile/${id}`, updates)
+      .pipe(catchError(this.handleError));
   }
 
   deleteUser(id: string): Observable<{ message: string }> {
-    return this.http.delete<{ message: string }>(
-      `${this.apiUrl}/deleteUser/${id}`
-    );
+    return this.http
+      .delete<{ message: string }>(`${this.apiUrl}deleteUser/${id}`)
+      .pipe(catchError(this.handleError));
   }
+
   getRoleMappings(): Observable<{ [id: string]: string }> {
     if (Object.keys(this.roleMappings).length) {
       return of(this.roleMappings); // if roleMappings is already fetched
@@ -46,7 +61,6 @@ export class UserService {
       .pipe(
         tap((mappings) => {
           this.roleMappings = mappings;
-          console.log('Fetched Role Mappings:', this.roleMappings); // Add this line
         })
       );
   }

@@ -10,7 +10,7 @@ import { CreateTeamComponent } from './modules/team-details/create-team/create-t
 import { ProfileComponent } from './modules/profile/profile.component';
 import { ForgetPasswordComponent } from './modules/forget-password/forget-password.component';
 import { ProfessorDashboardComponent } from './modules/professor-dashboard/professor-dashboard.component';
-import { RoleGuard } from './services/role.guard';
+import { RoleAndUserIdGuard } from './services/role.guard';
 import { AdminDashboardComponent } from './modules/admin-dashboard/admin-dashboard.component';
 import { ResetComponent } from './modules/reset/reset.component';
 import { NotFoundComponent } from './modules/not-found/not-found.component';
@@ -23,8 +23,10 @@ const routes: Routes = [
     component: DefaultComponent,
     children: [
       {
-        path: 'student-dashboard', // This empty path represents the default child route
+        path: 'student-dashboard/:id',
         component: StudentDashboardComponent,
+        canActivate: [RoleAndUserIdGuard],
+        data: { expectedRole: ['Student', 'Professor', 'Admin'] },
       },
       {
         path: 'manage-project',
@@ -32,6 +34,8 @@ const routes: Routes = [
           import('./modules/manage-project/manage-project.module').then(
             (m) => m.ManageProjectModule
           ),
+        canActivate: [RoleAndUserIdGuard],
+        data: { expectedRole: ['Student', 'Professor', 'Admin'] },
       },
       {
         path: 'project-details/:projectId',
@@ -39,33 +43,43 @@ const routes: Routes = [
           import(
             './modules/manage-project/project-details/project-details.module'
           ).then((m) => m.ProjectDetailsModule),
+        canActivate: [RoleAndUserIdGuard],
+        data: { expectedRole: ['Student', 'Professor', 'Admin'] },
       },
       {
-        path: 'ticket-details',
+        path: 'ticket-details/:ticketId',
         component: TicketDetailsComponent,
+        canActivate: [RoleAndUserIdGuard],
+        data: { expectedRole: ['Student', 'Professor', 'Admin'] },
       },
       {
         path: 'create-team',
         component: CreateTeamComponent,
+        canActivate: [RoleAndUserIdGuard],
+        data: { expectedRole: ['Student', 'Professor', 'Admin'] },
       },
       {
-        path: 'team-details',
+        path: 'team-details/:teamId',
         component: TeamDetailsComponent,
+        canActivate: [RoleAndUserIdGuard],
+        data: { expectedRole: ['Student', 'Professor', 'Admin'] },
       },
       {
-        path: 'profile',
+        path: 'profile/:id',
         component: ProfileComponent,
+        canActivate: [RoleAndUserIdGuard],
+        data: { expectedRole: ['Student', 'Professor', 'Admin'] },
       },
       {
-        path: 'professor-dashboard',
+        path: 'professor-dashboard/:id',
         component: ProfessorDashboardComponent,
-        canActivate: [RoleGuard],
+        canActivate: [RoleAndUserIdGuard],
         data: { expectedRole: ['Professor', 'Admin'] },
       },
       {
-        path: 'admin-dashboard',
+        path: 'admin-dashboard/:id',
         component: AdminDashboardComponent,
-        canActivate: [RoleGuard],
+        canActivate: [RoleAndUserIdGuard],
         data: { expectedRole: ['Admin'] },
       },
     ],
@@ -94,10 +108,8 @@ const routes: Routes = [
         path: 'reset',
         component: ResetComponent,
       },
-      {
-        path: '**',
-        component: NotFoundComponent,
-      },
+      { path: '404', component: NotFoundComponent },
+      { path: '**', redirectTo: '/404' }, // Wildcard route for a 404 page
     ],
   },
 ];

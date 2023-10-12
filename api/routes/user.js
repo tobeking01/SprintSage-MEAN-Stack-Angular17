@@ -1,17 +1,25 @@
-// user.router.js
 import express from "express";
 import {
-  getAllUsers,
-  getUserById,
+  getLoggedInUserDetails,
   createUser,
   updateUser,
   deleteUser,
   getUsersForTeam,
   getRoleMappings,
+  updateProfile,
 } from "../controllers/user.controller.js";
+import {
+  verifyToken,
+  requireRoles,
+  ROLES,
+} from "../middleware/verify-validate.js";
 
-// Initialize a new instance of the express router.
 const router = express.Router();
+
+// Middleware for verifying tokens
+// Middleware for verifying tokens
+const selfRoles = requireRoles([ROLES.STUDENT, ROLES.PROFESSOR, ROLES.ADMIN]);
+const selfRoleAdmin = requireRoles([ROLES.ADMIN]);
 
 function noCache(req, res, next) {
   res.setHeader(
@@ -23,51 +31,23 @@ function noCache(req, res, next) {
   next();
 }
 
-// POST / createUser;
-// Route for creating a new user.
-// Middleware:
-// - verifyToken: Validates the JWT token passed in the request header.
-// router.post("/createUser", verifyToken, createUser);
+router.post("/createUser", verifyToken, selfRoles, createUser);
 
-router.post("/createUser", createUser);
+router.get(
+  "/getLoggedInUserDetails",
+  verifyToken,
+  selfRoles,
+  getLoggedInUserDetails
+);
 
-// Setup the GET route for retrieving all users.
-// Before accessing this route, there are two middlewares that run:
-// 1. verifyToken - Checks if a valid token is provided in the request.
-router.get("/getAllUsers", noCache, getAllUsers);
+// requireSelfOrRole("Admin")' middleware to the updateUser route.
+router.put("/updateUser/:id", verifyToken, selfRoles, updateUser);
+router.put("/updateProfile/:id", verifyToken, selfRoles, updateProfile);
 
-// OR
-// router.get("/", verifyToken, getAllUsers);
+router.get("/getUsersForTeam", verifyToken, selfRoles, getUsersForTeam);
 
-// Setup the GET route for retrieving a user based on its ID.
-// Before accessing this route, there are two middlewares that run:
-// 1. verifyToken - Checks if a valid token is provided in the request.
+router.delete("/deleteUser/:id", verifyToken, selfRoleAdmin, deleteUser);
 
-router.get("/getUserById/:id", getUserById);
+router.get("/role-mappings", verifyToken, selfRoles, getRoleMappings);
 
-// OR
-// router.get("/:id", verifyToken, getUserById);
-
-// PUT /updateUser/:id
-// Route for updating an existing user by ID.
-// Middleware:
-// - verifyToken: Validates the JWT token passed in the request header.
-// router.put("/updateUser/:id", verifyToken, updateUser);
-
-router.put("/updateUser/:id", updateUser);
-
-// get user for teams
-router.get("/getUsersForTeam", getUsersForTeam);
-
-// DELETE /deleteUser/:id
-// Route for deleting an existing user by ID.
-// Middleware:
-// - verifyToken: Validates the JWT token passed in the request header.
-// router.delete("/deleteUser/:id", verifyToken, deleteUser);
-
-router.delete("/deleteUser/:id", deleteUser);
-
-router.get("/role-mappings", getRoleMappings);
-
-// Export the router for use in other parts of the application.
 export default router;

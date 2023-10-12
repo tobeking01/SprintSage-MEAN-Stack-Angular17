@@ -110,8 +110,8 @@ export class ProjectDetailsComponent implements OnInit {
 
   private loadLoggedInUser(): void {
     this.loggedInUser = this.authService.currentUserValue;
-    if (this.loggedInUser?.id) {
-      this.loggedInUserId = this.loggedInUser.id;
+    if (this.loggedInUser?._id) {
+      this.loggedInUserId = this.loggedInUser._id;
     }
 
     // Optionally: If you want the full details of the logged-in user, you can use the UserService
@@ -180,7 +180,7 @@ export class ProjectDetailsComponent implements OnInit {
   }
 
   private loadUsers(): Observable<ResponseData> {
-    return this.userService.getAllUsers().pipe(
+    return this.userService.getLoggedInUserDetails().pipe(
       tap((response: ResponseData) => {
         this.users = response.data[0];
         console.log('Users fetched:', this.users);
@@ -189,7 +189,7 @@ export class ProjectDetailsComponent implements OnInit {
   }
 
   private loadTeams(): Observable<MultipleTeamsResponseData> {
-    return this.teamService.getAllTeams().pipe(
+    return this.teamService.getTeamsByUserId().pipe(
       tap((response: MultipleTeamsResponseData) => {
         if (Array.isArray(response.data)) {
           this.teams = response.data;

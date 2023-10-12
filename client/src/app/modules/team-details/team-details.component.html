@@ -1,56 +1,51 @@
-<!-- Main container -->
 <div class="main-container" *ngIf="!isLoading; else loadingTemplate">
   <!-- Header -->
   <mat-toolbar class="team-header">
     <mat-list>
       <mat-list-item>
         <span matListItemTitle>Team Details</span>
-        <span matListItemLine
-          >View and manage team-specific details and team members.</span
-        >
+        <span matListItemLine>
+          View and manage team-specific details and team members.
+        </span>
       </mat-list-item>
     </mat-list>
   </mat-toolbar>
-  <br />
-  <!-- Body -->
-  <div class="main-body">
+
+  <div class="bottom-section">
+    <!-- Adapt the bottom-section class here -->
     <!-- Left Section: Team Details -->
-    <section class="team-details">
-      <h4>Team Details</h4>
-      <div *ngFor="let team of userTeams">
-        <!-- Make team name clickable -->
-        <p (click)="onTeamNameClick(team._id)">
-          <strong>Team Name:</strong> {{ team.teamName }}
-        </p>
-        <!-- Display projects for the clicked team -->
-        <div *ngIf="team._id === selectedTeamId">
-          <h5>Projects</h5>
-          <ul>
-            <li
-              *ngFor="let project of teamProjects"
-              (click)="project._id && onProjectClick(project._id)"
-            >
-              {{ project.projectName }}
-              {{ project?.description }}
-            </li>
-          </ul>
+    <div class="left-side">
+      <section class="team-details my-projects">
+        <h4>Team Details</h4>
+
+        <div *ngFor="let team of teams">
+          <p (click)="selectTeam(team)" style="cursor: pointer">
+            <strong>Team Name:</strong> {{ team.teamName }}
+          </p>
         </div>
-      </div>
+      </section>
+
+      <!-- Error message if any -->
       <div *ngIf="errorMessage" class="error-message">{{ errorMessage }}</div>
-    </section>
+    </div>
 
     <!-- Right Section: Team Members -->
-    <section class="team-members">
-      <h4>Team Members</h4>
-      <!-- Display the loaded team members -->
-      <ul *ngIf="users.length > 0">
-        <li *ngFor="let user of users">
-          {{ user.firstName }} {{ user.lastName }}
-        </li>
-      </ul>
-    </section>
+    <div class="right-side">
+      <section class="team-members my-tickets">
+        <h4>Team Members</h4>
+
+        <!-- Display the members of the selected team -->
+        <ul *ngIf="selectedTeam && selectedTeam.teamMembers.length">
+          <li *ngFor="let user of selectedTeam.teamMembers">
+            {{ user.firstName }} {{ user.lastName }}
+          </li>
+        </ul>
+      </section>
+    </div>
   </div>
 </div>
+
+<!-- Loading template -->
 <ng-template #loadingTemplate>
   <p>Loading...</p>
 </ng-template>

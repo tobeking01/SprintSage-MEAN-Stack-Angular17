@@ -26,6 +26,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { TeamDetailsComponent } from './team-details/team-details.component';
 import { MatListModule } from '@angular/material/list';
 import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatButtonModule } from '@angular/material/button';
 
 @NgModule({
   declarations: [
@@ -58,6 +60,8 @@ import { MatToolbarModule } from '@angular/material/toolbar';
     MatIconModule,
     MatListModule,
     MatToolbarModule,
+    MatTooltipModule,
+    MatButtonModule,
   ],
   exports: [
     StudentDashboardComponent,

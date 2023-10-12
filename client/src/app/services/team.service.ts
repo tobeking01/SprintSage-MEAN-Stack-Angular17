@@ -25,18 +25,6 @@ export class TeamService {
     return throwError(error);
   }
 
-  addTeamMember(
-    projectId: string,
-    userId: string
-  ): Observable<SingleTeamResponseData> {
-    return this.http
-      .post<SingleTeamResponseData>(`${this.apiUrl}addTeamMember`, {
-        projectId,
-        userId,
-      })
-      .pipe(catchError(this.handleError));
-  }
-
   createTeam(teamData: {
     teamName: string;
     teamMembers: string[];
@@ -46,15 +34,9 @@ export class TeamService {
       .pipe(catchError(this.handleError));
   }
 
-  getAllTeams(): Observable<MultipleTeamsResponseData> {
+  getTeamsByUserId(): Observable<MultipleTeamsResponseData> {
     return this.http
-      .get<MultipleTeamsResponseData>(`${this.apiUrl}getAllTeams`)
-      .pipe(catchError(this.handleError));
-  }
-
-  getTeamById(id: string): Observable<SingleTeamResponseData> {
-    return this.http
-      .get<SingleTeamResponseData>(`${this.apiUrl}getTeamById/${id}`)
+      .get<MultipleTeamsResponseData>(`${this.apiUrl}getTeamsByUserId`)
       .pipe(catchError(this.handleError));
   }
 
@@ -76,9 +58,33 @@ export class TeamService {
       .pipe(catchError(this.handleError));
   }
 
+  addUserToTeam(
+    teamId: string,
+    userId: string
+  ): Observable<SingleTeamResponseData> {
+    return this.http
+      .post<SingleTeamResponseData>(
+        `${this.apiUrl}addUserToTeam/${teamId}/${userId}`,
+        {}
+      )
+      .pipe(catchError(this.handleError));
+  }
+
+  removeUserFromTeam(
+    teamId: string,
+    userId: string
+  ): Observable<SingleTeamResponseData> {
+    return this.http
+      .post<SingleTeamResponseData>(
+        `${this.apiUrl}removeUserFromTeam/${teamId}/${userId}`,
+        {}
+      )
+      .pipe(catchError(this.handleError));
+  }
+
   getTeamByProjectId(projectId: string): Observable<SingleTeamResponseData> {
     return this.http.get<SingleTeamResponseData>(
-      `${this.apiUrl}teamsByProject/${projectId}`
+      `${this.apiUrl}getTeamByProjectId/${projectId}`
     );
   }
 
@@ -87,14 +93,8 @@ export class TeamService {
   ): Observable<MultipleProjectsFullResponseData> {
     return this.http
       .get<MultipleProjectsFullResponseData>(
-        `${this.apiUrl}projectsByTeam/${teamId}`
+        `${this.apiUrl}getProjectsByTeamId/${teamId}`
       )
-      .pipe(catchError(this.handleError));
-  }
-
-  getTeamsByUserId(userId: string): Observable<MultipleTeamsResponseData> {
-    return this.http
-      .get<MultipleTeamsResponseData>(`${this.apiUrl}teamsByUser/${userId}`)
       .pipe(catchError(this.handleError));
   }
 }

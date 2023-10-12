@@ -1,71 +1,54 @@
 // project.routes.js
 
-// Importing express to use its Router functionality.
 import express from "express";
-
-// Importing the Project Controller methods to be linked with routes.
 import {
   createProject,
-  getAllProjects,
+  getProjectsByUserId,
   getProjectById,
   updateProjectById,
   deleteProjectById,
   addMembersToProject,
 } from "../controllers/project.controller.js";
+import {
+  verifyToken,
+  requireRoles,
+  ROLES,
+} from "../middleware/verify-validate.js";
 
-// Initialize a new instance of express router.
 const router = express.Router();
 
-/**
- * POST /projects
- * Route to create a new project. Linked with the 'createProject' method from Project Controller.
- */
-// router.post("/createProject", verifyToken, createProject);
+// Middleware for verifying tokens
+const selfRoles = requireRoles([ROLES.STUDENT, ROLES.PROFESSOR, ROLES.ADMIN]);
+const selfRoleAdmin = requireRoles([ROLES.ADMIN]);
 
-router.post("/project", createProject);
+// Endpoint to create a new project
+// Only accessible to authenticated users
+router.post("/createProject", verifyToken, selfRoles, createProject);
 
-/**
- * GET /projects
- * Route to get all projects. Linked with the 'getAllProjects' method from Project Controller.
- */
-// router.get("/getAllProject", verifyToken, getAllProjects);
+// Endpoint to get all projects
+// Only accessible to authenticated users
+router.get("/getProjectsByUserId", verifyToken, selfRoles, getProjectsByUserId);
 
-router.get("/project", getAllProjects);
+// Endpoint to get a project by its ID
+// Only accessible to authenticated users
+router.get("/getProjectById/:id", verifyToken, selfRoles, getProjectById);
 
-/**
- * GET /projects/:id
- * Route to get a specific project by its ID. Linked with the 'getProjectById' method from Project Controller.
- */
-// router.get("/getProjectById/:id", verifyToken, getProjectById);
+// Endpoint to update a project by its ID
+// Only accessible to authenticated users
+router.put("/updateProjectById/:id", verifyToken, selfRoles, updateProjectById);
 
-router.get("/project/:id", getProjectById);
+// Endpoint to delete a project by its ID
+// Only accessible to authenticated users
+router.delete(
+  "/deleteProjectById/:id",
+  verifyToken,
+  selfRoles,
+  deleteProjectById
+);
 
-/**
- * PUT /projects/:id
- * Route to update a specific project by its ID. Linked with the 'updateProjectById' method from Project Controller.
- */
-// router.put(
-//   "/updateProjectById/:id",
-//   verifyToken,
-//   updateProjectById
-// );
+// Endpoint to add teams to a project by its ID
+// Only accessible to authenticated users
+router.put("/:id/addTeams", verifyToken, selfRoles, addMembersToProject);
 
-router.put("/project/:id", updateProjectById);
-
-/**
- * DELETE /projects/:id
- * Route to delete a specific project by its ID. Linked with the 'deleteProjectById' method from Project Controller.
- */
-// router.delete(
-//   "/deleteProjectById/:id",
-//   verifyToken,
-//   deleteProjectById
-// );
-
-router.delete("/project/:id", deleteProjectById);
-
-// New route for adding members to a project
-router.put("/project/:id/addTeams", addMembersToProject);
-
-// Exporting the router.
+// Export the router for use in other parts of the application
 export default router;

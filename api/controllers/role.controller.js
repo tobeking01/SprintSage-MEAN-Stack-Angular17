@@ -43,6 +43,7 @@ export const initializeRoles = async () => {
     }
   } catch (error) {
     console.error("[Initialization Error] Error initializing roles:", error);
+    sendError(res, 500, "Internal Server Error!");
   }
 };
 
@@ -56,8 +57,19 @@ export const initializeRoles = async () => {
  */
 export const updateRole = async (req, res, next) => {
   try {
-    if (!isValidRole(req.body.name)) {
+    const { name } = req.body;
+
+    if (!isValidRole(name)) {
       return sendError(res, 400, "Invalid role!");
+    }
+
+    // Check if a role with the desired update name already exists.
+    const existingRoleWithName = await Role.findOne({ name });
+    if (
+      existingRoleWithName &&
+      String(existingRoleWithName._id) !== String(req.params.id)
+    ) {
+      return sendError(res, 400, "Role name already exists!");
     }
 
     const role = await Role.findById(req.params.id);

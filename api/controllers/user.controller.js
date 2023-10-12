@@ -107,8 +107,9 @@ export const updateUser = async (req, res, next) => {
     });
 
     // If user not found, return an error response.
-    if (!user) return sendError(res, 404, "User not found");
-
+    if (!req.userId.equals(req.params.id)) {
+      return sendError(res, 403, "You can only update your own profile.");
+    }
     // Preparing the user object to be sent in the response.
     const responseUser = user.toObject();
     delete responseUser.password; // Removing the password from the response object.
@@ -123,22 +124,26 @@ export const updateUser = async (req, res, next) => {
   }
 };
 /**
- * Fetch all users from the database with pagination options.
- * @param {Object} req - Express request object with optional pagination query parameters.
+ * Fetch the logged-in user's details from the database.
+ * @param {Object} req - Express request object.
  * @param {Object} res - Express response object for sending the response.
  * @param {function} next - Express next middleware function.
  */
-// Controller function to handle the retrieval of all users with pagination
-export const getAllUsers = async (req, res, next) => {
+export const getLoggedInUserDetails = async (req, res, next) => {
   try {
-    // Retrieve all users from the database.
-    const users = await User.find();
+    // Retrieve the logged-in user's details from the database using their ID.
+    const user = await User.findById(req.user.id);
 
-    // If there are no users in the database, return a 404 error.
-    if (!users.length) return sendError(res, 404, "No users found!");
-    sendSuccess(res, 200, "All Users Retrieved Successfully", [users]); // Send array of users
+    // If the user isn't found (which should be rare if they're authenticated), return a 404 error.
+    if (!user) return sendError(res, 404, "User not found!");
+
+    // Prepare user for response (excluding password).
+    const responseUser = user.toObject();
+    delete responseUser.password;
+
+    sendSuccess(res, 200, "User Retrieved Successfully", responseUser);
   } catch (error) {
-    console.error("Error fetching users:", error);
+    console.error("Error fetching user:", error);
     return next(sendError(res, 500, "Internal Server Error!"));
   }
 };
@@ -150,34 +155,6 @@ export const getUsersForTeam = async (req, res, next) => {
   } catch (error) {
     console.error("Error fetching users for team:", error);
     sendError(res, 500, "Internal Server Error!");
-  }
-};
-/**
- * Retrieve a single user by their ID.
- * @param {Object} req - Express request object containing user ID in parameters.
- * @param {Object} res - Express response object for sending the response.
- * @param {function} next - Express next middleware function.
- */
-
-export const getUserById = async (req, res, next) => {
-  const { id } = req.params;
-
-  // Validate the format of the provided user ID.
-  if (!mongoose.Types.ObjectId.isValid(id))
-    return sendError(res, 400, "Invalid User ID!");
-
-  try {
-    // Retrieve a user from the database using the provided ID.
-    const user = await User.findById(id);
-
-    // If no user is found with the provided ID, return a 404 error.
-    if (!user) return sendError(res, 404, "User not found!");
-
-    // If a user is found, return the user in the response.
-    return sendSuccess(res, 200, "Single User", [user]);
-  } catch (error) {
-    console.error(`Error fetching user with ID ${id} :`, error); // Log error details for debugging
-    sendError(res, 500, "Internal Server Error while fetching user!");
   }
 };
 
@@ -209,10 +186,10 @@ export const deleteUser = async (req, res, next) => {
 export const updateProfile = async (req, res, next) => {
   try {
     const userId = req.params.id;
-    const { role } = req.user; // Assuming your authentication middleware sets this.
+    const { role } = req.user.id.toString();
 
     // Check if user is updating their own profile.
-    if (!req.user._id.equals(userId)) {
+    if (!req.user.id.equals(userId)) {
       return next(
         sendError(
           res,
@@ -254,7 +231,7 @@ export const updateProfile = async (req, res, next) => {
     sendSuccess(res, 200, "User Profile Updated Successfully!", [updatedUser]);
   } catch (error) {
     console.error("Error updating user profile:", error);
-    next(sendError(res, 500, "Error updating user profile."));
+    sendError(res, 500, "Error updating user profile.");
   }
 };
 

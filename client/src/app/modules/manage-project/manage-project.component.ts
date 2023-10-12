@@ -116,7 +116,7 @@ export class ManageProjectComponent implements OnInit, OnDestroy {
 
   private loadUsers(): void {
     console.log('Fetching users... manageSide');
-    this.userService.getAllUsers().subscribe(
+    this.userService.getLoggedInUserDetails().subscribe(
       (response: ResponseData) => {
         this.users = response.data[0];
         console.log('Users fetched:', this.users);
@@ -129,7 +129,7 @@ export class ManageProjectComponent implements OnInit, OnDestroy {
 
   private loadTeams(): void {
     console.log('Fetching teams... manageSide');
-    this.teamService.getAllTeams().subscribe(
+    this.teamService.getTeamsByUserId().subscribe(
       (response: MultipleTeamsResponseData) => {
         if (Array.isArray(response.data)) {
           this.teams = response.data;
@@ -149,7 +149,7 @@ export class ManageProjectComponent implements OnInit, OnDestroy {
     console.log('Fetching project... manageSide');
     this.isLoading = true;
     this.projectService
-      .getAllProjects()
+      .getProjectsByUserId()
       .pipe(takeUntil(this.ngUnsubscribe))
       .subscribe(
         (response) => {
@@ -192,7 +192,7 @@ export class ManageProjectComponent implements OnInit, OnDestroy {
   }
 
   openProjectDetails(project: ProjectFull): void {
-    this.router.navigate([`/student-dashboard/project-details/${project._id}`]);
+    this.router.navigate([`/project-details/${project._id}`]);
   }
 
   closeProjectDetails(): void {

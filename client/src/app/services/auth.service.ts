@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, BehaviorSubject, throwError } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
@@ -11,6 +11,7 @@ import {
   RegisterStudentPayload,
   ResponseData,
 } from './model/auth.model';
+import { Router } from '@angular/router';
 
 const USER_KEY = 'auth-user';
 
@@ -23,18 +24,18 @@ export class AuthService {
   currentUser$: Observable<User | null> =
     this.currentUserSubject.asObservable();
 
-  constructor(private http: HttpClient) {
+  constructor(private http: HttpClient, private router: Router) {
     this.loadUserFromStorage();
   }
   get currentUserValue(): User | null {
     return this.currentUserSubject.value;
   }
   getCurrentUserId(): string | null {
-    return this.currentUserValue?.id || null;
+    return this.currentUserValue?._id || null;
   }
 
   private loadUserFromStorage(): void {
-    const user = sessionStorage.getItem(USER_KEY);
+    const user = localStorage.getItem(USER_KEY); // use local storage to store session login
     if (user) {
       this.currentUserSubject.next(JSON.parse(user));
       console.debug('User loaded from storage:', user);
@@ -51,7 +52,7 @@ export class AuthService {
             const user = response.data;
             this.currentUserSubject.next(user);
             this.isLoggedIn$.next(true);
-            sessionStorage.setItem(USER_KEY, JSON.stringify(user));
+            localStorage.setItem(USER_KEY, JSON.stringify(user)); // Changed from sessionStorage
             console.debug('User successfully logged in:', user);
           } else {
             console.error('User data is not available from login response.');
@@ -61,7 +62,8 @@ export class AuthService {
         catchError((error) => {
           console.error('Error during login:', error);
           if (error.status === 401) {
-            // Handle Unauthorized, maybe redirect to the login page
+            // Handle Unauthorized, redirect to the NotFoundComponent
+            this.router.navigate(['/404']);
             console.warn('Unauthorized access attempt detected.');
           }
           return throwError(error);
@@ -69,22 +71,29 @@ export class AuthService {
       );
   }
 
-  logout(): void {
+  logout(): Observable<any> {
     console.debug('Attempting to logout...');
-    this.http.post(`${apiUrls.authServiceApi}logout`, {}).subscribe(
-      () => {
-        this.currentUserSubject.next(null);
-        this.isLoggedIn$.next(false);
-        sessionStorage.removeItem(USER_KEY); // Remove user data from storage
-        console.debug('User successfully logged out.');
-      },
-      (error) => {
-        console.error('Logout error', error);
-        this.currentUserSubject.next(null);
-        this.isLoggedIn$.next(false);
-        sessionStorage.removeItem(USER_KEY); // Remove user data from storage
-      }
-    );
+    return this.http
+      .post(
+        `${apiUrls.authServiceApi}logout`,
+        {},
+        { headers: this.getHeaders() }
+      )
+      .pipe(
+        tap(() => {
+          this.currentUserSubject.next(null);
+          this.isLoggedIn$.next(false);
+          localStorage.removeItem(USER_KEY);
+          console.debug('User successfully logged out.');
+        }),
+        catchError((error) => {
+          console.error('Logout error', error);
+          this.currentUserSubject.next(null);
+          this.isLoggedIn$.next(false);
+          localStorage.removeItem(USER_KEY);
+          throw error;
+        })
+      );
   }
 
   registerStudentService(
@@ -121,6 +130,15 @@ export class AuthService {
           return throwError(error);
         })
       );
+  }
+
+  private getHeaders(): HttpHeaders {
+    const user = this.currentUserValue;
+    if (user && user.token) {
+      return new HttpHeaders({ Authorization: 'Bearer ' + user.token });
+    } else {
+      return new HttpHeaders();
+    }
   }
 
   setCurrentUser(user: User): void {

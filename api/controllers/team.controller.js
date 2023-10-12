@@ -13,6 +13,12 @@ const isValidObjectId = (id) => {
   return mongoose.Types.ObjectId.isValid(id);
 };
 
+// Utility function to check if a user is an admin.
+const isUserAdmin = async (userId) => {
+  const user = await User.findById(userId);
+  return user && user.isAdmin;
+};
+
 export const createTeam = async (req, res, next) => {
   const { teamName, teamMembers } = req.body;
 
@@ -46,9 +52,10 @@ export const createTeam = async (req, res, next) => {
       );
     }
 
-    const newTeam = new Team({ teamName, teamMembers });
+    // Here we are setting the createdBy field using req.userId
+    const newTeam = new Team({ teamName, teamMembers, createdBy: req.user.id });
     await newTeam.save();
-    // When a new team is created, ensure the response contains the team in an array. important!!!
+    // When a new team is created, ensure the response contains the team in an array.
     sendSuccess(res, 201, "Team Created!", [newTeam]);
   } catch (error) {
     console.error("Error creating team:", error);
@@ -56,19 +63,22 @@ export const createTeam = async (req, res, next) => {
   }
 };
 
-export const getAllTeams = async (req, res, next) => {
+// getall teams by user Id
+export const getTeamsByUserId = async (req, res, next) => {
   try {
-    const searchQuery = {};
+    const loggedInUserId = req.user.id.toString();
 
-    if (req.query.name) {
-      searchQuery.teamName = new RegExp(req.query.name, "i");
+    // If the user isn't found (which should be rare if they're authenticated), return a 404 error.
+    if (!loggedInUserId) return sendError(res, 404, "User not found!");
+
+    const teams = await Team.find({
+      $or: [{ createdBy: loggedInUserId }, { teamMembers: loggedInUserId }],
+    }).populate("teamMembers");
+
+    if (!teams.length) {
+      return sendError(res, 404, "No teams found!");
     }
 
-    if (req.query.memberId) {
-      searchQuery.teamMembers = mongoose.Types.ObjectId(req.query.memberId);
-    }
-
-    const teams = await Team.find(searchQuery).populate("teamMembers");
     sendSuccess(res, 200, "Teams fetched successfully!", teams);
   } catch (error) {
     console.error("Error fetching teams:", error);
@@ -76,64 +86,17 @@ export const getAllTeams = async (req, res, next) => {
   }
 };
 
-export const getTeamById = async (req, res, next) => {
-  try {
-    const { id } = req.params;
-
-    if (!isValidObjectId(id)) {
-      return sendError(res, 400, "Invalid ID format.");
-    }
-
-    const team = await Team.findById(id).populate([
-      "teamMembers",
-      {
-        path: "projects",
-        model: "Project",
-      },
-    ]);
-
-    if (!team) return sendError(res, 404, "Team not found!");
-
-    sendSuccess(res, 200, "Team fetched successfully!", [team]);
-  } catch (error) {
-    console.error("Error fetching team:", error);
-    sendError(res, 500, "Internal Server Error!");
-  }
-};
-
-export const getTeamsByUserId = async (req, res, next) => {
-  try {
-    const { userId } = req.params;
-
-    if (!isValidObjectId(userId)) {
-      return sendError(res, 400, "Invalid User ID format.");
-    }
-
-    const teams = await Team.find({
-      teamMembers: new ObjectId(userId),
-    })
-      .populate("teamMembers")
-      .populate({
-        path: "projects",
-        model: "Project",
-      });
-
-    if (!teams.length) {
-      return sendError(res, 404, "No teams found for this user.");
-    }
-
-    sendSuccess(res, 200, "Teams fetched successfully!", teams);
-  } catch (error) {
-    console.error("Error fetching teams by user ID:", error);
-    sendError(res, 500, "Internal Server Error!");
-  }
-};
-
 export const updateTeamById = async (req, res, next) => {
   try {
+    const loggedInUserId = req.user.id;
     const { id } = req.params;
     const updates = req.body;
     const allowedUpdates = ["teamName", "teamMembers"];
+
+    // Check if logged-in user is an admin
+    if (!(await isUserAdmin(loggedInUserId))) {
+      return sendError(res, 403, "Permission denied.");
+    }
 
     const isValidOperation = Object.keys(updates).every((update) =>
       allowedUpdates.includes(update)
@@ -157,6 +120,13 @@ export const updateTeamById = async (req, res, next) => {
 
 export const deleteTeamById = async (req, res, next) => {
   try {
+    const loggedInUserId = req.user.id;
+
+    // Check if logged-in user is an admin
+    if (!(await isUserAdmin(loggedInUserId))) {
+      return sendError(res, 403, "Permission denied.");
+    }
+
     const { id } = req.params;
     const deletedTeam = await Team.findByIdAndDelete(id);
     if (!deletedTeam) return sendError(res, 404, "Team not found!");
@@ -171,6 +141,12 @@ export const deleteTeamById = async (req, res, next) => {
 export const removeUserFromTeam = async (req, res, next) => {
   try {
     const { teamId, userId } = req.params;
+    const loggedInUserId = req.user.id;
+
+    // Check if logged-in user is an admin or is removing themselves from the team
+    if (loggedInUserId !== userId && !(await isUserAdmin(loggedInUserId))) {
+      return sendError(res, 403, "Permission denied.");
+    }
 
     if (!isValidObjectId(teamId) || !isValidObjectId(userId)) {
       return sendError(res, 400, "Invalid ID format.");
@@ -179,7 +155,6 @@ export const removeUserFromTeam = async (req, res, next) => {
     const team = await Team.findById(teamId);
     if (!team) return sendError(res, 404, "Team not found!");
 
-    // Assuming teamMembers is an array of ObjectIds
     const index = team.teamMembers.indexOf(userId);
     if (index > -1) {
       team.teamMembers.splice(index, 1);
@@ -198,7 +173,12 @@ export const removeUserFromTeam = async (req, res, next) => {
 export const addUserToTeam = async (req, res, next) => {
   try {
     const { teamId, userId } = req.params;
+    const loggedInUserId = req.user.id;
 
+    // Check if logged-in user is an admin or is adding themselves to the team
+    if (loggedInUserId !== userId && !(await isUserAdmin(loggedInUserId))) {
+      return sendError(res, 403, "Permission denied.");
+    }
     // Validate ObjectIds
     if (!isValidObjectId(teamId) || !isValidObjectId(userId)) {
       return sendError(res, 400, "Invalid ID format.");

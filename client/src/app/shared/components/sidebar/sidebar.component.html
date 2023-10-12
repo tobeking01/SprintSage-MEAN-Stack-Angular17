@@ -14,14 +14,14 @@
     <a
       mat-list-item
       [routerLinkActive]="['list-item-active']"
-      routerLink="student-dashboard"
+      routerLink="student-dashboard/:id"
     >
       <mat-icon>dashboard</mat-icon> Student Dashboard
     </a>
     <a
       mat-list-item
       [routerLinkActive]="['list-item-active']"
-      routerLink="professor-dashboard"
+      routerLink="professor-dashboard/:id"
     >
       <mat-icon>dashboard</mat-icon> Professor Dashboard
     </a>
@@ -34,7 +34,7 @@
     <a
       mat-list-item
       [routerLinkActive]="['list-item-active']"
-      routerLink="ticket-details"
+      routerLink="ticket-details/:ticketId"
       ><mat-icon>local_activity</mat-icon> Tickets</a
     >
   </mat-card>
@@ -44,13 +44,13 @@
     <a
       mat-list-item
       [routerLinkActive]="['list-item-active']"
-      routerLink="team-details"
+      routerLink="team-details/:teamId"
       ><mat-icon>groups</mat-icon> My Team</a
     >
     <a
       mat-list-item
       [routerLinkActive]="['list-item-active']"
-      routerLink="profile"
+      routerLink="profile/:id"
       ><mat-icon>account_circle</mat-icon> Profile</a
     >
   </mat-card>

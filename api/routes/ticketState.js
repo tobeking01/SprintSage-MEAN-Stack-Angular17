@@ -6,14 +6,25 @@ import {
   getLogsByUser,
   deleteLog,
 } from "../controllers/ticketState.controller.js";
+import {
+  verifyToken,
+  requireRoles,
+  ROLES,
+} from "../middleware/verify-validate.js";
 
 const router = express.Router();
 
-router.post("/changeTicketState", changeTicketState);
+// Middleware for verifying tokens
+const selfRoles = requireRoles([ROLES.STUDENT, ROLES.PROFESSOR, ROLES.ADMIN]);
+const selfRoleAdmin = requireRoles([ROLES.ADMIN]);
 
-router.get("/logs", getAllLogs);
-router.get("/logs/ticket/:ticketId", getLogsForTicket);
-router.get("/logs/user/:userId", getLogsByUser);
-router.delete("/log/:logId", deleteLog);
+router.post("/changeTicketState", verifyToken, selfRoles, changeTicketState);
+
+router.get("/logs", verifyToken, getAllLogs);
+router.get("/logs/ticket/:ticketId", verifyToken, getLogsForTicket);
+router.get("/logs/user/:userId", verifyToken, getLogsByUser);
+
+// Consider authorizing only admins to delete logs for security reasons
+router.delete("/log/:logId", verifyToken, selfRoleAdmin, deleteLog);
 
 export default router;

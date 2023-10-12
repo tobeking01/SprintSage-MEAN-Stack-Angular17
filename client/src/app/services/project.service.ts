@@ -33,23 +33,26 @@ export class ProjectService {
     endDate?: Date;
   }): Observable<SingleProjectRefResponseData> {
     return this.http
-      .post<SingleProjectRefResponseData>(`${this.apiUrl}project`, projectData)
+      .post<SingleProjectRefResponseData>(
+        `${this.apiUrl}createProject`,
+        projectData
+      )
       .pipe(catchError(this.handleError));
   }
 
-  getAllProjects(): Observable<
+  getProjectsByUserId(): Observable<
     SingleProjectFullResponseData | MultipleProjectsFullResponseData
   > {
     return this.http
       .get<SingleProjectFullResponseData | MultipleProjectsFullResponseData>(
-        `${this.apiUrl}project`
+        `${this.apiUrl}getProjectsByUserId`
       )
       .pipe(catchError(this.handleError));
   }
 
   getProjectById(id: string): Observable<SingleProjectFullResponseData> {
     return this.http
-      .get<SingleProjectFullResponseData>(`${this.apiUrl}project/${id}`)
+      .get<SingleProjectFullResponseData>(`${this.apiUrl}getProjectById/${id}`)
       .pipe(catchError(this.handleError));
   }
 
