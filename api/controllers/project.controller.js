@@ -104,7 +104,7 @@ export const createProject = async (req, res, next) => {
 // Controller to get all projects related to a logged-in user
 export const getProjectsByUserId = async (req, res, next) => {
   try {
-    const loggedInUserId = req.user.id.toString();
+    const loggedInUserId = req.user.id;
     let projects = [];
 
     projects = await Project.find({

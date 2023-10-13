@@ -33,11 +33,11 @@
           <mat-form-field class="full-width">
             <mat-label>Team Member</mat-label>
             <mat-select [formControlName]="i" placeholder="Select Member">
+              <!-- Loop through users array to populate options -->
               <mat-option *ngFor="let user of users" [value]="user._id">
                 {{ user.firstName }} {{ user.lastName }}
               </mat-option>
             </mat-select>
-
             <mat-error *ngIf="memberCtrl.hasError('required')">
               Name is required!
             </mat-error>
@@ -48,7 +48,6 @@
         </div>
         <button mat-button (click)="addUser()">+ Add Member</button>
       </div>
-      <button (click)="logFormValue()">Log Form Value</button>
 
       <!-- Action Buttons -->
       <button

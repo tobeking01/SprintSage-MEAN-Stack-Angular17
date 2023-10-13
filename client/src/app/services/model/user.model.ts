@@ -26,5 +26,5 @@ export interface ResponseData {
   success: boolean;
   status: number;
   message: string;
-  data: User[][];
+  data: User[];
 }

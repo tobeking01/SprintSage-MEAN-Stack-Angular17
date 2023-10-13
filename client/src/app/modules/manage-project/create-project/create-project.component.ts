@@ -84,7 +84,7 @@ export class CreateProjectComponent implements OnInit, OnDestroy {
     console.log('Fetching users...');
     this.userService.getLoggedInUserDetails().subscribe(
       (response: ResponseData) => {
-        this.users = response.data[0];
+        this.users = response.data;
         console.log('Users fetched:', this.users);
       },
       (error: any) => {

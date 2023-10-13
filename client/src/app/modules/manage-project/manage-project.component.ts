@@ -29,7 +29,6 @@ import { TeamService } from 'src/app/services/team.service';
 import { ProjectFull } from 'src/app/services/model/project.model';
 import {
   Team,
-  SingleTeamResponseData,
   MultipleTeamsResponseData,
   TeamPopulated,
 } from 'src/app/services/model/team.model';
@@ -118,7 +117,7 @@ export class ManageProjectComponent implements OnInit, OnDestroy {
     console.log('Fetching users... manageSide');
     this.userService.getLoggedInUserDetails().subscribe(
       (response: ResponseData) => {
-        this.users = response.data[0];
+        this.users = response.data;
         console.log('Users fetched:', this.users);
       },
       (error: any) => {

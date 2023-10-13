@@ -141,7 +141,7 @@ export const getLoggedInUserDetails = async (req, res, next) => {
     const responseUser = user.toObject();
     delete responseUser.password;
 
-    sendSuccess(res, 200, "User Retrieved Successfully", responseUser);
+    sendSuccess(res, 200, "User Retrieved Successfully", [responseUser]);
   } catch (error) {
     console.error("Error fetching user:", error);
     return next(sendError(res, 500, "Internal Server Error!"));
@@ -150,8 +150,16 @@ export const getLoggedInUserDetails = async (req, res, next) => {
 
 export const getUsersForTeam = async (req, res, next) => {
   try {
+    // Ensure the user is logged in
+    if (!req.user.id) {
+      return res.status(401).json({ message: "Unauthorized. Please log in." });
+    }
+
+    // Fetch all users from the database
     const users = await User.find({}, "firstName lastName");
-    res.status(200).json(users); // This sends array of users for a team, which is expected
+
+    // Send back the array of users
+    res.status(200).json(users);
   } catch (error) {
     console.error("Error fetching users for team:", error);
     sendError(res, 500, "Internal Server Error!");
@@ -166,6 +174,10 @@ export const getUsersForTeam = async (req, res, next) => {
  */
 export const deleteUser = async (req, res, next) => {
   try {
+    // Ensure the user is logged in
+    if (!req.user.id) {
+      return res.status(401).json({ message: "Unauthorized. Please log in." });
+    }
     const user = await User.findByIdAndDelete(req.params.id);
 
     if (!user) return sendError(res, 404, "User not found");

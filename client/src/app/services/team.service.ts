@@ -5,7 +5,6 @@ import { catchError } from 'rxjs/operators';
 
 import { apiUrls } from '../api.urls';
 import {
-  Team,
   SingleTeamResponseData,
   MultipleTeamsResponseData,
   TeamPopulated,

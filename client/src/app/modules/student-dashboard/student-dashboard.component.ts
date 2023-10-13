@@ -16,6 +16,7 @@ import { UserService } from 'src/app/services/user.service';
 import { SingleProjectFullResponseData } from 'src/app/services/model/project.model';
 import { CreateProjectComponent } from '../manage-project/create-project/create-project.component';
 import { MatDialog } from '@angular/material/dialog';
+import { CreateTeamComponent } from '../team-details/create-team/create-team.component';
 
 @Component({
   selector: 'app-student-dashboard',
@@ -27,7 +28,6 @@ export class StudentDashboardComponent implements OnInit {
   users: User[] = [];
   teams: TeamPopulated[] = [];
   projects: ProjectFull[] = [];
-
   selectedProject: ProjectFull | null = null;
   isLoading = false;
   constructor(
@@ -44,18 +44,27 @@ export class StudentDashboardComponent implements OnInit {
     this.loadProject();
   }
 
-  private loadUsers(): void {
-    console.log('Fetching users... studentSide');
+  loadUsers() {
+    console.log('Fetching users...');
     this.userService.getLoggedInUserDetails().subscribe(
       (response: ResponseData) => {
-        this.users = response.data[0];
+        console.log('Response received:', response); // <-- Log the entire response for debugging
+
+        if (Array.isArray(response.data)) {
+          this.users = response.data;
+        } else {
+          console.error('Unexpected data structure:', response.data);
+          this.users = [response.data]; // Convert the single user object into an array
+        }
+
         console.log('Users fetched:', this.users);
       },
-      (error: any) => {
+      (error: HttpErrorResponse) => {
         console.error('Error:', error);
       }
     );
   }
+
   private loadTeams(): void {
     console.log('Fetching teams... ');
     this.teamService.getTeamsByUserId().subscribe(
@@ -74,9 +83,8 @@ export class StudentDashboardComponent implements OnInit {
     );
   }
   private loadProject(): void {
-    console.log('Fetching project...');
+    console.log('Fetching project... studentDashboard');
     this.isLoading = true;
-
     this.projectService.getProjectsByUserId().subscribe(
       (
         response:
@@ -102,11 +110,24 @@ export class StudentDashboardComponent implements OnInit {
       }
     );
   }
+
+  getMemberTooltip(member: User): string {
+    return `${member.firstName} ${member.lastName} - ${member.userName}`;
+  }
   openAddEditProjectDialog(): void {
     const dialogRef = this.dialog.open(CreateProjectComponent);
     dialogRef.afterClosed().subscribe({
       next: (val) => {
         if (val) this.loadProject();
+      },
+    });
+  }
+
+  openAddEditTeamDialog(): void {
+    const dialogRef = this.dialog.open(CreateTeamComponent);
+    dialogRef.afterClosed().subscribe({
+      next: (val) => {
+        if (val) this.loadTeams();
       },
     });
   }

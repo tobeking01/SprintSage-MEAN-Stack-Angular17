@@ -38,7 +38,7 @@ const routes: Routes = [
         data: { expectedRole: ['Student', 'Professor', 'Admin'] },
       },
       {
-        path: 'project-details/:projectId',
+        path: 'project-details/:id',
         loadChildren: () =>
           import(
             './modules/manage-project/project-details/project-details.module'
@@ -47,7 +47,7 @@ const routes: Routes = [
         data: { expectedRole: ['Student', 'Professor', 'Admin'] },
       },
       {
-        path: 'ticket-details/:ticketId',
+        path: 'ticket-details/:id',
         component: TicketDetailsComponent,
         canActivate: [RoleAndUserIdGuard],
         data: { expectedRole: ['Student', 'Professor', 'Admin'] },
@@ -59,7 +59,7 @@ const routes: Routes = [
         data: { expectedRole: ['Student', 'Professor', 'Admin'] },
       },
       {
-        path: 'team-details/:teamId',
+        path: 'team-details/:id',
         component: TeamDetailsComponent,
         canActivate: [RoleAndUserIdGuard],
         data: { expectedRole: ['Student', 'Professor', 'Admin'] },

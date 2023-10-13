@@ -51,6 +51,12 @@ export class UserService {
       .pipe(catchError(this.handleError));
   }
 
+  getAllUsersForTeam(): Observable<User[]> {
+    return this.http
+      .get<User[]>(`${this.apiUrl}getUsersForTeam`)
+      .pipe(catchError(this.handleError));
+  }
+
   getRoleMappings(): Observable<{ [id: string]: string }> {
     if (Object.keys(this.roleMappings).length) {
       return of(this.roleMappings); // if roleMappings is already fetched

@@ -10,10 +10,14 @@ import { AuthService } from 'src/app/services/auth.service';
 })
 export class SidebarComponent {
   userName$: Observable<string>;
+  isUserLoggedIn$: Observable<boolean>;
 
   constructor(private authService: AuthService) {
     this.userName$ = this.authService.currentUser$.pipe(
       map((user) => (user ? user.userName : 'default_user'))
+    );
+    this.isUserLoggedIn$ = this.authService.currentUser$.pipe(
+      map((user) => !!user)
     );
   }
 }

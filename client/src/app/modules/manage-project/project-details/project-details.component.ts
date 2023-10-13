@@ -182,7 +182,7 @@ export class ProjectDetailsComponent implements OnInit {
   private loadUsers(): Observable<ResponseData> {
     return this.userService.getLoggedInUserDetails().pipe(
       tap((response: ResponseData) => {
-        this.users = response.data[0];
+        this.users = response.data;
         console.log('Users fetched:', this.users);
       })
     );

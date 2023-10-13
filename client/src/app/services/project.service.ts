@@ -8,7 +8,6 @@ import {
   MultipleProjectsFullResponseData,
   SingleProjectFullResponseData,
   SingleProjectRefResponseData,
-  projectAddTeamsData,
 } from './model/project.model';
 
 @Injectable({
