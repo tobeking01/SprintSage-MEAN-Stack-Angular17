@@ -1,9 +1,9 @@
 <div class="profile-container" *ngIf="user">
   <!-- Header Section -->
   <div class="header">
-    <h1>Student Profile</h1>
+    <h1>{{ UserRole }} Profile</h1>
     <p>View and manage your profile details.</p>
-    <button class="update-button" (click)="updateProfile()">
+    <button class="update-button" (click)="openUpdateDialog()">
       Update Profile
     </button>
   </div>
@@ -37,6 +37,14 @@
       <div class="profile-detail" *ngIf="user?.expectedGraduation">
         <strong>Expected Graduation:</strong>
         <span>{{ user.expectedGraduation | date }}</span>
+      </div>
+      <div class="profile-detail" *ngIf="user?.professorTitle">
+        <strong>Professor Title:</strong>
+        <span>{{ user.professorTitle }}</span>
+      </div>
+      <div class="profile-detail" *ngIf="user?.professorDepartment">
+        <strong>Professor Department:</strong>
+        <span>{{ user.professorDepartment }}</span>
       </div>
     </div>
   </div>

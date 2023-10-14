@@ -34,14 +34,21 @@ export class UserService {
       .pipe(catchError(this.handleError));
   }
 
-  updateUser(id: string, updates: Partial<User>): Observable<User> {
+  updateStudentProfile(
+    id: string,
+    updates: Partial<User>
+  ): Observable<ResponseData> {
     return this.http
-      .put<User>(`${this.apiUrl}updateUser/${id}`, updates)
+      .put<ResponseData>(`${this.apiUrl}updateStudentProfile/${id}`, updates)
       .pipe(catchError(this.handleError));
   }
-  updateProfile(id: string, updates: Partial<User>): Observable<User> {
+
+  updateProfessorProfile(
+    id: string,
+    updates: Partial<User>
+  ): Observable<ResponseData> {
     return this.http
-      .put<User>(`${this.apiUrl}updateProfile/${id}`, updates)
+      .put<ResponseData>(`${this.apiUrl}updateProfessorProfile/${id}`, updates)
       .pipe(catchError(this.handleError));
   }
 

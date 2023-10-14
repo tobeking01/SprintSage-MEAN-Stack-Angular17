@@ -2,11 +2,11 @@ import express from "express";
 import {
   getLoggedInUserDetails,
   createUser,
-  updateUser,
+  updateStudentProfile,
   deleteUser,
   getUsersForTeam,
   getRoleMappings,
-  updateProfile,
+  updateProfessorProfile,
 } from "../controllers/user.controller.js";
 import {
   verifyToken,
@@ -40,9 +40,21 @@ router.get(
   getLoggedInUserDetails
 );
 
-// requireSelfOrRole("Admin")' middleware to the updateUser route.
-router.put("/updateUser/:id", verifyToken, selfRoles, updateUser);
-router.put("/updateProfile/:id", verifyToken, selfRoles, updateProfile);
+// update student profile
+router.put(
+  "/updateStudentProfile/:id",
+  verifyToken,
+  selfRoles,
+  updateStudentProfile
+);
+
+// update professor profile
+router.put(
+  "/updateProfessorProfile/:id",
+  verifyToken,
+  selfRoles,
+  updateProfessorProfile
+);
 
 router.get("/getUsersForTeam", verifyToken, selfRoles, getUsersForTeam);
 

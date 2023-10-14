@@ -80,50 +80,6 @@ export const createUser = async (req, res, next) => {
 };
 
 /**
- * Update an existing user based on provided ID.
- * @param {Object} req - Express request object containing updated user details in body.
- * @param {Object} res - Express response object for sending the response.
- * @param {function} next - Express next middleware function.
- */
-
-// Controller to update an existing user.
-export const updateUser = async (req, res, next) => {
-  try {
-    // Extracting password from the update payload, if present.
-    const { password, ...otherUpdates } = req.body;
-
-    let updates = otherUpdates;
-
-    // If password is provided in the updates, hash it before updating in the database.
-    if (password) {
-      const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
-      updates = { ...updates, password: hashedPassword };
-    }
-
-    // Finding the user by ID and updating with the new details.
-    const user = await User.findByIdAndUpdate(req.params.id, updates, {
-      new: true,
-      runValidators: true,
-    });
-
-    // If user not found, return an error response.
-    if (!req.userId.equals(req.params.id)) {
-      return sendError(res, 403, "You can only update your own profile.");
-    }
-    // Preparing the user object to be sent in the response.
-    const responseUser = user.toObject();
-    delete responseUser.password; // Removing the password from the response object.
-
-    // Sending the success response.
-    sendSuccess(res, 200, "User Updated Successfully", responseUser);
-  } catch (error) {
-    // Determine the error type and set appropriate status
-    const status = error instanceof mongoose.Error.ValidationError ? 400 : 500;
-    // Send the error using the sendError function
-    next(sendError(res, status, error.message));
-  }
-};
-/**
  * Fetch the logged-in user's details from the database.
  * @param {Object} req - Express request object.
  * @param {Object} res - Express response object for sending the response.
@@ -141,6 +97,7 @@ export const getLoggedInUserDetails = async (req, res, next) => {
     const responseUser = user.toObject();
     delete responseUser.password;
 
+    // Send the response.
     sendSuccess(res, 200, "User Retrieved Successfully", [responseUser]);
   } catch (error) {
     console.error("Error fetching user:", error);
@@ -148,6 +105,7 @@ export const getLoggedInUserDetails = async (req, res, next) => {
   }
 };
 
+// get user for team
 export const getUsersForTeam = async (req, res, next) => {
   try {
     // Ensure the user is logged in
@@ -195,13 +153,13 @@ export const deleteUser = async (req, res, next) => {
  * @param {function} next - Express next middleware function.
  */
 
-export const updateProfile = async (req, res, next) => {
+export const updateStudentProfile = async (req, res, next) => {
   try {
     const userId = req.params.id;
-    const { role } = req.user.id.toString();
+    const { roles } = req.user;
 
     // Check if user is updating their own profile.
-    if (!req.user.id.equals(userId)) {
+    if (req.user.id !== userId) {
       return next(
         sendError(
           res,
@@ -214,12 +172,64 @@ export const updateProfile = async (req, res, next) => {
     let updates = req.body;
 
     // Check for role-specific updates.
-    if (role === "Student") {
+    if (roles.includes("Student")) {
+      // Using includes to check if user has "Student" role
       updates = {
         schoolYear: req.body.schoolYear,
         expectedGraduation: req.body.expectedGraduation,
       };
-    } else if (role === "Professor") {
+    } else {
+      return next(
+        sendError(res, 400, "Unrecognized user role. Cannot update profile.")
+      );
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(userId, updates, {
+      new: true,
+      runValidators: true,
+    });
+
+    if (!updatedUser) {
+      return next(sendError(res, 404, "User not found."));
+    }
+
+    // Respond with the updated user.
+    sendSuccess(res, 200, "Student Profile Updated Successfully!", [
+      updatedUser,
+    ]);
+  } catch (error) {
+    console.error("Error updating student profile:", error);
+    sendError(res, 500, "Error updating student profile.");
+  }
+};
+
+/**
+ * Update professor's profile information based on their role.
+ * @param {Object} req - Express request object containing updated profile details.
+ * @param {Object} res - Express response object for sending the response.
+ * @param {function} next - Express next middleware function.
+ */
+export const updateProfessorProfile = async (req, res, next) => {
+  try {
+    const userId = req.params.id;
+    const { roles } = req.user; // Changed from `role` to `roles`
+
+    // Check if user is updating their own profile.
+    if (req.user.id !== userId) {
+      return next(
+        sendError(
+          res,
+          403,
+          "You do not have permission to update another user's profile."
+        )
+      );
+    }
+
+    let updates = req.body;
+
+    // Check for role-specific updates.
+    if (roles.includes("Professor")) {
+      // Using includes to check if user has "Professor" role
       updates = {
         professorTitle: req.body.professorTitle,
         professorDepartment: req.body.professorDepartment,
@@ -240,10 +250,12 @@ export const updateProfile = async (req, res, next) => {
     }
 
     // Respond with the updated user.
-    sendSuccess(res, 200, "User Profile Updated Successfully!", [updatedUser]);
+    sendSuccess(res, 200, "Professor Profile Updated Successfully!", [
+      updatedUser,
+    ]);
   } catch (error) {
-    console.error("Error updating user profile:", error);
-    sendError(res, 500, "Error updating user profile.");
+    console.error("Error updating professor profile:", error);
+    sendError(res, 500, "Error updating professor profile.");
   }
 };
 

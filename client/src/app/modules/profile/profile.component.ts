@@ -1,7 +1,9 @@
-import { Component, OnInit } from '@angular/core';
-import { User } from 'src/app/services/model/user.model';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { User, ResponseData } from 'src/app/services/model/user.model';
 import { UserService } from 'src/app/services/user.service';
 import { AuthService } from '../../services/auth.service';
+import { MatDialog } from '@angular/material/dialog';
+import { UpdateProfileComponent } from './update-profile/update-profile.component';
 
 @Component({
   selector: 'app-profile',
@@ -9,119 +11,74 @@ import { AuthService } from '../../services/auth.service';
   styleUrls: ['./profile.component.scss'],
 })
 export class ProfileComponent implements OnInit {
-  // This declares user as potentially a User object or null.
-  // This also means you should check whether user exists before accessing its properties
   user: User | null = null;
+  UserRole: 'Student' | 'Professor' | '' = '';
 
   constructor(
     private userService: UserService,
-    private authService: AuthService
+    private authService: AuthService,
+    private dialog: MatDialog,
+    private cd: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
     this.fetchUserProfile();
   }
 
+  private convertDatesForUser(userData: User): User {
+    if (userData.createdAt) userData.createdAt = new Date(userData.createdAt);
+    if (userData.updatedAt) userData.updatedAt = new Date(userData.updatedAt);
+    return userData;
+  }
+
   fetchUserProfile(): void {
     if (this.authService.isLoggedIn()) {
       this.userService.getLoggedInUserDetails().subscribe(
-        (response: any) => {
-          if (response.success) {
-            if (Array.isArray(response.data) && response.data.length > 0) {
-              const userData = response.data[0];
+        (response: ResponseData) => {
+          if (response.success && response.data && response.data.length) {
+            const userData = response.data[0];
+            this.user = this.convertDatesForUser(userData);
+            console.log('User after conversion:', this.user);
 
-              // Convert string date from the backend to a JavaScript Date object
-              if (userData.expectedGraduation) {
-                userData.expectedGraduation = new Date(
-                  userData.expectedGraduation
-                );
-              }
-
-              // Do the same for any other date properties you may have
-              if (userData.createdAt) {
-                userData.createdAt = new Date(userData.createdAt);
-              }
-              if (userData.updatedAt) {
-                userData.updatedAt = new Date(userData.updatedAt);
-              }
-
-              this.user = userData;
-            } else if (response.data instanceof Object) {
-              const userData = response.data as User;
-
-              // Convert string date from the backend to a JavaScript Date object
-              if (userData.expectedGraduation) {
-                userData.expectedGraduation = new Date(
-                  userData.expectedGraduation
-                );
-              }
-
-              // Again, convert other date properties
-              if (userData.createdAt) {
-                userData.createdAt = new Date(userData.createdAt);
-              }
-              if (userData.updatedAt) {
-                userData.updatedAt = new Date(userData.updatedAt);
-              }
-
-              this.user = userData;
+            // Determine the role based on the user data.
+            if (this.user.schoolYear) {
+              this.UserRole = 'Student';
+            } else if (this.user.professorTitle) {
+              this.UserRole = 'Professor';
+            } else {
+              this.UserRole = '';
             }
+
+            this.cd.detectChanges();
           }
         },
-        (error) => {
-          console.error('Error fetching user profile:', error);
-          // Maybe set user to some error state, display a message, etc.
-        }
+        (error) => console.error('Error fetching user profile:', error)
       );
     }
   }
 
-  updateProfile(): void {
-    if (this.user) {
-      const updates: any = {}; // The updates object should be dynamic based on role.
+  openUpdateDialog(): void {
+    if (!this.user) return;
+    this.dialog
+      .open(UpdateProfileComponent, { width: '500px', data: this.user })
+      .afterClosed()
+      .subscribe((updatedData) => {
+        if (updatedData) this.updateProfileWithData(updatedData);
+      });
+  }
 
-      if (this.user.roles.includes('Student')) {
-        updates.schoolYear = this.user.schoolYear;
-        updates.expectedGraduation = this.user.expectedGraduation;
-      } else if (this.user.roles.includes('Professor')) {
-        updates.professorTitle = this.user.professorTitle;
-        updates.professorDepartment = this.user.professorDepartment;
-      }
+  updateProfileWithData(updatedData: Partial<User>): void {
+    if (!this.user || !this.user._id) return;
 
-      if (this.user && this.user._id) {
-        this.userService.updateProfile(this.user._id, updates).subscribe(
-          (response: any) => {
-            if (
-              response.success &&
-              Array.isArray(response.data) &&
-              response.data.length > 0
-            ) {
-              const updatedUserData = response.data[0] as User;
-
-              // Convert string dates from backend to Date objects (if needed).
-              if (updatedUserData.expectedGraduation) {
-                updatedUserData.expectedGraduation = new Date(
-                  updatedUserData.expectedGraduation
-                );
-              }
-
-              // Do the same for any other date properties you may have.
-              if (updatedUserData.createdAt) {
-                updatedUserData.createdAt = new Date(updatedUserData.createdAt);
-              }
-              if (updatedUserData.updatedAt) {
-                updatedUserData.updatedAt = new Date(updatedUserData.updatedAt);
-              }
-
-              this.user = updatedUserData; // Update the local user object.
-            }
-          },
-          (error) => {
-            console.error('Error updating user profile:', error);
-            // Display error message to user or handle the error in another way.
-          }
-        );
-      }
-    }
+    this.userService.updateStudentProfile(this.user._id, updatedData).subscribe(
+      (response: any) => {
+        if (response.success && response.data) {
+          this.user = this.convertDatesForUser(response.data as User);
+          this.cd.detectChanges();
+        }
+      },
+      (error) =>
+        console.error('Error updating user profile with new data:', error)
+    );
   }
 }

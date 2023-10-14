@@ -28,6 +28,9 @@ import { MatListModule } from '@angular/material/list';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatButtonModule } from '@angular/material/button';
+import { UpdateProfileComponent } from './profile/update-profile/update-profile.component';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
 
 @NgModule({
   declarations: [
@@ -44,6 +47,7 @@ import { MatButtonModule } from '@angular/material/button';
     AdminDashboardComponent,
     NotFoundComponent,
     TeamDetailsComponent,
+    UpdateProfileComponent,
   ],
   imports: [
     CommonModule,
@@ -62,6 +66,8 @@ import { MatButtonModule } from '@angular/material/button';
     MatToolbarModule,
     MatTooltipModule,
     MatButtonModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
   ],
   exports: [
     StudentDashboardComponent,
