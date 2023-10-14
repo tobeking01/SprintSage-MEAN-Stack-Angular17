@@ -7,9 +7,6 @@ import {
   TeamPopulated,
 } from 'src/app/services/model/team.model';
 import { AuthService } from 'src/app/services/auth.service';
-import { ProjectFull } from 'src/app/services/model/project.model';
-import { ProjectService } from '../../services/project.service';
-import { switchMap } from 'rxjs';
 import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
@@ -24,7 +21,6 @@ export class TeamDetailsComponent implements OnInit {
   errorMessage: string = '';
   teamName?: string = '';
   isLoading: boolean = false;
-  teamProjects: ProjectFull[] = []; // You might want to fetch these from somewhere
 
   constructor(private teamService: TeamService) {}
 
@@ -47,7 +43,7 @@ export class TeamDetailsComponent implements OnInit {
   }
 
   loadTeamDetails(): void {
-    console.log('Fetching teams... ');
+    console.log('Fetching teams... team details');
     this.teamService.getTeamsByUserId().subscribe(
       (response: MultipleTeamsResponseData) => {
         if (Array.isArray(response.data)) {

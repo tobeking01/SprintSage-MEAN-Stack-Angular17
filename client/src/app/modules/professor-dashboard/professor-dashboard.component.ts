@@ -2,8 +2,8 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import {
-  MultipleProjectsFullResponseData,
-  ProjectFull,
+  MultipleProjectsResponseData,
+  ProjectPopulated,
 } from 'src/app/services/model/project.model';
 import {
   MultipleTeamsResponseData,
@@ -13,7 +13,7 @@ import { ResponseData, User } from 'src/app/services/model/user.model';
 import { ProjectService } from 'src/app/services/project.service';
 import { TeamService } from 'src/app/services/team.service';
 import { UserService } from 'src/app/services/user.service';
-import { SingleProjectFullResponseData } from 'src/app/services/model/project.model';
+import { SingleProjectResponseData } from 'src/app/services/model/project.model';
 import { CreateProjectComponent } from '../manage-project/create-project/create-project.component';
 import { MatDialog } from '@angular/material/dialog';
 import { CreateTeamComponent } from '../team-details/create-team/create-team.component';
@@ -27,8 +27,8 @@ export class ProfessorDashboardComponent implements OnInit {
   teamMembersDetails: { [key: string]: string } = {};
   users: User[] = [];
   teams: TeamPopulated[] = [];
-  projects: ProjectFull[] = [];
-  selectedProject: ProjectFull | null = null;
+  projects: ProjectPopulated[] = [];
+  selectedProject: ProjectPopulated | null = null;
   isLoading = false;
   constructor(
     private projectService: ProjectService,
@@ -82,27 +82,19 @@ export class ProfessorDashboardComponent implements OnInit {
       }
     );
   }
+
   private loadProject(): void {
-    console.log('Fetching project... studentDashboard');
-    this.isLoading = true;
+    console.log('Fetching project... ');
     this.projectService.getProjectsByUserId().subscribe(
-      (
-        response:
-          | SingleProjectFullResponseData
-          | MultipleProjectsFullResponseData
-      ) => {
-        if (response.hasOwnProperty('data') && Array.isArray(response.data)) {
-          // Assign the array directly for multiple projects
+      (response: MultipleProjectsResponseData) => {
+        if (Array.isArray(response.data)) {
           this.projects = response.data;
-        } else if (
-          response.hasOwnProperty('data') &&
-          !Array.isArray(response.data)
-        ) {
-          // Wrap single project inside an array
+        } else {
           this.projects = [response.data];
         }
 
         console.log('projects fetched:', this.projects);
+        this.isLoading = false;
       },
       (error: HttpErrorResponse) => {
         console.error('Error fetching projects:', error);

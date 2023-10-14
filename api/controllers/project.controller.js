@@ -104,10 +104,13 @@ export const createProject = async (req, res, next) => {
 // Controller to get all projects related to a logged-in user
 export const getProjectsByUserId = async (req, res, next) => {
   try {
-    const loggedInUserId = req.user.id;
-    let projects = [];
+    const loggedInUserId = req.user.id.toString();
+    // let projects = [];
 
-    projects = await Project.find({
+    // If the user isn't found (which should be rare if they're authenticated), return a 404 error.
+    if (!loggedInUserId) return sendError(res, 404, "User not found!");
+
+    const projects = await Project.find({
       $or: [
         { createdBy: loggedInUserId },
         { "teams.teamMembers": loggedInUserId },

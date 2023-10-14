@@ -1,9 +1,10 @@
 import mongoose from 'mongoose';
 import { Team, TeamPopulated } from './team.model';
 import { Ticket } from './ticket.model';
+import { User } from './user.model';
 
 // Interface for Project with only ObjectId references
-export interface ProjectRef {
+export interface Project {
   _id?: string;
   projectName: string;
   description?: string;
@@ -14,20 +15,21 @@ export interface ProjectRef {
   endDate?: Date;
   createdAt?: Date;
   updatedAt?: Date;
+  __v?: number; // MongoDB document version key. Added by Mongoose by default.
 }
 
-// Interface for Project with full Team and Ticket objects populated
-export interface ProjectFull {
-  _id?: string;
+export interface ProjectPopulated {
+  _id: string;
   projectName: string;
   description?: string;
   teams: TeamPopulated[];
   tickets?: Ticket[];
-  createdBy: string | mongoose.Types.ObjectId; // User who created the project
+  createdBy: User;
   startDate?: Date;
   endDate?: Date;
   createdAt?: Date;
   updatedAt?: Date;
+  __v?: number;
 }
 
 export interface projectUpdateData {
@@ -38,37 +40,20 @@ export interface projectUpdateData {
   startDate?: Date;
   endDate?: Date;
 }
-
 // For singular project responses with references
-export interface SingleProjectRefResponseData {
+export interface SingleProjectResponseData {
   success: boolean;
   status: number;
   message: string;
-  data: ProjectRef;
-}
-
-// For singular project responses with full details
-export interface SingleProjectFullResponseData {
-  success: boolean;
-  status: number;
-  message: string;
-  data: ProjectFull;
+  data: ProjectPopulated;
 }
 
 // For multiple project responses with references
-export interface MultipleProjectsRefResponseData {
+export interface MultipleProjectsResponseData {
   success: boolean;
   status: number;
   message: string;
-  data: ProjectRef[];
-}
-
-// For multiple project responses with full details
-export interface MultipleProjectsFullResponseData {
-  success: boolean;
-  status: number;
-  message: string;
-  data: ProjectFull[];
+  data: ProjectPopulated[];
 }
 
 export interface projectAddTeamsData {

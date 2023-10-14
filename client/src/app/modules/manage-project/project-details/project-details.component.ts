@@ -12,8 +12,8 @@ import { Observable, Subject, forkJoin } from 'rxjs';
 import { tap, takeUntil } from 'rxjs/operators';
 import { AuthService } from 'src/app/services/auth.service';
 import {
-  ProjectFull,
-  SingleProjectFullResponseData,
+  ProjectPopulated,
+  SingleProjectResponseData,
 } from 'src/app/services/model/project.model';
 import {
   MultipleTeamsResponseData,
@@ -32,7 +32,7 @@ import { UserService } from 'src/app/services/user.service';
 export class ProjectDetailsComponent implements OnInit {
   addMemberForm!: FormGroup;
   isExistingTeamSelected = false;
-  selectedProject?: ProjectFull;
+  selectedProject?: ProjectPopulated;
   @Output() close = new EventEmitter<void>();
   users: User[] = [];
   teams: TeamPopulated[] = [];
@@ -135,7 +135,7 @@ export class ProjectDetailsComponent implements OnInit {
 
   private fetchProjectDetails(id: string): void {
     this.projectService.getProjectById(id).subscribe(
-      (response: SingleProjectFullResponseData) => {
+      (response: SingleProjectResponseData) => {
         // If the response data is an array, take the first element
         this.selectedProject = Array.isArray(response.data)
           ? response.data[0]

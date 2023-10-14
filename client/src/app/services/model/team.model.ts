@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 import { User } from './user.model';
-import { ProjectFull, ProjectRef } from './project.model';
+import { ProjectPopulated } from './project.model';
 
 // Interface for teams
 export interface Team {
@@ -24,7 +24,7 @@ export interface TeamPopulated {
   teamName: string;
   teamMembers: User[];
   createdBy: User; // User who created the Team
-  projects?: ProjectRef[];
+  projects?: ProjectPopulated[];
   createdAt?: Date;
   updatedAt?: Date;
   __v?: number;

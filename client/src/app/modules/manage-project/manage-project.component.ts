@@ -26,7 +26,7 @@ import { UserService } from 'src/app/services/user.service';
 import { TeamService } from 'src/app/services/team.service';
 
 // Model Imports
-import { ProjectFull } from 'src/app/services/model/project.model';
+import { ProjectPopulated } from 'src/app/services/model/project.model';
 import {
   Team,
   MultipleTeamsResponseData,
@@ -65,13 +65,13 @@ export class ManageProjectComponent implements OnInit, OnDestroy {
   isLoading = false;
   error: string | null = null;
   teamMembersDetails: { [key: string]: string } = {};
-  MyDataSource: MatTableDataSource<ProjectFull> =
-    new MatTableDataSource<ProjectFull>();
+  MyDataSource: MatTableDataSource<ProjectPopulated> =
+    new MatTableDataSource<ProjectPopulated>();
   teamDetails: { [key: string]: Team } = {};
   users: User[] = [];
   teams: TeamPopulated[] = [];
   showProjectDetails: boolean = false;
-  selectedProject: ProjectFull | null = null;
+  selectedProject: ProjectPopulated | null = null;
 
   constructor(
     private projectService: ProjectService,
@@ -190,7 +190,7 @@ export class ManageProjectComponent implements OnInit, OnDestroy {
     });
   }
 
-  openProjectDetails(project: ProjectFull): void {
+  openProjectDetails(project: ProjectPopulated): void {
     this.router.navigate([`/project-details/${project._id}`]);
   }
 
