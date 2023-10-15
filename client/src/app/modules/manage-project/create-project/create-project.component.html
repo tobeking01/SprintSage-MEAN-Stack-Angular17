@@ -3,7 +3,7 @@
 </div>
 
 <div class="project-form">
-  <form [formGroup]="projectForm" (ngSubmit)="onSubmit()">
+  <form [formGroup]="createProjectForm" (ngSubmit)="onSubmit()">
     <div mat-dialog-content class="content">
       <!-- Project Name Field -->
       <mat-form-field class="full-width">
@@ -16,13 +16,16 @@
         />
         <mat-error
           *ngIf="
-            projectForm.get('projectName')?.invalid &&
-            projectForm.get('projectName')?.touched
+            createProjectForm.get('projectName')?.invalid &&
+            createProjectForm.get('projectName')?.touched
           "
         >
           Please enter project name
         </mat-error>
       </mat-form-field>
+      <div *ngIf="errorMessage" class="error-message">
+        {{ errorMessage }}
+      </div>
 
       <!-- Description Field -->
       <mat-form-field class="full-width">
@@ -42,7 +45,16 @@
             {{ team.teamName }}
           </mat-option>
         </mat-select>
+        <mat-error
+          *ngIf="
+            createProjectForm.get('existingTeam')?.invalid &&
+            createProjectForm.get('existingTeam')?.touched
+          "
+        >
+          Please select a team.
+        </mat-error>
       </mat-form-field>
+      <mat-spinner *ngIf="isLoading"></mat-spinner>
 
       <!-- Start Date Field -->
       <mat-form-field class="full-width">
@@ -77,7 +89,7 @@
         mat-raised-button
         color="accent"
         type="submit"
-        [disabled]="projectForm.invalid"
+        [disabled]="createProjectForm.invalid"
       >
         {{ data ? "Update" : "Save" }}
       </button>

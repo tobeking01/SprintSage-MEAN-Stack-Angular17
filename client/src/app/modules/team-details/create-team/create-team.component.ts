@@ -14,7 +14,6 @@ import {
   SingleTeamResponseData,
   TeamPopulated,
 } from 'src/app/services/model/team.model';
-import { ResponseData } from 'src/app/services/model/user.model';
 
 @Component({
   selector: 'app-create-team',
@@ -22,7 +21,7 @@ import { ResponseData } from 'src/app/services/model/user.model';
   styleUrls: ['./create-team.component.scss'],
 })
 export class CreateTeamComponent implements OnInit {
-  createTeamMemberForm!: FormGroup;
+  createTeamForm!: FormGroup;
   isExistingTeamSelected = false;
   users: User[] = [];
   teams: TeamPopulated[] = [];
@@ -42,18 +41,18 @@ export class CreateTeamComponent implements OnInit {
     this.loadAllUsersForTeamCreation();
   }
   logFormValue() {
-    console.log(this.createTeamMemberForm.value);
+    console.log(this.createTeamForm.value);
   }
 
   // Initializes the form controls
   initializeForm() {
-    this.createTeamMemberForm = this.fb.group({
+    this.createTeamForm = this.fb.group({
       teamName: ['', Validators.required],
       teamMembers: this.fb.array([new FormControl(null, Validators.required)]),
     });
 
     // Log changes in the entire form value
-    this.createTeamMemberForm.valueChanges.subscribe((value) => {
+    this.createTeamForm.valueChanges.subscribe((value) => {
       console.log('Form Value:', value);
     });
 
@@ -107,7 +106,7 @@ export class CreateTeamComponent implements OnInit {
 
   // Returns the form array for team members
   get teamMembersFormArray(): FormArray {
-    return this.createTeamMemberForm.get('teamMembers') as FormArray;
+    return this.createTeamForm.get('teamMembers') as FormArray;
   }
 
   // Returns the form controls for team members
@@ -139,12 +138,12 @@ export class CreateTeamComponent implements OnInit {
 
   // Handles form submission
   onSubmit() {
-    if (this.createTeamMemberForm.valid) {
+    if (this.createTeamForm.valid) {
       const teamData = {
-        teamName: this.createTeamMemberForm.value.teamName,
-        teamMembers: this.createTeamMemberForm.value.teamMembers,
+        teamName: this.createTeamForm.value.teamName,
+        teamMembers: this.createTeamForm.value.teamMembers,
       };
-      console.log(this.createTeamMemberForm.value);
+      console.log(this.createTeamForm.value);
 
       this.teamService.createTeam(teamData).subscribe(
         (response: SingleTeamResponseData) => {

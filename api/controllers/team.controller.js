@@ -55,6 +55,12 @@ export const createTeam = async (req, res, next) => {
     // Here we are setting the createdBy field using req.userId
     const newTeam = new Team({ teamName, teamMembers, createdBy: req.user.id });
     await newTeam.save();
+
+    // Update each user's teams array with the new team's ID
+    for (let userId of teamMembers) {
+      await User.findByIdAndUpdate(userId, { $push: { teams: newTeam._id } });
+    }
+
     // When a new team is created, ensure the response contains the team in an array.
     sendSuccess(res, 201, "Team Created!", [newTeam]);
   } catch (error) {
@@ -66,7 +72,7 @@ export const createTeam = async (req, res, next) => {
 // getall teams by user Id
 export const getTeamsByUserId = async (req, res, next) => {
   try {
-    const loggedInUserId = req.user.id.toString();
+    const loggedInUserId = req.user.id.toString(); // endpoint to return teams for the currently authenticated user
 
     // If the user isn't found (which should be rare if they're authenticated), return a 404 error.
     if (!loggedInUserId) return sendError(res, 404, "User not found!");
@@ -76,7 +82,12 @@ export const getTeamsByUserId = async (req, res, next) => {
     }).populate("teamMembers");
 
     if (!teams.length) {
-      return sendError(res, 404, "No teams found!");
+      return sendSuccess(
+        res,
+        200,
+        "No teams found for the authenticated user.",
+        []
+      );
     }
 
     sendSuccess(res, 200, "Teams fetched successfully!", teams);
@@ -254,12 +265,9 @@ export const getProjectsByTeamId = async (req, res, next) => {
       return sendError(res, 404, "No projects associated with this team.");
     }
 
-    return sendSuccess(
-      res,
-      200,
-      "Projects fetched successfully!",
-      team.projects
-    );
+    return sendSuccess(res, 200, "Projects fetched successfully!", [
+      team.projects,
+    ]);
   } catch (error) {
     console.error("Error fetching projects by team ID:", error);
     sendError(res, 500, "Internal Server Error!");

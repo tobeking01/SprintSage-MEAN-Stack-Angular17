@@ -6,14 +6,14 @@ import {
   MultipleTeamsResponseData,
   TeamPopulated,
 } from 'src/app/services/model/team.model';
-import { User } from 'src/app/services/model/user.model';
+import { ResponseData, User } from 'src/app/services/model/user.model';
 import { ProjectService } from 'src/app/services/project.service';
 import { TeamService } from 'src/app/services/team.service';
-import { UserService } from 'src/app/services/user.service';
 import { MultipleProjectsResponseData } from 'src/app/services/model/project.model';
 import { CreateProjectComponent } from '../manage-project/create-project/create-project.component';
 import { MatDialog } from '@angular/material/dialog';
 import { CreateTeamComponent } from '../team-details/create-team/create-team.component';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-student-dashboard',
@@ -26,12 +26,12 @@ export class StudentDashboardComponent implements OnInit {
   teams: TeamPopulated[] = [];
   projects: ProjectPopulated[] = [];
   selectedProject: ProjectPopulated | null = null;
-  isLoading = false;
+  isLoading: boolean = false;
   errorMessage: string = '';
+  private onDestroy$ = new Subject<void>(); // For handling unSubscription when the component is destroyed
 
   constructor(
     private projectService: ProjectService,
-    private userService: UserService,
     private teamService: TeamService,
     private dialog: MatDialog,
     private router: Router
@@ -39,9 +39,8 @@ export class StudentDashboardComponent implements OnInit {
 
   ngOnInit(): void {
     this.isLoading = true;
-    // this.loadUsers();
-    this.loadTeamDetails();
-    this.loadProjectDetails();
+    this.loadAllTeamDetails();
+    this.loadAllProjectDetails();
   }
 
   handleError(err: HttpErrorResponse, defaultMsg: string) {
@@ -57,62 +56,41 @@ export class StudentDashboardComponent implements OnInit {
     this.isLoading = false;
   }
 
-  // loadUsers() {
-  //   console.log('Fetching users...');
-  //   this.userService.getLoggedInUserDetails().subscribe(
-  //     (response: ResponseData) => {
-  //       console.log('Response received:', response); // <-- Log the entire response for debugging
-
-  //       if (Array.isArray(response.data)) {
-  //         this.users = response.data;
-  //       } else {
-  //         console.error('Unexpected data structure:', response.data);
-  //         this.users = [response.data]; // Convert the single user object into an array
-  //       }
-
-  //       console.log('Users fetched:', this.users);
-  //     },
-  //     (error: HttpErrorResponse) => {
-  //       console.error('Error:', error);
-  //     }
-  //   );
-  // }
-
-  private loadTeamDetails(): void {
+  private loadAllTeamDetails(): void {
     console.log('Fetching teams... studentDashboard');
-    this.teamService.getTeamsByUserId().subscribe(
-      (response: MultipleTeamsResponseData) => {
-        if (Array.isArray(response.data)) {
+    this.teamService
+      .getTeamsByUserId()
+      .pipe(takeUntil(this.onDestroy$))
+      .subscribe(
+        (response: MultipleTeamsResponseData) => {
           this.teams = response.data;
-        } else {
-          this.teams = [response.data];
-        }
-        console.log('Teams fetched:', this.teams);
-      },
-      (error: HttpErrorResponse) => {
-        this.handleError(error, 'Error fetching teams');
-        this.teams = [];
-      }
-    );
-  }
-  private loadProjectDetails(): void {
-    console.log('Fetching project... studentDashboard');
-    this.projectService.getProjectsByUserId().subscribe(
-      (response: MultipleProjectsResponseData) => {
-        if (Array.isArray(response.data)) {
-          this.projects = response.data;
-        } else {
-          this.projects = [response.data];
-        }
 
-        console.log('projects fetched:', this.projects);
-        this.isLoading = false;
-      },
-      (error: HttpErrorResponse) => {
-        console.error('Error fetching projects:', error);
-        this.projects = [];
-      }
-    );
+          console.log('Teams fetched:', this.teams);
+          this.isLoading = false;
+        },
+        (error: HttpErrorResponse) => {
+          this.handleError(error, 'Error fetching teams');
+          this.teams = [];
+        }
+      );
+  }
+
+  private loadAllProjectDetails(): void {
+    console.log('Fetching project... studentDashboard');
+    this.projectService
+      .getProjectsByUserId()
+      .pipe(takeUntil(this.onDestroy$))
+      .subscribe(
+        (response: MultipleProjectsResponseData) => {
+          this.projects = response.data;
+          console.log('projects fetched:', this.projects);
+          this.isLoading = false;
+        },
+        (error: HttpErrorResponse) => {
+          this.handleError(error, 'Error fetching projects');
+          this.projects = [];
+        }
+      );
   }
 
   getMemberTooltip(member: User): string {
@@ -122,7 +100,7 @@ export class StudentDashboardComponent implements OnInit {
     const dialogRef = this.dialog.open(CreateProjectComponent);
     dialogRef.afterClosed().subscribe({
       next: (val) => {
-        if (val) this.loadProjectDetails();
+        if (val) this.loadAllProjectDetails();
       },
     });
   }
@@ -131,7 +109,7 @@ export class StudentDashboardComponent implements OnInit {
     const dialogRef = this.dialog.open(CreateTeamComponent);
     dialogRef.afterClosed().subscribe({
       next: (val) => {
-        if (val) this.loadTeamDetails();
+        if (val) this.loadAllTeamDetails();
       },
     });
   }

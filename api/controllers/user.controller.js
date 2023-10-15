@@ -10,7 +10,6 @@ import Role from "../models/Role.js"; // Importing Role model.
 // The higher the number, the more secure the hash, but the longer it will take to generate.
 const SALT_ROUNDS = 10;
 
-// This can be in a separate utilities file or within the user.controller.js
 export const createStudentProfessorUser = async (userData) => {
   // Extract relevant fields from userData
   const {

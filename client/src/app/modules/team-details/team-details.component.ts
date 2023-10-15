@@ -1,13 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { TeamService } from 'src/app/services/team.service';
-import { UserService } from 'src/app/services/user.service';
-import { User } from 'src/app/services/model/user.model';
+import { ResponseData, User } from 'src/app/services/model/user.model';
 import {
   MultipleTeamsResponseData,
   TeamPopulated,
 } from 'src/app/services/model/team.model';
-import { AuthService } from 'src/app/services/auth.service';
 import { HttpErrorResponse } from '@angular/common/http';
+import { Subject, takeUntil } from 'rxjs';
+import { UserService } from 'src/app/services/user.service';
 
 @Component({
   selector: 'app-team-details',
@@ -21,12 +21,36 @@ export class TeamDetailsComponent implements OnInit {
   errorMessage: string = '';
   teamName?: string = '';
   isLoading: boolean = false;
+  loggedInUserId: string = '';
+  private onDestroy$ = new Subject<void>(); // For handling unSubscription when the component is destroyed
 
-  constructor(private teamService: TeamService) {}
+  constructor(
+    private teamService: TeamService,
+    private userService: UserService
+  ) {}
 
   ngOnInit(): void {
     this.isLoading = true;
-    this.loadTeamDetails();
+    this.loadLoggedInUser();
+    this.loadAllTeamDetails();
+  }
+
+  loadLoggedInUser() {
+    console.log('Fetching users...');
+    this.userService
+      .getLoggedInUserDetails()
+      .pipe(takeUntil(this.onDestroy$))
+      .subscribe(
+        (response: ResponseData) => {
+          this.users = response.data;
+          console.log('Users fetched:', this.users);
+          this.isLoading = false; // <-- Add this line
+        },
+        (error: any) => {
+          console.error('Error:', error);
+          this.isLoading = false; // <-- Add this line
+        }
+      );
   }
 
   handleError(err: HttpErrorResponse, defaultMsg: string) {
@@ -42,28 +66,22 @@ export class TeamDetailsComponent implements OnInit {
     this.isLoading = false;
   }
 
-  loadTeamDetails(): void {
-    console.log('Fetching teams... team details');
-    this.teamService.getTeamsByUserId().subscribe(
-      (response: MultipleTeamsResponseData) => {
-        if (Array.isArray(response.data)) {
+  private loadAllTeamDetails(): void {
+    console.log('Fetching teams... ');
+    this.teamService
+      .getTeamsByUserId()
+      .pipe(takeUntil(this.onDestroy$))
+      .subscribe(
+        (response: MultipleTeamsResponseData) => {
           this.teams = response.data;
-        } else {
-          this.teams = [response.data];
+          console.log('Teams fetched:', this.teams);
+          this.isLoading = false; // <-- Add this line
+        },
+        (error: HttpErrorResponse) => {
+          this.handleError(error, 'Error fetching teams');
+          this.teams = [];
         }
-        console.log('Teams fetched:', this.teams);
-
-        // Set the first team as the selected team if it exists
-        if (this.teams.length > 0) {
-          this.selectedTeam = this.teams[0];
-        }
-
-        this.isLoading = false; // Ensure loading stops after fetching
-      },
-      (error: HttpErrorResponse) => {
-        this.handleError(error, 'Error fetching teams'); // Use handleError function
-      }
-    );
+      );
   }
 
   selectTeam(team: TeamPopulated) {

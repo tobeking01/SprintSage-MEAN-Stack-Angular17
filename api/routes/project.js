@@ -4,7 +4,6 @@ import express from "express";
 import {
   createProject,
   getProjectsByUserId,
-  getProjectById,
   updateProjectById,
   deleteProjectById,
   addMembersToProject,
@@ -23,19 +22,15 @@ const selfRoleAdmin = requireRoles([ROLES.ADMIN]);
 
 // Endpoint to create a new project
 // Only accessible to authenticated users
-router.post("/createProject", verifyToken, selfRoles, createProject);
+router.post("/createProject", verifyToken, createProject);
 
 // Endpoint to get all projects
 // Only accessible to authenticated users
-router.get("/getProjectsByUserId", verifyToken, selfRoles, getProjectsByUserId);
-
-// Endpoint to get a project by its ID
-// Only accessible to authenticated users
-router.get("/getProjectById/:id", verifyToken, selfRoles, getProjectById);
+router.get("/getProjectsByUserId", verifyToken, getProjectsByUserId);
 
 // Endpoint to update a project by its ID
 // Only accessible to authenticated users
-router.put("/updateProjectById/:id", verifyToken, selfRoles, updateProjectById);
+router.put("/updateProjectById/:id", verifyToken, updateProjectById);
 
 // Endpoint to delete a project by its ID
 // Only accessible to authenticated users
@@ -48,7 +43,7 @@ router.delete(
 
 // Endpoint to add teams to a project by its ID
 // Only accessible to authenticated users
-router.put("/:id/addTeams", verifyToken, selfRoles, addMembersToProject);
+router.put("/:id/addTeams", verifyToken, addMembersToProject);
 
 // Export the router for use in other parts of the application
 export default router;

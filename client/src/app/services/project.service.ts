@@ -44,12 +44,6 @@ export class ProjectService {
       .pipe(catchError(this.handleError));
   }
 
-  getProjectById(id: string): Observable<SingleProjectResponseData> {
-    return this.http
-      .get<SingleProjectResponseData>(`${this.apiUrl}getProjectById/${id}`)
-      .pipe(catchError(this.handleError));
-  }
-
   updateProjectById(
     id: string,
     updateProjectData: projectUpdateData
@@ -71,7 +65,7 @@ export class ProjectService {
     projectId: string,
     teamIds: string[]
   ): Observable<SingleProjectResponseData> {
-    const endpointUrl = `${this.apiUrl}project/${projectId}/addTeams`;
+    const endpointUrl = `${this.apiUrl}/${projectId}/addTeams`;
     return this.http
       .put<SingleProjectResponseData>(endpointUrl, { teams: teamIds })
       .pipe(catchError(this.handleError));

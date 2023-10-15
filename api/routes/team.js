@@ -64,6 +64,6 @@ router.get(
 );
 
 // Get teams associated with a specific user
-router.get("/getTeamsByUserId/:userId", verifyToken, getTeamsByUserId);
+router.get("/getTeamsByUserId/:id", verifyToken, getTeamsByUserId);
 
 export default router;

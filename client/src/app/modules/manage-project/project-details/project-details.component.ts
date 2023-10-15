@@ -8,12 +8,11 @@ import {
   Validators,
 } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import { Observable, Subject, forkJoin } from 'rxjs';
+import { Subject, forkJoin } from 'rxjs';
 import { tap, takeUntil } from 'rxjs/operators';
-import { AuthService } from 'src/app/services/auth.service';
 import {
+  MultipleProjectsResponseData,
   ProjectPopulated,
-  SingleProjectResponseData,
 } from 'src/app/services/model/project.model';
 import {
   MultipleTeamsResponseData,
@@ -45,12 +44,13 @@ export class ProjectDetailsComponent implements OnInit {
   private ngUnsubscribe = new Subject<void>();
   membersVisible = false;
   roleNames: { [id: string]: string } = {};
+  private onDestroy$ = new Subject<void>(); // For handling unSubscription when the component is destroyed
+  errorMessage: string = '';
 
   constructor(
     private fb: FormBuilder,
     private teamService: TeamService,
     private userService: UserService,
-    private authService: AuthService,
     private route: ActivatedRoute,
     private projectService: ProjectService
   ) {}
@@ -58,6 +58,7 @@ export class ProjectDetailsComponent implements OnInit {
   ngOnInit(): void {
     this.combineObservables();
     this.loadLoggedInUser();
+    this.loadAllTeamDetails();
     this.initializeForm();
     this.fetchRoleNames();
   }
@@ -108,24 +109,13 @@ export class ProjectDetailsComponent implements OnInit {
     return 'No Role Assigned';
   }
 
-  private loadLoggedInUser(): void {
-    this.loggedInUser = this.authService.currentUserValue;
-    if (this.loggedInUser?._id) {
-      this.loggedInUserId = this.loggedInUser._id;
-    }
-
-    // Optionally: If you want the full details of the logged-in user, you can use the UserService
-    // to fetch it by the ID.
-    // this.loadUserDetailsById(this.loggedInUserId);
-  }
-
   private combineObservables(): void {
-    forkJoin([this.loadUsers(), this.loadTeams()])
+    forkJoin([this.loadLoggedInUser(), this.loadAllTeamDetails()])
       .pipe(
         tap(() => {
           const projectId = this.route.snapshot.paramMap.get('projectId');
           if (projectId) {
-            this.fetchProjectDetails(projectId);
+            this.fetchProjectDetails();
           }
         }),
         takeUntil(this.ngUnsubscribe)
@@ -133,9 +123,9 @@ export class ProjectDetailsComponent implements OnInit {
       .subscribe();
   }
 
-  private fetchProjectDetails(id: string): void {
-    this.projectService.getProjectById(id).subscribe(
-      (response: SingleProjectResponseData) => {
+  private fetchProjectDetails(): void {
+    this.projectService.getProjectsByUserId().subscribe(
+      (response: MultipleProjectsResponseData) => {
         // If the response data is an array, take the first element
         this.selectedProject = Array.isArray(response.data)
           ? response.data[0]
@@ -179,26 +169,50 @@ export class ProjectDetailsComponent implements OnInit {
       );
   }
 
-  private loadUsers(): Observable<ResponseData> {
-    return this.userService.getLoggedInUserDetails().pipe(
-      tap((response: ResponseData) => {
-        this.users = response.data;
-        console.log('Users fetched:', this.users);
-      })
-    );
+  loadLoggedInUser() {
+    console.log('Fetching users...');
+    this.userService
+      .getLoggedInUserDetails()
+      .pipe(takeUntil(this.onDestroy$))
+      .subscribe(
+        (response: ResponseData) => {
+          this.users = response.data;
+          console.log('Users fetched:', this.users);
+        },
+        (error: any) => {
+          console.error('Error:', error);
+        }
+      );
   }
 
-  private loadTeams(): Observable<MultipleTeamsResponseData> {
-    return this.teamService.getTeamsByUserId().pipe(
-      tap((response: MultipleTeamsResponseData) => {
-        if (Array.isArray(response.data)) {
+  handleError(err: HttpErrorResponse, defaultMsg: string) {
+    let errorMessage = defaultMsg;
+    if (err instanceof HttpErrorResponse) {
+      // Server or connection error happened
+      errorMessage = `Error Code: ${err.status}, Message: ${err.message}`;
+    } else {
+      errorMessage = (err as any).message || defaultMsg;
+    }
+    console.error(errorMessage, err);
+    this.errorMessage = errorMessage;
+    this.isLoading = false;
+  }
+  private loadAllTeamDetails(): void {
+    console.log('Fetching teams...');
+    this.teamService
+      .getTeamsByUserId()
+      .pipe(takeUntil(this.onDestroy$))
+      .subscribe(
+        (response: MultipleTeamsResponseData) => {
           this.teams = response.data;
-        } else {
-          this.teams = [response.data];
+
+          console.log('Teams fetched:', this.teams);
+        },
+        (error: HttpErrorResponse) => {
+          this.handleError(error, 'Error fetching teams');
+          this.teams = [];
         }
-        console.log('Teams fetched:', this.teams);
-      })
-    );
+      );
   }
 
   viewMembers(): void {
@@ -225,11 +239,6 @@ export class ProjectDetailsComponent implements OnInit {
       console.error('Team not found in the teams array:', projectTeamId);
     }
   }
-
-  getCurrentUser(): User | null {
-    return this.authService.currentUserValue;
-  }
-
   get teamMembersFormArray(): FormArray {
     return this.addMemberForm.get('teamMembers') as FormArray;
   }

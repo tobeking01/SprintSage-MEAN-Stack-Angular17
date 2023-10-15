@@ -22,11 +22,13 @@ import { Event as RouterEvent } from '@angular/router';
 
 // Service Imports
 import { ProjectService } from 'src/app/services/project.service';
-import { UserService } from 'src/app/services/user.service';
 import { TeamService } from 'src/app/services/team.service';
 
 // Model Imports
-import { ProjectPopulated } from 'src/app/services/model/project.model';
+import {
+  MultipleProjectsResponseData,
+  ProjectPopulated,
+} from 'src/app/services/model/project.model';
 import {
   Team,
   MultipleTeamsResponseData,
@@ -62,20 +64,24 @@ import { takeUntil } from 'rxjs/operators';
   ],
 })
 export class ManageProjectComponent implements OnInit, OnDestroy {
-  isLoading = false;
-  error: string | null = null;
+  isLoading: boolean = false;
   teamMembersDetails: { [key: string]: string } = {};
-  MyDataSource: MatTableDataSource<ProjectPopulated> =
+  projectDataSource: MatTableDataSource<ProjectPopulated> =
     new MatTableDataSource<ProjectPopulated>();
+
   teamDetails: { [key: string]: Team } = {};
   users: User[] = [];
   teams: TeamPopulated[] = [];
+  projects: ProjectPopulated[] = [];
   showProjectDetails: boolean = false;
   selectedProject: ProjectPopulated | null = null;
+  errorMessage: string = '';
+  loggedInUserId: string = '';
+
+  private onDestroy$ = new Subject<void>(); // For handling unSubscription when the component is destroyed
 
   constructor(
     private projectService: ProjectService,
-    private userService: UserService,
     private teamService: TeamService,
     private dialog: MatDialog,
     private router: Router
@@ -83,9 +89,8 @@ export class ManageProjectComponent implements OnInit, OnDestroy {
   // Private Subject to trigger unSubscription
   private ngUnsubscribe = new Subject<void>();
   ngOnInit(): void {
-    this.loadUsers();
-    this.loadTeams();
-    this.loadProject();
+    this.loadAllTeamDetails();
+    this.loadAllProjectDetails();
     this.listenToRouterEvents();
   }
   ngOnDestroy(): void {
@@ -113,56 +118,56 @@ export class ManageProjectComponent implements OnInit, OnDestroy {
       });
   }
 
-  private loadUsers(): void {
-    console.log('Fetching users... manageSide');
-    this.userService.getLoggedInUserDetails().subscribe(
-      (response: ResponseData) => {
-        this.users = response.data;
-        console.log('Users fetched:', this.users);
-      },
-      (error: any) => {
-        console.error('Error:', error);
-      }
-    );
+  handleError(err: HttpErrorResponse, defaultMsg: string) {
+    let errorMessage = defaultMsg;
+    if (err instanceof HttpErrorResponse) {
+      // Server or connection error happened
+      errorMessage = `Error Code: ${err.status}, Message: ${err.message}`;
+    } else {
+      errorMessage = (err as any).message || defaultMsg;
+    }
+    console.error(errorMessage, err);
+    this.errorMessage = errorMessage;
+    this.isLoading = false;
   }
 
-  private loadTeams(): void {
-    console.log('Fetching teams... manageSide');
-    this.teamService.getTeamsByUserId().subscribe(
-      (response: MultipleTeamsResponseData) => {
-        if (Array.isArray(response.data)) {
+  private loadAllTeamDetails(): void {
+    console.log('Fetching teams... studentDashboard');
+    this.teamService
+      .getTeamsByUserId()
+      .pipe(takeUntil(this.onDestroy$))
+      .subscribe(
+        (response: MultipleTeamsResponseData) => {
           this.teams = response.data;
-        } else {
-          this.teams = [response.data];
+          console.log('Teams fetched:', this.teams);
+          this.isLoading = false; // <-- Add this line
+        },
+        (error: HttpErrorResponse) => {
+          this.handleError(error, 'Error fetching teams');
+          this.teams = [];
         }
-        console.log('Teams fetched:', this.teams);
-      },
-      (error: HttpErrorResponse) => {
-        console.error('Error fetching teams:', error);
-        this.teams = [];
-      }
-    );
+      );
   }
 
-  private loadProject(): void {
-    console.log('Fetching project... manageSide');
-    this.isLoading = true;
+  private loadAllProjectDetails(): void {
+    console.log('Fetching project... studentDashboard');
     this.projectService
       .getProjectsByUserId()
-      .pipe(takeUntil(this.ngUnsubscribe))
+      .pipe(takeUntil(this.onDestroy$))
       .subscribe(
-        (response) => {
-          if (Array.isArray(response.data)) {
-            this.MyDataSource.data = response.data;
-          } else {
-            this.MyDataSource.data = [response.data];
-          }
+        (response: MultipleProjectsResponseData) => {
+          this.projects = response.data;
+          console.log('projects fetched:', this.projects);
+
+          // Populate the MyDataSource with the projects
+          this.projectDataSource.data = this.projects;
+
           this.isLoading = false;
         },
-        (error) => {
-          this.error = 'Error loading projects.';
-          console.error('Error occurred:', error);
-          this.isLoading = false;
+        (error: HttpErrorResponse) => {
+          this.handleError(error, 'Error fetching projects');
+          this.projects = [];
+          this.projectDataSource.data = []; // <-- Add this line
         }
       );
   }
@@ -185,7 +190,7 @@ export class ManageProjectComponent implements OnInit, OnDestroy {
     const dialogRef = this.dialog.open(CreateProjectComponent);
     dialogRef.afterClosed().subscribe({
       next: (val) => {
-        if (val) this.loadProject();
+        if (val) this.loadAllProjectDetails();
       },
     });
   }
@@ -201,7 +206,7 @@ export class ManageProjectComponent implements OnInit, OnDestroy {
 
   applyFilter(event: Event): void {
     const filterValue = (event.target as HTMLInputElement).value;
-    this.MyDataSource.filter = filterValue.trim().toLowerCase();
+    this.projectDataSource.filter = filterValue.trim().toLowerCase();
   }
 
   applyDateFilter(): void {

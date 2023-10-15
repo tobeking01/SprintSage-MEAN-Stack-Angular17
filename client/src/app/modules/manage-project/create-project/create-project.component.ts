@@ -6,7 +6,7 @@ import {
   FormArray,
   FormControl,
 } from '@angular/forms';
-import { Subject } from 'rxjs';
+import { Subject, takeUntil } from 'rxjs';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -32,10 +32,13 @@ import {
   styleUrls: ['./create-project.component.scss'],
 })
 export class CreateProjectComponent implements OnInit, OnDestroy {
-  projectForm!: FormGroup;
+  createProjectForm!: FormGroup;
   users: User[] = [];
   teams: TeamPopulated[] = [];
   projects: ProjectPopulated[] = [];
+  isLoading = false;
+  errorMessage: string = '';
+  loggedInUserId: string = '';
 
   private onDestroy$ = new Subject<void>(); // For handling unSubscription when the component is destroyed
 
@@ -51,13 +54,13 @@ export class CreateProjectComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.initializeForm();
-    this.loadUsers();
-    this.loadTeams();
-    this.loadProjects();
+    this.loadLoggedInUser();
+    this.loadAllTeamDetails();
+    this.loadAllProjectDetails();
   }
 
   initializeForm() {
-    this.projectForm = this.fb.group({
+    this.createProjectForm = this.fb.group({
       projectName: ['', Validators.required],
       description: [''],
       startDate: [null],
@@ -67,7 +70,7 @@ export class CreateProjectComponent implements OnInit, OnDestroy {
   }
 
   get teamMembersFormArray(): FormArray {
-    return this.projectForm.get('teamMembers') as FormArray;
+    return this.createProjectForm.get('teamMembers') as FormArray;
   }
   get teamMembersControls(): FormControl[] {
     return this.teamMembersFormArray.controls as FormControl[];
@@ -75,57 +78,78 @@ export class CreateProjectComponent implements OnInit, OnDestroy {
   addUser() {
     this.teamMembersFormArray.push(new FormControl('', Validators.required));
   }
+  get isTeamMembersValid(): boolean {
+    return this.teamMembersFormArray.controls.every((control) => control.valid);
+  }
 
   removeUser(index: number) {
     this.teamMembersFormArray.removeAt(index);
   }
-  loadUsers() {
+
+  loadLoggedInUser() {
     console.log('Fetching users...');
-    this.userService.getLoggedInUserDetails().subscribe(
-      (response: ResponseData) => {
-        this.users = response.data;
-        console.log('Users fetched:', this.users);
-      },
-      (error: any) => {
-        console.error('Error:', error);
-      }
-    );
+    this.userService
+      .getLoggedInUserDetails()
+      .pipe(takeUntil(this.onDestroy$))
+      .subscribe(
+        (response: ResponseData) => {
+          this.users = response.data;
+          console.log('Users fetched:', this.users);
+        },
+        (error: any) => {
+          console.error('Error:', error);
+        }
+      );
   }
 
-  loadTeams(): void {
-    this.teamService.getTeamsByUserId().subscribe(
-      (response: MultipleTeamsResponseData) => {
-        if (Array.isArray(response.data)) {
+  handleError(err: HttpErrorResponse, defaultMsg: string) {
+    let errorMessage = defaultMsg;
+    if (err instanceof HttpErrorResponse) {
+      // Server or connection error happened
+      errorMessage = `Error Code: ${err.status}, Message: ${err.message}`;
+    } else {
+      errorMessage = (err as any).message || defaultMsg;
+    }
+    console.error(errorMessage, err);
+    this.errorMessage = errorMessage;
+    this.isLoading = false;
+  }
+
+  private loadAllTeamDetails(): void {
+    console.log('Fetching teams... studentDashboard');
+    this.teamService
+      .getTeamsByUserId()
+      .pipe(takeUntil(this.onDestroy$))
+      .subscribe(
+        (response: MultipleTeamsResponseData) => {
           this.teams = response.data;
-        } else {
-          this.teams = [response.data]; // Convert the single team into an array
+
+          console.log('Teams fetched:', this.teams);
+        },
+        (error: HttpErrorResponse) => {
+          this.handleError(error, 'Error fetching teams');
+          this.teams = [];
         }
-        console.log('Teams fetched:', this.teams);
-      },
-      (error: HttpErrorResponse) => {
-        console.error('Error fetching teams:', error);
-        this.teams = [];
-      }
-    );
+      );
   }
 
-  private loadProjects(): void {
+  private loadAllProjectDetails(): void {
     console.log('Fetching project... studentDashboard');
-    this.projectService.getProjectsByUserId().subscribe(
-      (response: MultipleProjectsResponseData) => {
-        if (Array.isArray(response.data)) {
+    this.projectService
+      .getProjectsByUserId()
+      .pipe(takeUntil(this.onDestroy$))
+      .subscribe(
+        (response: MultipleProjectsResponseData) => {
           this.projects = response.data;
-        } else {
-          this.projects = [response.data];
-        }
 
-        console.log('projects fetched:', this.projects);
-      },
-      (error: HttpErrorResponse) => {
-        console.error('Error fetching projects:', error);
-        this.projects = [];
-      }
-    );
+          console.log('projects fetched:', this.projects);
+          this.isLoading = false;
+        },
+        (error: HttpErrorResponse) => {
+          this.handleError(error, 'Error fetching projects');
+          this.projects = [];
+        }
+      );
   }
 
   createMember(): FormGroup {
@@ -135,9 +159,9 @@ export class CreateProjectComponent implements OnInit, OnDestroy {
   }
 
   onSubmit() {
-    if (this.projectForm.valid) {
+    if (this.createProjectForm.valid) {
       const { projectName, description, existingTeam, startDate, endDate } =
-        this.projectForm.value;
+        this.createProjectForm.value;
 
       // Find the selected team
       const selectedTeam = this.teams.find((team) => team._id === existingTeam);
@@ -147,10 +171,19 @@ export class CreateProjectComponent implements OnInit, OnDestroy {
         teamIds.push(selectedTeam._id);
       }
 
+      // Extract user IDs from the selected team
+      let userIds: string[] = [];
+      if (selectedTeam && Array.isArray(selectedTeam.teamMembers)) {
+        userIds = selectedTeam.teamMembers
+          .map((member) => member._id)
+          .filter((id): id is string => !!id); // This filters out undefined or falsy values.
+      }
+
       const formData = {
         projectName,
         description,
-        teams: teamIds, // Send array of string IDs
+        teams: teamIds, // Send array of team IDs
+        users: userIds, // Send array of user IDs (if your backend supports this)
         startDate,
         endDate,
       };
@@ -170,27 +203,26 @@ export class CreateProjectComponent implements OnInit, OnDestroy {
               this.dialogRef.close(true); // Close the dialog with a success indicator
             },
             (error: HttpErrorResponse) =>
-              this.handleError('Error updating project:', error)
+              this.handleError(error, 'Error fetching projects')
           );
       } else {
-        this.projectService.createProject(formData).subscribe(
-          (response: SingleProjectResponseData) => {
-            this.snackBar.open(response.message, 'Close', { duration: 3000 });
-            this.dialogRef.close(true); // Close the dialog with a success indicator
-          },
-          (error: HttpErrorResponse) =>
-            this.handleError('Error creating project:', error)
-        );
+        this.projectService
+          .createProject(formData)
+          .pipe(takeUntil(this.onDestroy$))
+          .subscribe(
+            (response: SingleProjectResponseData) => {
+              this.snackBar.open(response.message, 'Close', { duration: 3000 });
+              this.dialogRef.close(true); // Close the dialog with a success indicator
+            },
+            (error: HttpErrorResponse) =>
+              this.handleError(error, 'Error fetching projects')
+          );
       }
     } else {
       this.snackBar.open('Please fill in all required fields.', 'Close', {
         duration: 3000,
       });
     }
-  }
-
-  private handleError(prefix: string, error: HttpErrorResponse) {
-    this.snackBar.open(`${prefix} ${error.message}`, 'Close');
   }
 
   ngOnDestroy(): void {

@@ -5,6 +5,7 @@ import { ResponseData, User } from './model/user.model';
 import { catchError } from 'rxjs/operators';
 
 import { apiUrls } from '../api.urls';
+import { AuthService } from './auth.service';
 
 @Injectable({
   providedIn: 'root',
@@ -13,16 +14,18 @@ export class UserService {
   private apiUrl = apiUrls.userServiceApi;
   private roleMappings: { [id: string]: string } = {};
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private authService: AuthService) {}
 
   private handleError(error: any): Observable<never> {
     console.error('An error occurred:', error); // Log to console instead
     return throwError(error.message || 'Unknown server error in user service');
   }
+
+  getLoggedInUserId(): string | null {
+    return this.authService.getCurrentUserId();
+  }
+
   getLoggedInUserDetails(): Observable<ResponseData> {
-    console.log(
-      `Fetching users from URL in User: ${this.apiUrl}getLoggedInUserDetails`
-    );
     return this.http
       .get<ResponseData>(`${this.apiUrl}getLoggedInUserDetails`)
       .pipe(catchError(this.handleError));
