@@ -5,9 +5,10 @@ import {
   deleteTeamById,
   removeUserFromTeam,
   addUserToTeam,
-  getTeamByProjectId,
+  // getTeamByProjectId,
   getTeamsByUserId,
   getProjectsByTeamId,
+  getTeamsByProjectDetails,
 } from "../controllers/team.controller.js";
 import {
   verifyToken,
@@ -24,6 +25,13 @@ const selfRoleAdmin = requireRoles([ROLES.ADMIN]);
 
 // Route to create a new team. Requires self/Admin privileges.
 router.post("/createTeam", verifyToken, selfRoles, createTeam);
+
+router.get(
+  "/getTeamsByProjectDetails",
+  verifyToken,
+  selfRoles,
+  getTeamsByProjectDetails
+);
 
 // Get all teams
 router.get("/getTeamsByUserId", verifyToken, getTeamsByUserId);
@@ -54,7 +62,7 @@ router.post(
 );
 
 // Get teams associated with a specific project
-router.get("/getTeamByProjectId/:projectId", verifyToken, getTeamByProjectId);
+// router.get("/getTeamByProjectId/:projectId", verifyToken, getTeamByProjectId);
 
 // Get projects associated with a specific team
 router.get(

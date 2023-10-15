@@ -20,6 +20,7 @@
         <mat-icon>dashboard</mat-icon> Student Dashboard
       </a>
       <a
+        *ngIf="isProfessor"
         mat-list-item
         [routerLinkActive]="['list-item-active']"
         routerLink="professor-dashboard/:id"

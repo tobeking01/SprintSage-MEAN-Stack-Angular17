@@ -6,7 +6,7 @@ import {
   MultipleTeamsResponseData,
   TeamPopulated,
 } from 'src/app/services/model/team.model';
-import { ResponseData, User } from 'src/app/services/model/user.model';
+import { User } from 'src/app/services/model/user.model';
 import { ProjectService } from 'src/app/services/project.service';
 import { TeamService } from 'src/app/services/team.service';
 import { MultipleProjectsResponseData } from 'src/app/services/model/project.model';

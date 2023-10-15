@@ -1,6 +1,8 @@
+import { Role } from './role.model';
+
 // Interface to define the structure of User
 export interface User {
-  _id?: string;
+  _id: string;
   firstName: string;
   lastName: string;
   userName: string;
@@ -22,6 +24,10 @@ export interface User {
   updatedAt?: Date;
 }
 
+// Populated version of User with full Role objects
+export interface UserPopulated extends Omit<User, 'roles'> {
+  roles: Role[];
+}
 export interface ResponseData {
   success: boolean;
   status: number;

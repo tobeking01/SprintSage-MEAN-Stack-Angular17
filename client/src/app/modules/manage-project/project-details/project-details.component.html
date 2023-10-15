@@ -23,7 +23,6 @@
       >
         {{ membersVisible ? "HIDE MEMBERS" : "VIEW MEMBERS" }}
       </button>
-
       <button mat-raised-button color="accent" (click)="addMembers()">
         ADD MEMBERS
       </button>
@@ -34,8 +33,8 @@
   </div>
 
   <!-- Members Section -->
-  <div *ngIf="membersVisible && projectMembers.length > 0 && roleNames">
-    <h3>Members of {{ selectedProject?.projectName }}</h3>
+  <div *ngIf="membersVisible && projectMembers.length > 0">
+    <h3>TeamMembers of {{ selectedProject?.projectName }}</h3>
     <table>
       <thead>
         <tr>
@@ -48,16 +47,16 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let member of projectMembers">
-          <td>{{ member.firstName }}</td>
-          <td>{{ member.lastName }}</td>
-          <td>{{ member.userName }}</td>
-          <td>{{ getRoleName(member.roles) }}</td>
-          <!-- Assuming a user can have multiple roles -->
+        <tr *ngFor="let teamMember of projectMembers">
+          <td>{{ teamMember.firstName }}</td>
+          <td>{{ teamMember.lastName }}</td>
+          <td>{{ teamMember.userName }}</td>
+          <td>{{ roleNames[teamMember._id] }}</td>
           <td>{{ selectedProject?.createdAt | date }}</td>
-          <!-- Assuming you added a dateAdded property to each member in the project -->
           <td>
-            <button (click)="removeMemberFromProject(member)">Remove</button>
+            <button (click)="removeMemberFromProject(teamMember)">
+              Remove
+            </button>
           </td>
         </tr>
       </tbody>

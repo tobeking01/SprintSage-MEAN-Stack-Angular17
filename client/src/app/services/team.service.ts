@@ -81,10 +81,14 @@ export class TeamService {
       .pipe(catchError(this.handleError));
   }
 
-  getTeamByProjectId(projectId: string): Observable<SingleTeamResponseData> {
-    return this.http.get<SingleTeamResponseData>(
-      `${this.apiUrl}getTeamByProjectId/${projectId}`
-    );
+  getTeamsByProjectDetails(
+    projectId: string
+  ): Observable<MultipleTeamsResponseData> {
+    return this.http
+      .get<MultipleTeamsResponseData>(
+        `${this.apiUrl}getTeamsByProjectDetails?projectId=${projectId}`
+      )
+      .pipe(catchError(this.handleError));
   }
 
   getProjectsByTeamId(
