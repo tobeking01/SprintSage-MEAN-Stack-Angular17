@@ -14,7 +14,7 @@ export class HeaderComponent implements OnInit {
   constructor(private authService: AuthService, private router: Router) {}
 
   ngOnInit() {
-    this.isProfessor = this.authService.isProfessor(); // Assign value from service here
+    this.isProfessor = this.authService.isProfessor();
   }
 
   toggleSidebar() {

@@ -1,12 +1,12 @@
 import express from "express";
 import {
-  getLoggedInUserDetails,
   createUser,
   updateStudentProfile,
+  updateProfessorProfile,
+  getLoggedInUserDetails,
   deleteUser,
   getUsersForTeam,
   getRoleMappings,
-  updateProfessorProfile,
 } from "../controllers/user.controller.js";
 import {
   verifyToken,
@@ -17,49 +17,22 @@ import {
 const router = express.Router();
 
 // Middleware for verifying tokens
-// Middleware for verifying tokens
-const selfRoles = requireRoles([ROLES.STUDENT, ROLES.PROFESSOR, ROLES.ADMIN]);
 const selfRoleAdmin = requireRoles([ROLES.ADMIN]);
 
-function noCache(req, res, next) {
-  res.setHeader(
-    "Cache-Control",
-    "no-store, no-cache, must-revalidate, proxy-revalidate"
-  );
-  res.setHeader("Pragma", "no-cache");
-  res.setHeader("Expires", "0");
-  next();
-}
-
-router.post("/createUser", verifyToken, selfRoles, createUser);
-
-router.get(
-  "/getLoggedInUserDetails",
-  verifyToken,
-  selfRoles,
-  getLoggedInUserDetails
-);
+router.post("/createUser", verifyToken, createUser);
 
 // update student profile
-router.put(
-  "/updateStudentProfile/:id",
-  verifyToken,
-  selfRoles,
-  updateStudentProfile
-);
+router.put("/updateStudentProfile/:id", verifyToken, updateStudentProfile);
 
 // update professor profile
-router.put(
-  "/updateProfessorProfile/:id",
-  verifyToken,
-  selfRoles,
-  updateProfessorProfile
-);
+router.put("/updateProfessorProfile/:id", verifyToken, updateProfessorProfile);
 
-router.get("/getUsersForTeam", verifyToken, selfRoles, getUsersForTeam);
+router.get("/getLoggedInUserDetails", verifyToken, getLoggedInUserDetails);
 
 router.delete("/deleteUser/:id", verifyToken, selfRoleAdmin, deleteUser);
 
-router.get("/role-mappings", verifyToken, selfRoles, getRoleMappings);
+router.get("/getUsersForTeam", verifyToken, getUsersForTeam);
+
+router.get("/role-mappings", verifyToken, getRoleMappings);
 
 export default router;

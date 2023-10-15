@@ -66,7 +66,6 @@ export const changeTicketState = async (req, res) => {
       auditLog
     );
   } catch (error) {
-    // More detailed error messages depending on the error type
     if (error.name === "ValidationError") {
       return sendError(res, 400, error.message);
     }
@@ -109,7 +108,7 @@ export const getLogsByUser = async (req, res) => {
   }
 };
 
-// Delete a log (not common but here's how you'd do it)
+// Delete a log
 export const deleteLog = async (req, res) => {
   const { logId } = req.params;
   try {

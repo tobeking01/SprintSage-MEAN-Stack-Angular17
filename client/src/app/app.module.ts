@@ -12,7 +12,7 @@ import { AppComponent } from './app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { DefaultModule } from './layouts/default/default.module';
-import { FullwidthModule } from './layouts/fullwidth/fullwidth.module';
+import { FullWidthModule } from './layouts/fullWidth/fullWidth.module';
 import { ModulesModule } from './modules/modules.module';
 import { Router } from '@angular/router';
 
@@ -25,7 +25,7 @@ import { Router } from '@angular/router';
     FlexLayoutModule,
     DefaultModule,
     ModulesModule,
-    FullwidthModule,
+    FullWidthModule,
     HttpClientModule,
     ReactiveFormsModule,
     MatNativeDateModule,

@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { DefaultComponent } from './layouts/default/default.component';
-import { FullwidthComponent } from './layouts/fullwidth/fullwidth.component';
+import { FullWidthComponent } from './layouts/fullWidth/fullWidth.component';
 import { HomeComponent } from './modules/home/home.component';
 import { LoginComponent } from './modules/login/login.component';
 import { RegisterComponent } from './modules/register/register.component';
@@ -86,10 +86,10 @@ const routes: Routes = [
   },
   {
     path: '',
-    component: FullwidthComponent,
+    component: FullWidthComponent,
     children: [
       {
-        path: '',
+        path: 'home',
         component: HomeComponent,
       },
       {

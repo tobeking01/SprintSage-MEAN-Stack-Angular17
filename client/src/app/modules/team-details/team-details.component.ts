@@ -24,7 +24,7 @@ export class TeamDetailsComponent implements OnInit {
   teamName = '';
   isLoading = false;
 
-  private onDestroy$ = new Subject<void>(); // For handling unsubscription when the component is destroyed
+  private onDestroy$ = new Subject<void>(); // For handling unSubscription when the component is destroyed
 
   constructor(private teamService: TeamService) {}
 

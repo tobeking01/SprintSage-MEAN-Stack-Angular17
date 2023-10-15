@@ -15,10 +15,9 @@ import {
 const router = express.Router();
 
 // Middleware for verifying tokens
-const selfRoles = requireRoles([ROLES.STUDENT, ROLES.PROFESSOR, ROLES.ADMIN]);
 const selfRoleAdmin = requireRoles([ROLES.ADMIN]);
 
-router.post("/changeTicketState", verifyToken, selfRoles, changeTicketState);
+router.post("/changeTicketState", verifyToken, changeTicketState);
 
 router.get("/logs", verifyToken, getAllLogs);
 router.get("/logs/ticket/:ticketId", verifyToken, getLogsForTicket);

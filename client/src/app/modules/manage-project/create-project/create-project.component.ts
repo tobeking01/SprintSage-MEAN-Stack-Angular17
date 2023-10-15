@@ -182,8 +182,8 @@ export class CreateProjectComponent implements OnInit, OnDestroy {
       const formData = {
         projectName,
         description,
-        teams: teamIds, // Send array of team IDs
-        users: userIds, // Send array of user IDs (if your backend supports this)
+        teams: teamIds,
+        users: userIds,
         startDate,
         endDate,
       };

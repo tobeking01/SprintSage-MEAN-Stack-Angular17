@@ -34,7 +34,7 @@ import {
   MultipleTeamsResponseData,
   TeamPopulated,
 } from 'src/app/services/model/team.model';
-import { ResponseData, User } from 'src/app/services/model/user.model';
+import { User } from 'src/app/services/model/user.model';
 
 // Component Imports
 import { CreateProjectComponent } from './create-project/create-project.component';
@@ -95,14 +95,14 @@ export class ManageProjectComponent implements OnInit, OnDestroy {
   }
   ngOnDestroy(): void {
     // Emit an event to trigger unSubscription
-    this.ngUnsubscribe.next();
-    this.ngUnsubscribe.complete();
+    this.onDestroy$.next();
+    this.onDestroy$.complete();
   }
 
   // Test events
   listenToRouterEvents(): void {
     this.router.events
-      .pipe(takeUntil(this.ngUnsubscribe))
+      .pipe(takeUntil(this.onDestroy$))
       .subscribe((event: RouterEvent) => {
         if (event instanceof NavigationStart) {
           console.log('NavigationStart:', event);

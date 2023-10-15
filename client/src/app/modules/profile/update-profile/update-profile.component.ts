@@ -57,7 +57,7 @@ export class UpdateProfileComponent implements OnInit {
         .subscribe(
           (response: ResponseData) => {
             if (response.success && response.data.length > 0) {
-              this.dialogRef.close(response.data[0]); // Assuming data contains updated user
+              this.dialogRef.close(response.data[0]);
             } else {
               this.snackBar.open(
                 response.message || 'Error updating profile.',
