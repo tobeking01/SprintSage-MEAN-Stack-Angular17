@@ -118,6 +118,31 @@ export const createProject = async (req, res, next) => {
   }
 };
 
+/**
+ * Controller to get a specific project by its ID.
+ * @async
+ * @function
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @param {function} next - Express next middleware function.
+ */
+export const getProjectById = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const project = await getProjectByIdHelper(id);
+
+    if (!project) {
+      return sendError(res, 404, "Project not found!");
+    }
+
+    return sendSuccess(res, 200, "Project fetched successfully!", [project]);
+  } catch (error) {
+    console.error("Error fetching project:", error);
+    sendError(res, 500, "Internal Server Error!");
+  }
+};
+
 export const getProjectsByUserId = async (req, res, next) => {
   try {
     const loggedInUserId = req.user.id.toString();

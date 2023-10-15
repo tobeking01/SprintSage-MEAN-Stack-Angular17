@@ -158,6 +158,10 @@ export class AuthService {
     return this.currentUserSubject.value?.roles.includes('Admin') || false;
   }
 
+  isProfessor(): boolean {
+    return this.currentUserSubject.value?.roles.includes('Professor') || false;
+  }
+
   sendEmailService(email: string): Observable<any> {
     return this.http.post<any>(`${apiUrls.authServiceApi}send-email`, {
       email,

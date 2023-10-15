@@ -7,6 +7,7 @@ import {
   updateProjectById,
   deleteProjectById,
   addMembersToProject,
+  getProjectById,
 } from "../controllers/project.controller.js";
 import {
   verifyToken,
@@ -23,6 +24,8 @@ const selfRoleAdmin = requireRoles([ROLES.ADMIN]);
 // Endpoint to create a new project
 // Only accessible to authenticated users
 router.post("/createProject", verifyToken, createProject);
+
+router.get("/getProjectById/:id", getProjectById);
 
 // Endpoint to get all projects
 // Only accessible to authenticated users

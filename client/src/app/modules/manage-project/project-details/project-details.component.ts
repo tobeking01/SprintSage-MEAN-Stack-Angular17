@@ -11,17 +11,16 @@ import { ActivatedRoute } from '@angular/router';
 import { Subject, forkJoin } from 'rxjs';
 import { tap, takeUntil } from 'rxjs/operators';
 import {
-  MultipleProjectsResponseData,
   ProjectPopulated,
+  SingleProjectResponseData,
 } from 'src/app/services/model/project.model';
 import {
   MultipleTeamsResponseData,
   TeamPopulated,
 } from 'src/app/services/model/team.model';
-import { ResponseData, User } from 'src/app/services/model/user.model';
+import { User } from 'src/app/services/model/user.model';
 import { ProjectService } from 'src/app/services/project.service';
 import { TeamService } from 'src/app/services/team.service';
-import { UserService } from 'src/app/services/user.service';
 
 @Component({
   selector: 'app-project-details',
@@ -35,9 +34,7 @@ export class ProjectDetailsComponent implements OnInit {
   @Output() close = new EventEmitter<void>();
   users: User[] = [];
   teams: TeamPopulated[] = [];
-  loggedInUserId: string = '';
   teamMembersDetails: { [key: string]: string } = {};
-  loggedInUser: User | null = null;
   projectMembers: User[] = [];
   isLoading: boolean = false;
   error: string | null = null;
@@ -50,17 +47,27 @@ export class ProjectDetailsComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private teamService: TeamService,
-    private userService: UserService,
-    private route: ActivatedRoute,
-    private projectService: ProjectService
+    private projectService: ProjectService,
+    private route: ActivatedRoute
   ) {}
 
   ngOnInit(): void {
-    this.combineObservables();
-    this.loadLoggedInUser();
+    this.route.paramMap
+      .pipe(
+        tap((params) => {
+          const projectId = params.get('projectId');
+          if (projectId) {
+            this.fetchProjectDetails(projectId);
+          } else {
+            console.error('Project ID not provided in route parameters.');
+          }
+        }),
+        takeUntil(this.ngUnsubscribe)
+      )
+      .subscribe();
+
     this.loadAllTeamDetails();
     this.initializeForm();
-    this.fetchRoleNames();
   }
 
   initializeForm() {
@@ -89,19 +96,6 @@ export class ProjectDetailsComponent implements OnInit {
     // (e.g., by calling a service method to update the project's members in the database).
   }
 
-  fetchRoleNames(): void {
-    this.userService.getRoleMappings().subscribe(
-      (mappings) => {
-        console.log('Fetched role mappings:', mappings);
-        this.roleNames = mappings;
-      },
-      (error) => {
-        console.error('Error fetching role mappings:', error);
-        this.error = 'Error fetching role mappings.';
-      }
-    );
-  }
-
   getRoleName(roleId: string[]): string {
     if (roleId && roleId.length > 0) {
       return this.roleNames[roleId[0]] || 'Unknown Role';
@@ -109,27 +103,10 @@ export class ProjectDetailsComponent implements OnInit {
     return 'No Role Assigned';
   }
 
-  private combineObservables(): void {
-    forkJoin([this.loadLoggedInUser(), this.loadAllTeamDetails()])
-      .pipe(
-        tap(() => {
-          const projectId = this.route.snapshot.paramMap.get('projectId');
-          if (projectId) {
-            this.fetchProjectDetails();
-          }
-        }),
-        takeUntil(this.ngUnsubscribe)
-      )
-      .subscribe();
-  }
-
-  private fetchProjectDetails(): void {
-    this.projectService.getProjectsByUserId().subscribe(
-      (response: MultipleProjectsResponseData) => {
-        // If the response data is an array, take the first element
-        this.selectedProject = Array.isArray(response.data)
-          ? response.data[0]
-          : response.data;
+  private fetchProjectDetails(projectId: string): void {
+    this.projectService.getProjectById(projectId).subscribe(
+      (response: SingleProjectResponseData) => {
+        this.selectedProject = response.data;
       },
       (error: HttpErrorResponse) => {
         console.error('Error fetching project details:', error.error.message);
@@ -165,22 +142,6 @@ export class ProjectDetailsComponent implements OnInit {
         (error) => {
           console.error('Error adding teams:', error);
           // TODO: Show a user-friendly notification about the error
-        }
-      );
-  }
-
-  loadLoggedInUser() {
-    console.log('Fetching users...');
-    this.userService
-      .getLoggedInUserDetails()
-      .pipe(takeUntil(this.onDestroy$))
-      .subscribe(
-        (response: ResponseData) => {
-          this.users = response.data;
-          console.log('Users fetched:', this.users);
-        },
-        (error: any) => {
-          console.error('Error:', error);
         }
       );
   }
@@ -273,7 +234,7 @@ export class ProjectDetailsComponent implements OnInit {
         );
     }
   }
-  ngOnDestroy() {
+  ngOnDestroy(): void {
     this.ngUnsubscribe.next();
     this.ngUnsubscribe.complete();
   }

@@ -38,6 +38,12 @@ export class ProjectService {
       .pipe(catchError(this.handleError));
   }
 
+  getProjectById(id: string): Observable<SingleProjectResponseData> {
+    return this.http
+      .get<SingleProjectResponseData>(`${this.apiUrl}getProjectById/${id}`)
+      .pipe(catchError(this.handleError));
+  }
+
   getProjectsByUserId(): Observable<MultipleProjectsResponseData> {
     return this.http
       .get<MultipleProjectsResponseData>(`${this.apiUrl}getProjectsByUserId`)
