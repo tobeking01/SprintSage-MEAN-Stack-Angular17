@@ -22,6 +22,10 @@ import {
 import { User, UserPopulated } from 'src/app/services/model/user.model';
 import { ProjectService } from 'src/app/services/project.service';
 import { TeamService } from 'src/app/services/team.service';
+import { CreateTeamComponent } from '../../team-details/create-team/create-team.component';
+import { MatDialog } from '@angular/material/dialog';
+import { AddMemberComponent } from 'src/app/shared/components/add-member/add-member.component';
+import { UserService } from 'src/app/services/user.service';
 
 @Component({
   selector: 'app-project-details',
@@ -45,6 +49,7 @@ export class ProjectDetailsComponent implements OnInit {
     private fb: FormBuilder,
     private teamService: TeamService,
     private projectService: ProjectService,
+    private dialog: MatDialog,
     private route: ActivatedRoute
   ) {}
 
@@ -130,16 +135,19 @@ export class ProjectDetailsComponent implements OnInit {
       .controls as FormControl[];
   }
 
-  // Add these methods to your ProjectDetailsComponent class.
-
   toggleMembersVisibility(): void {
     this.membersVisible = !this.membersVisible;
   }
 
   addMembers(): void {
-    // Here you'd typically want to show a modal or a form to add members.
-    // Fetch the list of users, let the user select one, and then add that user to the project.
-    // After adding the user, you'd typically want to refresh the list of members for this project.
+    const dialogRef = this.dialog.open(AddMemberComponent);
+    dialogRef.afterClosed().subscribe({
+      next: (isMemberAdded) => {
+        if (isMemberAdded) {
+          this.loadAllTeamDetails();
+        }
+      },
+    });
   }
 
   deleteProject(): void {

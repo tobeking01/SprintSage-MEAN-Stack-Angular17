@@ -1,0 +1,20 @@
+<h2>Add Member to Team</h2>
+
+<mat-form-field>
+  <mat-label>Select User</mat-label>
+  <mat-select [(ngModel)]="selectedUser">
+    <mat-option *ngFor="let user of users" [value]="user._id">
+      {{ user.firstName }} {{ user.lastName }}
+    </mat-option>
+  </mat-select>
+</mat-form-field>
+
+<button
+  mat-raised-button
+  (click)="addMemberToTeam(teamId)"
+  [disabled]="!selectedUser || !teamId"
+>
+  Add Member to Team
+</button>
+
+<button mat-button (click)="dialogRef.close()">Cancel</button>
