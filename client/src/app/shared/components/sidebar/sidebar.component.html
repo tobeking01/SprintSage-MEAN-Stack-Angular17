@@ -1,50 +1,60 @@
-<mat-nav-list>
-  <div class="profile-card">
-    <div class="header">
-      <h2>{{ userName }}</h2>
-      <h4>{{ email }}</h4>
+<ng-container *ngIf="isUserLoggedIn$ | async">
+  <mat-nav-list>
+    <div class="profile-card">
+      <div class="header">
+        <h4>{{ userName$ | async }}</h4>
+      </div>
+      <img
+        src="https://material.angular.io/assets/img/examples/shiba2.jpg"
+        alt="user profile card"
+      />
     </div>
-    <img
-      src="https://material.angular.io/assets/img/examples/shiba2.jpg"
-      alt="user profile card"
-    />
-  </div>
-  <mat-divider> </mat-divider>
-  <mat-card>
-    <h2 matSubheader>Manage</h2>
-    <a
-      mat-list-item
-      [routerLinkActive]="['list-item-active']"
-      routerLink="/dashboard"
-      ><mat-icon>dashboard</mat-icon> Dashboard</a
-    >
-    <a
-      mat-list-item
-      [routerLinkActive]="['list-item-active']"
-      routerLink="/manage-project"
-      ><mat-icon>create_new_folder</mat-icon> Projects</a
-    >
-    <a
-      mat-list-item
-      [routerLinkActive]="['list-item-active']"
-      routerLink="/manage-ticket"
-      ><mat-icon>local_activity</mat-icon> Tickets</a
-    >
-  </mat-card>
-  <mat-divider> </mat-divider>
-  <mat-card>
-    <h2 matSubheader>Teams</h2>
-    <a
-      mat-list-item
-      [routerLinkActive]="['list-item-active']"
-      routerLink="/team"
-      ><mat-icon>groups</mat-icon> My Team</a
-    >
-    <a
-      mat-list-item
-      [routerLinkActive]="['list-item-active']"
-      routerLink="/profile"
-      ><mat-icon>account_circle</mat-icon> Profile</a
-    >
-  </mat-card>
-</mat-nav-list>
+    <mat-divider></mat-divider>
+    <mat-card>
+      <h2 matSubheader>Manage</h2>
+      <a
+        mat-list-item
+        [routerLinkActive]="['list-item-active']"
+        routerLink="student-dashboard/:id"
+      >
+        <mat-icon>dashboard</mat-icon> Student Dashboard
+      </a>
+      <a
+        *ngIf="isProfessor"
+        mat-list-item
+        [routerLinkActive]="['list-item-active']"
+        routerLink="professor-dashboard/:id"
+      >
+        <mat-icon>dashboard</mat-icon> Professor Dashboard
+      </a>
+      <a
+        mat-list-item
+        [routerLinkActive]="['list-item-active']"
+        routerLink="manage-project/m"
+        ><mat-icon>create_new_folder</mat-icon> Manage Project</a
+      >
+      <a
+        mat-list-item
+        [routerLinkActive]="['list-item-active']"
+        routerLink="ticket-details/:id"
+        ><mat-icon>local_activity</mat-icon> Tickets</a
+      >
+    </mat-card>
+    <mat-divider> </mat-divider>
+    <mat-card>
+      <h2 matSubheader>Teams</h2>
+      <a
+        mat-list-item
+        [routerLinkActive]="['list-item-active']"
+        routerLink="team-details/:id"
+        ><mat-icon>groups</mat-icon> My Team</a
+      >
+      <a
+        mat-list-item
+        [routerLinkActive]="['list-item-active']"
+        routerLink="profile/:id"
+        ><mat-icon>account_circle</mat-icon> Profile</a
+      >
+    </mat-card>
+  </mat-nav-list>
+</ng-container>

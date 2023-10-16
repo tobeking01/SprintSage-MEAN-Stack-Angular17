@@ -1,0 +1,113 @@
+<div class="project-detail">
+  <!-- Top Section -->
+  <div class="top-section">
+    <div class="project-info">
+      <div>
+        <strong>Project Name</strong>
+        <!-- <pre>{{ selectedProject | json }}</pre> -->
+
+        <p>{{ selectedProject?.projectName }}</p>
+      </div>
+      <div>
+        <div>
+          <strong>Created By: </strong>
+          <span
+            >{{ selectedProject?.createdBy?.firstName }}
+            {{ selectedProject?.createdBy?.lastName }}
+          </span>
+        </div>
+
+        <br />
+        <strong>Created At:</strong>
+        {{ selectedProject?.createdAt | date : "yyyy-MM-dd HH:mm" }}
+      </div>
+    </div>
+    <div class="project-actions">
+      <button
+        mat-raised-button
+        color="accent"
+        (click)="toggleMembersVisibility()"
+      >
+        {{ membersVisible ? "HIDE MEMBERS" : "VIEW MEMBERS" }}
+      </button>
+      <button mat-raised-button color="accent" (click)="addMembers()">
+        ADD MEMBERS
+      </button>
+      <button mat-raised-button color="warn" (click)="deleteProject()">
+        DELETE PROJECT
+      </button>
+    </div>
+  </div>
+
+  <!-- Members Section -->
+  <div *ngIf="membersVisible && projectMembers.length > 0">
+    <h3>TeamMembers of {{ selectedProject?.projectName }}</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>First Name</th>
+          <th>Last Name</th>
+          <th>Username</th>
+          <th>Role</th>
+          <th>Date Added to Project</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let teamMember of projectMembers">
+          <td>{{ teamMember.firstName }}</td>
+          <td>{{ teamMember.lastName }}</td>
+          <td>{{ teamMember.userName }}</td>
+          <td>{{ roleNames[teamMember._id] }}</td>
+          <td>{{ selectedProject?.createdAt | date }}</td>
+          TODO change to date added!
+          <td>
+            <button (click)="removeMemberFromProject(teamMember)">
+              Remove
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Team Members Selection -->
+  <form [formGroup]="addMemberForm" (ngSubmit)="saveTeamsToProject()">
+    <div formArrayName="teamMembers">
+      <div
+        *ngFor="let memberCtrl of teamMembersControls; let i = index"
+        class="member-row"
+      >
+        <mat-form-field class="full-width">
+          <mat-label>Team Members</mat-label>
+          <mat-select
+            [formControl]="memberCtrl"
+            placeholder="Select Member Name"
+          >
+            <mat-option *ngFor="let user of users" [value]="user._id">
+              {{ user.firstName }} {{ user.lastName }}
+            </mat-option>
+          </mat-select>
+          <mat-error *ngIf="memberCtrl.hasError('required')">
+            Name is required!
+          </mat-error>
+        </mat-form-field>
+        <button
+          mat-icon-button
+          color="warn"
+          (click)="removeMembers(i)"
+          aria-label="Remove member"
+        >
+          <mat-icon>delete</mat-icon>
+        </button>
+      </div>
+      <button mat-button (click)="addMembers()">+ Add Another Member</button>
+    </div>
+    <button mat-raised-button color="accent" type="submit">Save Members</button>
+  </form>
+  <br />
+  <!-- Tickets Section -->
+  <div class="ticket-section">
+    <app-ticket-details></app-ticket-details>
+  </div>
+</div>

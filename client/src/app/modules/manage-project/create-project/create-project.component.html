@@ -1,0 +1,106 @@
+<div mat-dialog-title>
+  <h1>{{ data ? "Edit" : "Create" }} Project Form</h1>
+</div>
+
+<div class="project-form">
+  <form [formGroup]="createProjectForm" (ngSubmit)="onSubmit()">
+    <div mat-dialog-content class="content">
+      <!-- Project Name Field -->
+      <mat-form-field class="full-width">
+        <mat-label>Project Name</mat-label>
+        <input
+          matInput
+          type="text"
+          placeholder="Enter Project Name"
+          formControlName="projectName"
+        />
+        <mat-error
+          *ngIf="
+            createProjectForm.get('projectName')?.invalid &&
+            createProjectForm.get('projectName')?.touched
+          "
+        >
+          Please enter project name
+        </mat-error>
+      </mat-form-field>
+      <div *ngIf="errorMessage" class="error-message">
+        {{ errorMessage }}
+      </div>
+
+      <!-- Description Field -->
+      <mat-form-field class="full-width">
+        <mat-label>Description</mat-label>
+        <textarea
+          matInput
+          formControlName="description"
+          placeholder="Enter Project Description"
+        ></textarea>
+      </mat-form-field>
+
+      <!-- Existing Team Selection Field -->
+      <mat-form-field class="full-width">
+        <mat-label>Select Existing Team</mat-label>
+        <mat-select formControlName="existingTeam">
+          <mat-option *ngFor="let team of teams" [value]="team._id">
+            {{ team.teamName }}
+          </mat-option>
+        </mat-select>
+        <mat-error
+          *ngIf="
+            createProjectForm.get('existingTeam')?.invalid &&
+            createProjectForm.get('existingTeam')?.touched
+          "
+        >
+          Please select a team.
+        </mat-error>
+      </mat-form-field>
+      <mat-spinner *ngIf="isLoading"></mat-spinner>
+
+      <!-- Start Date Field -->
+      <mat-form-field class="full-width">
+        <mat-label>Start Date</mat-label>
+        <input
+          matInput
+          [matDatepicker]="startPicker"
+          formControlName="startDate"
+        />
+        <mat-datepicker-toggle
+          matSuffix
+          [for]="startPicker"
+        ></mat-datepicker-toggle>
+        <mat-datepicker #startPicker></mat-datepicker>
+      </mat-form-field>
+
+      <!-- End Date Field -->
+      <mat-form-field class="full-width">
+        <mat-label>End Date</mat-label>
+        <input matInput [matDatepicker]="endPicker" formControlName="endDate" />
+        <mat-datepicker-toggle
+          matSuffix
+          [for]="endPicker"
+        ></mat-datepicker-toggle>
+        <mat-datepicker #endPicker></mat-datepicker>
+      </mat-form-field>
+    </div>
+
+    <!-- Action Buttons -->
+    <div mat-dialog-actions class="action-btns">
+      <button
+        mat-raised-button
+        color="accent"
+        type="submit"
+        [disabled]="createProjectForm.invalid"
+      >
+        {{ data ? "Update" : "Save" }}
+      </button>
+      <button
+        mat-raised-button
+        type="button"
+        color="warn"
+        [mat-dialog-close]="false"
+      >
+        Cancel
+      </button>
+    </div>
+  </form>
+</div>

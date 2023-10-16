@@ -1,0 +1,73 @@
+/* Global Styles */
+.main-container {
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+/* Header Styles */
+.project-header {
+  color: rgb(47, 116, 180);
+}
+
+/* Form Styles */
+mat-form-field {
+  width: 100%;
+  max-width: 60%;
+}
+
+/* Top Section Styles */
+.top-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+
+  .project-info {
+    display: flex;
+    flex-direction: column;
+
+    div {
+      margin-bottom: 10px;
+    }
+  }
+
+  .project-actions {
+    display: flex;
+    gap: 10px;
+
+    button {
+      padding: 5px 15px;
+    }
+  }
+}
+
+/* Ticket Section Styles */
+.ticket-section {
+  .ticket-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+
+    .search-ticket,
+    .sort-ticket {
+      width: 40%;
+    }
+  }
+}
+
+/* Members Section Styles */
+ul {
+  padding-left: 0;
+  list-style-type: none;
+}
+
+li {
+  background-color: #f3f3f3;
+  padding: 5px 10px;
+  margin-bottom: 5px;
+  border-radius: 5px;
+}
+
+/* Animation Styles */
+// Add your animation styles if any

@@ -3,27 +3,77 @@
     <button mat-icon-button (click)="toggleSidebar()">
       <mat-icon>menu</mat-icon>
     </button>
-    <span> My App </span>
+
+    <div class="logo-section">
+      <span style="font-weight: bold; color: #e83e8c">Sprint</span>
+      <span style="font-weight: bold; color: #6f42c1">Sage</span>
+      <span style="font-size: small; color: grey"> 👟⏱</span>
+    </div>
+
+    <!-- Navigation Links Section -->
+    <div class="nav-section">
+      <ul>
+        <li>
+          <a
+            mat-list-item
+            [routerLinkActive]="['list-item-active']"
+            routerLink="profile/:id"
+          >
+            Profile
+          </a>
+        </li>
+        <li>
+          <a
+            mat-list-item
+            [routerLinkActive]="['list-item-active']"
+            routerLink="team-details/:id"
+          >
+            Teams
+          </a>
+        </li>
+        <li>
+          <a
+            mat-list-item
+            [routerLinkActive]="['list-item-active']"
+            routerLink="manage-project/m"
+          >
+            Projects</a
+          >
+        </li>
+        <li>
+          <a
+            mat-list-item
+            [routerLinkActive]="['list-item-active']"
+            routerLink="student-dashboard/:id"
+          >
+            Dashboard
+          </a>
+        </li>
+        <li *ngIf="isProfessor">
+          <a
+            mat-list-item
+            [routerLinkActive]="['list-item-active']"
+            routerLink="professor-dashboard/:id"
+          >
+            Professor Dashboard
+          </a>
+        </li>
+      </ul>
+    </div>
 
     <div fxFlex fxLayout="row" fxLayoutAlign="flex-end">
-      <ul fxLayout="row" fxLayoutGap="20px">
-        <li>
-          <button mat-icon-button><mat-icon>settings</mat-icon></button>
-        </li>
-        <li>
-          <button mat-icon-button><mat-icon>help-outline</mat-icon></button>
-        </li>
+      <ul>
         <li>
           <button mat-button [matMenuTriggerFor]="menu">
             <mat-icon>logout</mat-icon>Logout
           </button>
-      <mat-menu #menu="matMenu">
-  <button mat-menu-item (click)="onLogout()"> 
-    <mat-icon>exit_to_app</mat-icon>Sign Out
-  </button>
-</mat-menu>
+          <mat-menu #menu="matMenu">
+            <button mat-menu-item (click)="onLogout()">
+              <mat-icon>exit_to_app</mat-icon>Sign Out
+            </button>
+          </mat-menu>
         </li>
       </ul>
     </div>
-  </mat-toolbar-row></mat-toolbar
->
+  </mat-toolbar-row>
+</mat-toolbar>

@@ -1,0 +1,67 @@
+[mat-dialog-title] h1 {
+  font-size: 1.5rem;
+  margin: 0;
+  padding: 10px 0;
+}
+
+mat-dialog-content {
+  .content {
+    display: flex;
+    flex-direction: column;
+    mat-form-field {
+      margin-bottom: 20px;
+    }
+  }
+}
+
+mat-dialog-actions {
+  display: flex;
+  justify-content: space-between;
+  button {
+    margin: 20px; // Added 20px padding all around the buttons
+    padding: 20px;
+  }
+}
+
+.content {
+  .full-width {
+    width: 100%;
+  }
+
+  .member-row {
+    display: flex;
+    align-items: center;
+
+    .member-name {
+      flex-grow: 1;
+    }
+  }
+
+  button {
+    margin-left: 10px;
+  }
+}
+
+.action-btns {
+  button {
+    margin: 20px;
+  }
+}
+
+.full-width {
+  width: 100%;
+}
+
+.member-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  .member-name {
+    flex-grow: 1;
+  }
+
+  button {
+    margin-left: 10px;
+  }
+}

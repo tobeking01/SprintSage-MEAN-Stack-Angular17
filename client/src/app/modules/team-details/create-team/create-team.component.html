@@ -1,0 +1,83 @@
+<div mat-dialog-title>
+  <h1>{{ data ? "Edit" : "Create" }} Team Form</h1>
+</div>
+
+<div class="team-form">
+  <form [formGroup]="createTeamForm" (ngSubmit)="onSubmit()">
+    <div mat-dialog-content class="content">
+      <!-- Team Name Input -->
+      <mat-form-field class="full-width">
+        <mat-label>Team Name</mat-label>
+        <input
+          matInput
+          type="text"
+          formControlName="teamName"
+          placeholder="Enter Team Name"
+        />
+        <mat-error
+          *ngIf="
+            createTeamForm.get('teamName')?.invalid &&
+            createTeamForm.get('teamName')?.touched
+          "
+        >
+          Please enter team name
+        </mat-error>
+      </mat-form-field>
+
+      <!-- Team Members Selection -->
+      <div formArrayName="teamMembers">
+        <div
+          *ngFor="let memberCtrl of teamMembersControls; let i = index"
+          class="member-row"
+        >
+          <mat-form-field class="full-width">
+            <mat-label>Team Member</mat-label>
+            <mat-select [formControlName]="i" placeholder="Select Member">
+              <!-- Loop through users array to populate options -->
+              <mat-option *ngFor="let user of users" [value]="user._id">
+                {{ user.firstName }} {{ user.lastName }}
+              </mat-option>
+            </mat-select>
+            <mat-error *ngIf="memberCtrl.hasError('required')">
+              Name is required!
+            </mat-error>
+          </mat-form-field>
+          <button mat-icon-button color="warn" (click)="removeUser(i)">
+            <mat-icon>remove_circle</mat-icon>
+          </button>
+        </div>
+        <button mat-button (click)="addUser()">+ Add Member</button>
+      </div>
+
+      <!-- Action Buttons -->
+      <button
+        mat-raised-button
+        color="primary"
+        type="submit"
+        [disabled]="!createTeamForm.valid || !isAtLeastOneMemberSelected()"
+      >
+        Create New Team
+      </button>
+
+      <button
+        mat-raised-button
+        *ngIf="selectedTeamId"
+        (click)="onAddMember()"
+        [disabled]="!selectedUserId"
+        color="primary"
+      >
+        Add to Team
+      </button>
+
+      <button
+        mat-raised-button
+        *ngIf="selectedTeamId"
+        (click)="onRemoveMember()"
+        [disabled]="!selectedUserId"
+        color="warn"
+      >
+        Remove from Team
+      </button>
+    </div>
+  </form>
+</div>

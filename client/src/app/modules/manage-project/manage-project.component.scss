@@ -1,0 +1,93 @@
+/* Global Styles */
+.main-container {
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+.main-body {
+  max-width: 80%;
+  margin: 20px auto;
+}
+
+.example-spacer {
+  flex: 1 1 auto;
+}
+
+/* Header Styles */
+.project-header {
+  color: rgb(47, 116, 180);
+}
+
+/* Form Styles */
+mat-form-field {
+  width: 100%;
+  max-width: 60%;
+}
+.button-container {
+  display: flex;
+  justify-content: flex-start;
+  .action-button:not(:last-child) {
+    margin-right: 20px;
+  }
+}
+
+.error-message {
+  color: red;
+  background-color: #ffe6e6;
+  padding: 10px;
+  margin-top: 10px;
+  border: 1px solid #ffcccc;
+  border-radius: 4px;
+}
+
+.project-item {
+  cursor: pointer;
+  padding: 1rem;
+  border: 1px solid #ccc;
+  margin-bottom: 1rem;
+  transition: background-color 0.3s ease;
+
+  &:hover {
+    background-color: #94becf;
+  }
+
+  p {
+    margin: 0;
+    padding: 0.5rem 0;
+  }
+}
+
+.mat-column-projectName {
+  width: 60px;
+  border-right: 1px solid currentColor;
+  padding-right: 60px;
+  text-align: center;
+}
+
+.no-projects {
+  text-align: center;
+  padding: 1rem;
+  color: #999;
+}
+.filter-container {
+  display: flex;
+  justify-content: flex-start;
+  gap: 20px;
+}
+
+.filter-item {
+  flex-grow: 1;
+  padding: 20px;
+}
+
+.project-card a {
+  color: #007bff; // or any other color
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+/* Animation Styles */
+// (if there were any additional styles for animation, they would go here)

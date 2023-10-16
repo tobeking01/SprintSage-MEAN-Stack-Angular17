@@ -11,16 +11,20 @@ import { MatListModule } from '@angular/material/list';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatIconModule } from '@angular/material/icon';
-import { HeaderFullwidthComponent } from './components/header-fullwidth/header-fullwidth.component';
+import { HeaderFullWidthComponent } from './components/header-fullWidth/header-fullWidth.component';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatCardModule } from '@angular/material/card';
-
+import { ConfirmationDialogComponent } from './components/confirmation-dialog/confirmation-dialog.component';
+import { MatDialogModule } from '@angular/material/dialog';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
 @NgModule({
   declarations: [
     HeaderComponent,
     SidebarComponent,
     FooterComponent,
-    HeaderFullwidthComponent,
+    HeaderFullWidthComponent,
+    ConfirmationDialogComponent,
   ],
   imports: [
     CommonModule,
@@ -34,12 +38,16 @@ import { MatCardModule } from '@angular/material/card';
     MatListModule,
     MatFormFieldModule,
     MatCardModule,
+    MatDialogModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
   ],
   exports: [
     HeaderComponent,
     SidebarComponent,
     FooterComponent,
-    HeaderFullwidthComponent,
+    HeaderFullWidthComponent,
+    ConfirmationDialogComponent,
   ],
 })
 export class SharedModule {}

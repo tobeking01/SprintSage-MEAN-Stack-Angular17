@@ -1,29 +1,36 @@
 <div class="p-10 mx-auto mt-5 shadow-lg lg:w-3/12">
+  <div class="login-logo">
+    <span style="font-weight: bold; color: #e83e8c">Sprint</span>
+    <span style="font-weight: bold; color: #6f42c1">Sage</span>
+  </div>
   <h3 class="py-5 text-3xl font-bold text-center">Login</h3>
 
   <!-- Updated form tag to use (ngSubmit) for form submission -->
   <form [formGroup]="loginForm" class="flex flex-col" (ngSubmit)="login()">
-    <!-- Email -->
+    <!-- Username -->
     <div class="flex flex-col mt-4 mb-1">
       <input
-        type="email"
-        placeholder="Email"
-        formControlName="email"
+        type="text"
+        placeholder="User Name"
+        formControlName="userName"
         required
-        autocomplete="email"
+        autocomplete="userName"
         class="p-2 border border-gray-300 rounded"
       />
       <span
         *ngIf="
-          loginForm.hasError('required', 'email') &&
-          loginForm.controls['email'].dirty
+          loginForm.hasError('required', 'userName') &&
+          loginForm.controls['userName'].dirty
         "
         class="text-red-500"
       >
-        *A valid email is required
+        *A valid Username is required
       </span>
-      <span *ngIf="loginForm.hasError('email', 'email')" class="text-red-500">
-        *Email is invalid
+      <span
+        *ngIf="loginForm.hasError('userName', 'userName')"
+        class="text-red-500"
+      >
+        *Username is invalid
       </span>
     </div>
 

@@ -1,6 +1,13 @@
+<!-- Your container div -->
 <div class="p-10 mx-auto mt-5 shadow-lg lg:w-3/12">
+  <!-- ... (Logo and heading parts) -->
+  <div class="register-logo">
+    <span style="font-weight: bold; color: #e83e8c">Sprint</span>
+    <span style="font-weight: bold; color: #6f42c1">Sage</span>
+  </div>
   <h3 class="py-5 text-3xl font-bold text-center">Register</h3>
 
+  <!-- Main registration form, binding to 'registerForm' from the component -->
   <form [formGroup]="registerForm" class="flex flex-col">
     <!-- First Name -->
     <div class="flex flex-col mt-4 mb-1">
@@ -42,6 +49,25 @@
       >
     </div>
 
+    <!-- Username -->
+    <div class="flex flex-col mt-4 mb-1">
+      <input
+        type="text"
+        placeholder="Username"
+        formControlName="userName"
+        required
+        autocomplete="userName"
+        class="p-2 border border-gray-300 rounded"
+      />
+      <span
+        *ngIf="
+          registerForm.hasError('required', 'userName') &&
+          registerForm.controls['userName'].dirty
+        "
+        class="text-red-500"
+        >*Username is required</span
+      >
+    </div>
     <!-- Email -->
     <div class="flex flex-col mt-4 mb-1">
       <input
@@ -63,26 +89,6 @@
         *ngIf="registerForm.hasError('email', 'email')"
         class="text-red-500"
         >*Email is invalid</span
-      >
-    </div>
-
-    <!-- Username -->
-    <div class="flex flex-col mt-4 mb-1">
-      <input
-        type="text"
-        placeholder="Username"
-        formControlName="userName"
-        required
-        autocomplete="userName"
-        class="p-2 border border-gray-300 rounded"
-      />
-      <span
-        *ngIf="
-          registerForm.hasError('required', 'userName') &&
-          registerForm.controls['userName'].dirty
-        "
-        class="text-red-500"
-        >*Username is required</span
       >
     </div>
 
@@ -134,7 +140,99 @@
         >*Password didn't match!</span
       >
     </div>
+    <!-- Role selection using mat-radio-group -->
+    <div class="flex flex-col mt-4 mb-1">
+      <mat-radio-group formControlName="role" aria-label="Select an option">
+        <mat-radio-button value="Student">Student</mat-radio-button>
+        <mat-radio-button value="Professor">Professor</mat-radio-button>
+      </mat-radio-group>
+    </div>
 
+    <!-- Fields for Student role -->
+    <div *ngIf="registerForm.get('role')?.value === 'Student'">
+      <!-- School Year -->
+      <div class="flex flex-col mt-4 mb-1">
+        <input
+          type="text"
+          placeholder="School Year"
+          formControlName="schoolYear"
+          autocomplete="schoolYear"
+          class="p-2 border border-gray-300 rounded"
+        />
+        <span
+          *ngIf="
+            registerForm.hasError('required', 'schoolYear') &&
+            registerForm.controls['schoolYear'].dirty
+          "
+          class="text-red-500"
+        >
+          *School Year is required
+        </span>
+      </div>
+
+      <!-- Expected Graduation -->
+      <div class="flex flex-col mt-4 mb-1">
+        <input
+          type="text"
+          placeholder="Expected Graduation"
+          formControlName="expectedGraduation"
+          autocomplete="expectedGraduation"
+          class="p-2 border border-gray-300 rounded"
+        />
+        <span
+          *ngIf="
+            registerForm.hasError('required', 'expectedGraduation') &&
+            registerForm.controls['expectedGraduation'].dirty
+          "
+          class="text-red-500"
+        >
+          *Expected Graduation is required
+        </span>
+      </div>
+    </div>
+
+    <!-- Fields for Professor role -->
+    <div *ngIf="registerForm.get('role')?.value === 'Professor'">
+      <!-- Professor Title -->
+      <div class="flex flex-col mt-4 mb-1">
+        <input
+          type="text"
+          placeholder="Professor Title"
+          formControlName="professorTitle"
+          autocomplete="professorTitle"
+          class="p-2 border border-gray-300 rounded"
+        />
+        <span
+          *ngIf="
+            registerForm.hasError('required', 'professorTitle') &&
+            registerForm.controls['professorTitle'].dirty
+          "
+          class="text-red-500"
+        >
+          *Professor Title is required
+        </span>
+      </div>
+
+      <!-- Professor Department -->
+      <div class="flex flex-col mt-4 mb-1">
+        <input
+          type="text"
+          placeholder="Professor Department"
+          formControlName="professorDepartment"
+          autocomplete="professorDepartment"
+          class="p-2 border border-gray-300 rounded"
+        />
+        <span
+          *ngIf="
+            registerForm.hasError('required', 'professorDepartment') &&
+            registerForm.controls['professorDepartment'].dirty
+          "
+          class="text-red-500"
+        >
+          *Professor Department is required
+        </span>
+      </div>
+    </div>
     <button
       [disabled]="registerForm.invalid"
       [class.disabled]="registerForm.invalid"

@@ -1,51 +1,95 @@
 import { NgModule } from '@angular/core';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Routes } from '@angular/router';
 import { DefaultComponent } from './layouts/default/default.component';
-import { DashboardComponent } from './modules/dashboard/dashboard.component';
-import { FullwidthComponent } from './layouts/fullwidth/fullwidth.component';
+import { FullWidthComponent } from './layouts/fullWidth/fullWidth.component';
 import { HomeComponent } from './modules/home/home.component';
 import { LoginComponent } from './modules/login/login.component';
 import { RegisterComponent } from './modules/register/register.component';
-import { ManageProjectComponent } from './modules/manage-project/manage-project.component';
-import { ManageTicketComponent } from './modules/manage-ticket/manage-ticket.component';
-import { TeamComponent } from './modules/team/team.component';
+import { TicketDetailsComponent } from './modules/ticket-details/ticket-details.component';
+import { CreateTeamComponent } from './modules/team-details/create-team/create-team.component';
 import { ProfileComponent } from './modules/profile/profile.component';
-import { Routes } from '@angular/router';
 import { ForgetPasswordComponent } from './modules/forget-password/forget-password.component';
+import { ProfessorDashboardComponent } from './modules/professor-dashboard/professor-dashboard.component';
+import { RoleAndUserIdGuard } from './services/role.guard';
+import { AdminDashboardComponent } from './modules/admin-dashboard/admin-dashboard.component';
+import { ResetComponent } from './modules/reset/reset.component';
+import { NotFoundComponent } from './modules/not-found/not-found.component';
+import { TeamDetailsComponent } from './modules/team-details/team-details.component';
+import { StudentDashboardComponent } from './modules/student-dashboard/student-dashboard.component';
 
 const routes: Routes = [
   {
-    path: 'dashboard',
+    path: '',
     component: DefaultComponent,
     children: [
       {
-        path: 'dashboard',
-        component: DashboardComponent,
+        path: 'student-dashboard/:id',
+        component: StudentDashboardComponent,
+        canActivate: [RoleAndUserIdGuard],
+        data: { expectedRole: ['Student', 'Professor', 'Admin'] },
       },
       {
         path: 'manage-project',
-        component: ManageProjectComponent,
+        loadChildren: () =>
+          import('./modules/manage-project/manage-project.module').then(
+            (m) => m.ManageProjectModule
+          ),
+        canActivate: [RoleAndUserIdGuard],
+        data: { expectedRole: ['Student', 'Professor', 'Admin'] },
       },
       {
-        path: 'manage-ticket',
-        component: ManageTicketComponent,
+        path: 'project-details/:id',
+        loadChildren: () =>
+          import(
+            './modules/manage-project/project-details/project-details.module'
+          ).then((m) => m.ProjectDetailsModule),
+        canActivate: [RoleAndUserIdGuard],
+        data: { expectedRole: ['Student', 'Professor', 'Admin'] },
       },
       {
-        path: 'team',
-        component: TeamComponent,
+        path: 'ticket-details/:id',
+        component: TicketDetailsComponent,
+        canActivate: [RoleAndUserIdGuard],
+        data: { expectedRole: ['Student', 'Professor', 'Admin'] },
       },
       {
-        path: 'profile',
+        path: 'create-team',
+        component: CreateTeamComponent,
+        canActivate: [RoleAndUserIdGuard],
+        data: { expectedRole: ['Student', 'Professor', 'Admin'] },
+      },
+      {
+        path: 'team-details/:id',
+        component: TeamDetailsComponent,
+        canActivate: [RoleAndUserIdGuard],
+        data: { expectedRole: ['Student', 'Professor', 'Admin'] },
+      },
+      {
+        path: 'profile/:id',
         component: ProfileComponent,
+        canActivate: [RoleAndUserIdGuard],
+        data: { expectedRole: ['Student', 'Professor', 'Admin'] },
+      },
+      {
+        path: 'professor-dashboard/:id',
+        component: ProfessorDashboardComponent,
+        canActivate: [RoleAndUserIdGuard],
+        data: { expectedRole: ['Professor', 'Admin'] },
+      },
+      {
+        path: 'admin-dashboard/:id',
+        component: AdminDashboardComponent,
+        canActivate: [RoleAndUserIdGuard],
+        data: { expectedRole: ['Admin'] },
       },
     ],
   },
   {
     path: '',
-    component: FullwidthComponent,
+    component: FullWidthComponent,
     children: [
       {
-        path: '',
+        path: 'home',
         component: HomeComponent,
       },
       {
@@ -60,12 +104,20 @@ const routes: Routes = [
         path: 'forget-password',
         component: ForgetPasswordComponent,
       },
+      {
+        path: 'reset',
+        component: ResetComponent,
+      },
+      { path: '404', component: NotFoundComponent },
+      { path: '**', redirectTo: '/404' }, // Wildcard route for a 404 page
     ],
   },
 ];
 
 @NgModule({
+  // imports: [RouterModule.forRoot(routes, { enableTracing: true })], // for debugging
   imports: [RouterModule.forRoot(routes)],
+
   exports: [RouterModule],
 })
 export class AppRoutingModule {}

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Student Dashboard</title>
+  </head>
+  <body>
+    <div class="top-section">
+      <h1>Student Dashboard</h1>
+      <p>Manage and oversee your projects, team, and tickets.</p>
+    </div>
+
+    <div class="bottom-section">
+      <div class="left-side">
+        <div class="my-projects">
+          <h2>My Projects</h2>
+          <div class="create-project">
+            <button
+              class="action-button"
+              mat-raised-button
+              color="accent"
+              (click)="openAddEditProjectDialog()"
+            >
+              CREATE PROJECT
+            </button>
+          </div>
+          <br />
+          <div>
+            <div *ngIf="projects.length">
+              <div *ngFor="let project of projects">
+                <div class="project-card">
+                  <h3>
+                    <a [routerLink]="['/project-details', project._id]">{{
+                      project.projectName
+                    }}</a>
+                  </h3>
+                  <!-- <h3>{{ project.projectName }}</h3> -->
+                  <!-- Any other project details you'd like to show can be placed here -->
+                </div>
+              </div>
+            </div>
+            <div *ngIf="!projects.length">
+              <p>You don't have any projects yet.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="my-team">
+          <h2>My Teams</h2>
+          <!-- Teams Section -->
+          <div class="create-team">
+            <button
+              class="action-button"
+              mat-raised-button
+              color="accent"
+              (click)="openAddEditTeamDialog()"
+            >
+              CREATE TEAM
+            </button>
+          </div>
+          <br />
+          <div *ngFor="let team of teams">
+            <!-- Updated line below -->
+            <h4>
+              <a [routerLink]="['/team-details', team._id]">{{
+                team.teamName
+              }}</a>
+            </h4>
+          </div>
+        </div>
+
+        <ng-template #noMembersTemplate>
+          <p>No Members in this Team</p>
+        </ng-template>
+      </div>
+
+      <div class="right-side">
+        <div class="my-tickets">
+          <h2>My Tickets</h2>
+          <!-- Tickets List here -->
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

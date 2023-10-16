@@ -1,16 +1,16 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { FullwidthComponent } from './fullwidth.component';
+import { FullWidthComponent } from './fullWidth.component';
 
-describe('FullwidthComponent', () => {
-  let component: FullwidthComponent;
-  let fixture: ComponentFixture<FullwidthComponent>;
+describe('FullWidthComponent', () => {
+  let component: FullWidthComponent;
+  let fixture: ComponentFixture<FullWidthComponent>;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      declarations: [FullwidthComponent]
+      declarations: [FullWidthComponent],
     });
-    fixture = TestBed.createComponent(FullwidthComponent);
+    fixture = TestBed.createComponent(FullWidthComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

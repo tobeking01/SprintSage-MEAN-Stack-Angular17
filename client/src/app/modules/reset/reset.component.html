@@ -1,1 +1,81 @@
-<p>reset works!</p>
+<!-- Main container for the login form with styling -->
+<div class="p-10 mx-auto mt-5 shadow-lg lg:w-3/12">
+  <!-- p-10: Add padding of 2.5rem to all sides -->
+  <!-- mx-auto: Center the element horizontally -->
+  <!-- mt-5: Add a margin-top of 1.25rem -->
+  <!-- shadow-lg: Add a large box shadow -->
+  <!-- lg:w-3/12: Set the width to 25% on large screens and up -->
+
+  <!-- Login header/title -->
+  <h3 class="py-5 text-3xl font-bold text-center">Reset Your Password</h3>
+  <!-- py-5: Add padding of 1.25rem to the top and bottom -->
+  <!-- text-3xl: Set the font size to 3 times the base size -->
+  <!-- font-bold: Make the font bold -->
+  <!-- text-center: Center align the text -->
+
+  <!-- Login form container -->
+  <form [formGroup]="resetForm" class="flex flex-col">
+    <!-- flex: Use flexbox layout for direct children -->
+    <!-- flex-col: Arrange direct children in a column -->
+    <span class="mb-2"> Your password must be at least 7 characters long!</span>
+    <!-- Password -->
+    <div class="flex flex-col mt-4 mb-1">
+      <input
+        type="password"
+        placeholder="Password"
+        formControlName="password"
+        required
+        autocomplete="current-password"
+        class="p-2 border border-gray-300 rounded"
+      />
+      <span
+        *ngIf="
+          resetForm.hasError('required', 'password') &&
+          resetForm.controls['password'].dirty
+        "
+        class="text-red-500"
+        >*Password is required</span
+      >
+    </div>
+
+    <!-- Confirm Password -->
+    <div class="flex flex-col mt-4 mb-1">
+      <input
+        type="password"
+        placeholder="Confirm Password"
+        formControlName="confirmPassword"
+        required
+        autocomplete="confirmPassword"
+        class="p-2 border border-gray-300 rounded"
+      />
+      <span
+        *ngIf="
+          resetForm.hasError('required', 'confirmPassword') &&
+          resetForm.controls['confirmPassword'].dirty
+        "
+        class="text-red-500"
+        >*Please confirm your password</span
+      ><span
+        *ngIf="
+          resetForm.hasError('confirmPasswordValidator', 'confirmPassword') &&
+          resetForm.controls['confirmPassword'].dirty
+        "
+        class="text-red-500"
+        >*Password didn't match!</span
+      >
+    </div>
+    <!-- Login Button -->
+    <button
+      [disabled]="resetForm.invalid"
+      [class.disabled]="resetForm.invalid"
+      (click)="reset()"
+      class="p-2 mt-3 text-white bg-indigo-500 rounded hover:bg-indigo-700"
+    >
+      <!-- mt-3: Add a margin-top of 0.75rem -->
+      <!-- text-white: Set the font color to white -->
+      <!-- bg-indigo-500: Set the background color to a shade of indigo -->
+      <!-- hover:bg-indigo-700: Set a darker shade of indigo when hovered -->
+      Submit
+    </button>
+  </form>
+</div>

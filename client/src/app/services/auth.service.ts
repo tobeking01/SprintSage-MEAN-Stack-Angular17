@@ -1,58 +1,174 @@
-// Importing necessary modules from Angular's HTTP client module and core module.
-import { HttpClient } from '@angular/common/http';
-import { Injectable, inject } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
-
-// Importing the API URLs constants from a separate module.
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Injectable } from '@angular/core';
+import { Observable, BehaviorSubject, throwError } from 'rxjs';
+import { catchError, tap } from 'rxjs/operators';
 import { apiUrls } from '../api.urls';
+import { User } from './model/user.model';
+import {
+  BaseUserPayload,
+  LoginPayload,
+  RegisterProfessorPayload,
+  RegisterStudentPayload,
+  ResponseData,
+} from './model/auth.model';
+import { Router } from '@angular/router';
 
-// Using the @Injectable decorator to make this service available to Angular's dependency injection system.
+const USER_KEY = 'auth-user';
+
 @Injectable({
-  providedIn: 'root', // This ensures the AuthService is available as a singleton instance throughout the application.
+  providedIn: 'root',
 })
 export class AuthService {
-  // Using Angular's dependency injection to get an instance of HttpClient.
-  // This is used for making HTTP requests.
-  constructor(private http: HttpClient) {}
-  isLoggedIn$ = new BehaviorSubject<boolean>(false);
+  isLoggedIn$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
+  private currentUserSubject = new BehaviorSubject<User | null>(null);
+  currentUser$: Observable<User | null> =
+    this.currentUserSubject.asObservable();
 
-  /**
-   * Function to call the registration API.
-   *
-   * @param registerObj - The object containing user registration details.
-   * @returns An Observable of the HTTP response from the API.
-   */
-  registerService(registerObj: any) {
-    // Using the post method of HttpClient to make an HTTP POST request.
-    // The API endpoint is constructed using a constant and appending the specific route for registration.
-    return this.http.post<any>(
-      `${apiUrls.authServiceApi}register`,
-      registerObj
-    );
+  constructor(private http: HttpClient, private router: Router) {
+    this.loadUserFromStorage();
+  }
+  get currentUserValue(): User | null {
+    return this.currentUserSubject.value;
+  }
+  getCurrentUserId(): string | null {
+    return this.currentUserValue?._id || null;
   }
 
-  loginService(loginObj: any) {
-    return this.http.post<any>(`${apiUrls.authServiceApi}login`, loginObj);
+  private loadUserFromStorage(): void {
+    const user = localStorage.getItem(USER_KEY); // use local storage to store session login
+    if (user) {
+      this.currentUserSubject.next(JSON.parse(user));
+      console.debug('User loaded from storage:', user);
+    }
   }
 
-  sendEmailService(email: string) {
+  loginService(loginObj: LoginPayload): Observable<ResponseData> {
+    console.debug('Attempting to login with:', loginObj);
+    return this.http
+      .post<ResponseData>(`${apiUrls.authServiceApi}login`, loginObj)
+      .pipe(
+        tap((response) => {
+          if (response.data) {
+            const user = response.data;
+            this.currentUserSubject.next(user);
+            this.isLoggedIn$.next(true);
+            localStorage.setItem(USER_KEY, JSON.stringify(user)); // Changed from sessionStorage
+            console.debug('User successfully logged in:', user);
+          } else {
+            console.error('User data is not available from login response.');
+            throw new Error('User data is not available');
+          }
+        }),
+        catchError((error) => {
+          console.error('Error during login:', error);
+          if (error.status === 401) {
+            // Handle Unauthorized, redirect to the NotFoundComponent
+            this.router.navigate(['/404']);
+            console.warn('Unauthorized access attempt detected.');
+          }
+          return throwError(error);
+        })
+      );
+  }
+
+  logout(): Observable<any> {
+    console.debug('Attempting to logout...');
+    return this.http
+      .post(
+        `${apiUrls.authServiceApi}logout`,
+        {},
+        { headers: this.getHeaders() }
+      )
+      .pipe(
+        tap(() => {
+          this.currentUserSubject.next(null);
+          this.isLoggedIn$.next(false);
+          localStorage.removeItem(USER_KEY);
+          console.debug('User successfully logged out.');
+        }),
+        catchError((error) => {
+          console.error('Logout error', error);
+          this.currentUserSubject.next(null);
+          this.isLoggedIn$.next(false);
+          localStorage.removeItem(USER_KEY);
+          throw error;
+        })
+      );
+  }
+
+  registerStudentService(
+    registerObj: RegisterStudentPayload
+  ): Observable<ResponseData> {
+    console.debug('Attempting to register student with:', registerObj);
+    return this.handleRegistration(registerObj, 'student');
+  }
+
+  registerProfessorService(
+    registerObj: RegisterProfessorPayload
+  ): Observable<ResponseData> {
+    console.debug('Attempting to register professor with:', registerObj);
+    return this.handleRegistration(registerObj, 'professor');
+  }
+
+  private handleRegistration(
+    registerObj: BaseUserPayload,
+    type: 'student' | 'professor'
+  ): Observable<ResponseData> {
+    console.debug(`Handling registration for type: ${type}`, registerObj);
+    return this.http
+      .post<ResponseData>(`${apiUrls.authServiceApi}register`, registerObj)
+      .pipe(
+        tap((response) => {
+          if (!response.success) {
+            console.error('Registration failed with response:', response);
+            throw new Error('Registration Failed');
+          }
+          console.debug('Registration successful for:', registerObj);
+        }),
+        catchError((error) => {
+          console.error('Error during registration:', error);
+          return throwError(error);
+        })
+      );
+  }
+
+  private getHeaders(): HttpHeaders {
+    const user = this.currentUserValue;
+    if (user && user.token) {
+      return new HttpHeaders({ Authorization: 'Bearer ' + user.token });
+    } else {
+      return new HttpHeaders();
+    }
+  }
+
+  setCurrentUser(user: User): void {
+    this.currentUserSubject.next(user);
+    this.isLoggedIn$.next(!!user);
+  }
+
+  getUserRoles(): string[] {
+    return this.currentUserSubject.value?.roles || [];
+  }
+
+  isLoggedIn(): boolean {
+    return !!this.currentUserSubject.value;
+  }
+
+  isAdmin(): boolean {
+    return this.currentUserSubject.value?.roles.includes('Admin') || false;
+  }
+
+  isProfessor(): boolean {
+    return this.currentUserSubject.value?.roles.includes('Professor') || false;
+  }
+
+  sendEmailService(email: string): Observable<any> {
     return this.http.post<any>(`${apiUrls.authServiceApi}send-email`, {
-      email: email,
+      email,
     });
   }
 
-  resetPasswordService(resetObj: any) {
+  resetPasswordService(resetObj: any): Observable<any> {
     return this.http.post<any>(`${apiUrls.authServiceApi}reset`, resetObj);
-  }
-
-  isLoggedIn() {
-    const loggedIn = !!localStorage.getItem('user_id');
-    this.isLoggedIn$.next(loggedIn);
-    return loggedIn;
-  }
-
-  logout() {
-    localStorage.removeItem('user_id'); // Clear user id from local storage
-    this.isLoggedIn$.next(false); // Update isLoggedIn$ to false
   }
 }

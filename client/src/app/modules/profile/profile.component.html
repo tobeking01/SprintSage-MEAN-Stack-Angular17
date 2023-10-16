@@ -1,1 +1,51 @@
-<p>profile works!</p>
+<div class="profile-container" *ngIf="user">
+  <!-- Header Section -->
+  <div class="header">
+    <h1>{{ UserRole }} Profile</h1>
+    <p>View and manage your profile details.</p>
+    <button mat-raised-button color="accent" (click)="openUpdateDialog()">
+      Update Profile
+    </button>
+  </div>
+
+  <!-- Body Section -->
+  <div class="body">
+    <!-- Major Profile Details -->
+    <div class="details">
+      <h2>Profile Details</h2>
+
+      <div class="profile-detail">
+        <strong>First Name:</strong>
+        <span>{{ user.firstName }}</span>
+      </div>
+      <div class="profile-detail">
+        <strong>Last Name:</strong>
+        <span>{{ user.lastName }}</span>
+      </div>
+      <div class="profile-detail">
+        <strong>Username:</strong>
+        <span>{{ user.userName }}</span>
+      </div>
+      <div class="profile-detail">
+        <strong>Email:</strong>
+        <span>{{ user.email }}</span>
+      </div>
+      <div class="profile-detail" *ngIf="user?.schoolYear">
+        <strong>School Year:</strong>
+        <span>{{ user.schoolYear }}</span>
+      </div>
+      <div class="profile-detail" *ngIf="user?.expectedGraduation">
+        <strong>Expected Graduation:</strong>
+        <span>{{ user.expectedGraduation | date }}</span>
+      </div>
+      <div class="profile-detail" *ngIf="user?.professorTitle">
+        <strong>Professor Title:</strong>
+        <span>{{ user.professorTitle }}</span>
+      </div>
+      <div class="profile-detail" *ngIf="user?.professorDepartment">
+        <strong>Professor Department:</strong>
+        <span>{{ user.professorDepartment }}</span>
+      </div>
+    </div>
+  </div>
+</div>
