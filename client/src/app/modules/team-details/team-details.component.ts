@@ -9,6 +9,8 @@ import {
   MultipleTeamsResponseData,
   TeamPopulated,
 } from 'src/app/services/model/team.model';
+import { CreateTeamComponent } from './create-team/create-team.component';
+import { MatDialog } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-team-details',
@@ -26,7 +28,7 @@ export class TeamDetailsComponent implements OnInit {
 
   private onDestroy$ = new Subject<void>(); // For handling unSubscription when the component is destroyed
 
-  constructor(private teamService: TeamService) {}
+  constructor(private teamService: TeamService, private dialog: MatDialog) {}
 
   ngOnInit(): void {
     this.isLoading = true;
@@ -66,5 +68,13 @@ export class TeamDetailsComponent implements OnInit {
     }
     console.error(errorMessage, err);
     this.errorMessage = errorMessage;
+  }
+  openAddEditTeamDialog(): void {
+    const dialogRef = this.dialog.open(CreateTeamComponent);
+    dialogRef.afterClosed().subscribe({
+      next: (val) => {
+        if (val) this.loadAllTeamDetails();
+      },
+    });
   }
 }
