@@ -36,6 +36,10 @@
       <button mat-raised-button color="warn" (click)="deleteProject()">
         DELETE PROJECT
       </button>
+      <mat-progress-spinner
+        *ngIf="isLoading"
+        mode="indeterminate"
+      ></mat-progress-spinner>
     </div>
   </div>
 
@@ -54,7 +58,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let teamMember of projectMembers">
+        <tr *ngFor="let teamMember of projectMembers; let i = index">
           <td>{{ teamMember.firstName }}</td>
           <td>{{ teamMember.lastName }}</td>
           <td>{{ teamMember.userName }}</td>
@@ -64,7 +68,7 @@
             <button
               mat-icon-button
               color="warn"
-              (click)="removeMemberFromProject(teamMember)"
+              (click)="removeMemberFromProject(teamMember._id)"
             >
               <mat-icon>remove_circle</mat-icon>
             </button>

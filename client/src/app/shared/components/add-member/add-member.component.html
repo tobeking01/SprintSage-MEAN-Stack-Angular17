@@ -1,20 +1,34 @@
-<h2>Add Member to Team</h2>
+<h2>Add Members to Team</h2>
 
+<!-- Display selected users with option to remove them -->
+<div *ngFor="let user of selectedUsers">
+  {{ user.firstName }} {{ user.lastName }}
+  <button mat-icon-button color="warn" (click)="removeUserFromSelection(user)">
+    <mat-icon>remove_circle</mat-icon>
+  </button>
+</div>
+
+<!-- Form field to select user to add -->
 <mat-form-field>
   <mat-label>Select User</mat-label>
-  <mat-select [(ngModel)]="selectedUser">
+  <mat-select [(ngModel)]="currentSelectedUserId">
     <mat-option *ngFor="let user of users" [value]="user._id">
       {{ user.firstName }} {{ user.lastName }}
     </mat-option>
   </mat-select>
 </mat-form-field>
 
+<!-- Button to add selected user to the local array -->
+<button mat-button (click)="addUser()">+ Add Member</button>
+
+<!-- Button to add all selected users to the team -->
 <button
   mat-raised-button
-  (click)="addMemberToTeam(teamId)"
-  [disabled]="!selectedUser || !teamId"
+  color="accent"
+  (click)="addMemberToTeam()"
+  [disabled]="selectedUsers.length === 0 || !teamId"
 >
-  Add Member to Team
+  Add Members to Team
 </button>
 
-<button mat-button (click)="dialogRef.close()">Cancel</button>
+<button mat-button color="warn" (click)="dialogRef.close()">Cancel</button>

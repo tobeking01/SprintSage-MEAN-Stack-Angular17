@@ -204,6 +204,9 @@ export const removeUserFromTeam = async (req, res, next) => {
     const team = await Team.findById(teamId);
     if (!team) return sendError(res, 404, "Team not found!");
 
+    const user = await User.findById(userId);
+    if (!user) return sendError(res, 404, "User not found!");
+
     const index = team.teamMembers.indexOf(userId);
     if (index > -1) {
       team.teamMembers.splice(index, 1);
@@ -219,6 +222,7 @@ export const removeUserFromTeam = async (req, res, next) => {
   }
 };
 
+//  Used in project details to add members
 export const addUserToTeam = async (req, res, next) => {
   try {
     const { teamId, userId } = req.params;
@@ -249,41 +253,16 @@ export const addUserToTeam = async (req, res, next) => {
     team.teamMembers.push(userId);
     await team.save();
 
+    // Add team to the user's teams array
+    user.teams.push(teamId);
+    await user.save();
+
     sendSuccess(res, 200, "User added to team successfully!", [team]);
   } catch (error) {
     console.error("Error adding user to team:", error);
     sendError(res, 500, "Internal Server Error!");
   }
 };
-
-// // Controller to get teams by a specific project ID.
-// export const getTeamByProjectId = async (req, res, next) => {
-//   try {
-//     const { projectId } = req.params;
-
-//     // Find project by ID to get its associated teams
-//     const project = await Project.findById(projectId).populate("teams");
-
-//     if (!project) {
-//       return sendError(res, 404, "Project not found.");
-//     }
-
-//     // Check if project has teams
-//     if (!project.teams || project.teams.length === 0) {
-//       return sendError(res, 404, "No teams associated with this project.");
-//     }
-
-//     // Now, fetch team details
-//     const teams = await Team.find({ _id: { $in: project.teams } }).populate(
-//       "teamMembers"
-//     );
-
-//     return sendSuccess(res, 200, "Teams fetched successfully!", teams);
-//   } catch (error) {
-//     console.error("Error fetching teams by project ID:", error);
-//     sendError(res, 500, "Internal Server Error!");
-//   }
-// };
 
 // Controller to get projects by a specific team ID.
 export const getProjectsByTeamId = async (req, res, next) => {

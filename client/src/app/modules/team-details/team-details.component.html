@@ -32,10 +32,11 @@
             <strong>Team Name:</strong> {{ team.teamName }}
           </p>
         </div>
+        <!-- Error message if any -->
+        <div *ngIf="!teams.length">
+          <p>You don't have any teams yet.</p>
+        </div>
       </section>
-
-      <!-- Error message if any -->
-      <div *ngIf="errorMessage" class="error-message">{{ errorMessage }}</div>
     </div>
 
     <!-- Right Section: Team Members -->

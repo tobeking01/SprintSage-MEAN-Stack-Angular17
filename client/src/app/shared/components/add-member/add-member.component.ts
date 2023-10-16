@@ -1,5 +1,5 @@
-import { Component } from '@angular/core';
-import { MatDialogRef } from '@angular/material/dialog';
+import { Component, Inject } from '@angular/core';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { Team } from 'src/app/services/model/team.model';
 import { User } from 'src/app/services/model/user.model';
 import { TeamService } from 'src/app/services/team.service';
@@ -13,14 +13,17 @@ import { UserService } from 'src/app/services/user.service';
 export class AddMemberComponent {
   users: User[] = [];
   teams: Team[] = [];
-  selectedUser?: string;
+  selectedUsers: User[] = [];
+  currentSelectedUserId?: string; // <- added this
   teamId?: string;
 
   constructor(
     private userService: UserService,
     private teamService: TeamService,
-    public dialogRef: MatDialogRef<AddMemberComponent>
+    public dialogRef: MatDialogRef<AddMemberComponent>,
+    @Inject(MAT_DIALOG_DATA) public data: any
   ) {
+    this.teamId = data.teamId;
     this.loadUsers();
   }
 
@@ -30,16 +33,36 @@ export class AddMemberComponent {
     });
   }
 
-  addMemberToTeam(teamId?: string): void {
-    console.log(teamId);
-    console.log(this.selectedUser);
-    if (!teamId || !this.selectedUser) return;
+  addMemberToTeam(): void {
+    if (!this.teamId || this.selectedUsers.length === 0) return;
 
-    this.teamService
-      .addUserToTeam(teamId, this.selectedUser)
-      .subscribe((response) => {
-        console.log('Member added successfully:', response);
-        this.dialogRef.close(true);
-      });
+    // Loop through the selected users and add them
+    for (let user of this.selectedUsers) {
+      this.teamService
+        .addUserToTeam(this.teamId, user._id)
+        .subscribe((response) => {
+          console.log('Member added successfully:', response);
+        });
+    }
+
+    this.dialogRef.close(true);
+  }
+
+  removeUserFromSelection(user: User): void {
+    const index = this.selectedUsers.indexOf(user);
+    if (index > -1) {
+      this.selectedUsers.splice(index, 1);
+    }
+  }
+
+  addUser(): void {
+    // Add the currently selected user to the selectedUsers array
+    const userToAdd = this.users.find(
+      (user) => user._id === this.currentSelectedUserId
+    );
+    if (userToAdd) {
+      this.selectedUsers.push(userToAdd);
+      this.currentSelectedUserId = undefined; // Reset current selection
+    }
   }
 }

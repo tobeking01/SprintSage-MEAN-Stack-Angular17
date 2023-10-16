@@ -325,7 +325,7 @@ export const deleteProjectById = async (req, res, next) => {
  * @param {Object} res - Express response object.
  * @param {function} next - Express next middleware function.
  */
-export const addMembersToProject = async (req, res, next) => {
+export const addTeamsToProject = async (req, res, next) => {
   try {
     // Extract project ID from route parameters and team IDs from the request body.
     const { id } = req.params;
@@ -390,6 +390,63 @@ export const addMembersToProject = async (req, res, next) => {
   } catch (error) {
     // Log and respond with any errors.
     console.error("Error adding teams to project:", error);
+    sendError(res, 500, "Internal Server Error!");
+  }
+};
+
+/**
+ * Controller to remove a member from a project.
+ * @async
+ * @function
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @param {function} next - Express next middleware function.
+ */
+export const removeMemberFromProject = async (req, res, next) => {
+  try {
+    const { id: projectId, memberId: userId } = req.params;
+
+    // Fetch the project by its ID.
+    const project = await Project.findById(projectId);
+    if (!project) {
+      return sendError(res, 404, "Project not found!");
+    }
+
+    // Ensure that only the project's creator or an admin can remove members from the project.
+    if (
+      project.createdBy.toString() !== req.user.id.toString() &&
+      !(await isUserAdmin(req.user.id.toString()))
+    ) {
+      return sendError(
+        res,
+        403,
+        "Access denied! Only the project creator or an admin can remove members from this project."
+      );
+    }
+
+    let isMemberRemoved = false;
+
+    // Loop through the teams of the project
+    for (let teamId of project.teams) {
+      let team = await Team.findById(teamId);
+      if (team && team.teamMembers.includes(userId)) {
+        // Use the removeUser method from the Team schema to remove the user from the team
+        await team.removeUser(userId);
+        isMemberRemoved = true;
+        break; // Assuming a user can only be in one team, we break after removing
+      }
+    }
+
+    // If user is not found in any of the teams
+    if (!isMemberRemoved) {
+      return sendError(res, 400, "User is not a member of this project.");
+    }
+
+    // Respond with a success message.
+    return sendSuccess(res, 200, "User removed from project successfully!");
+  } catch (error) {
+    // Log and respond with any errors.
+    console.error("Error removing user from project:", error);
     sendError(res, 500, "Internal Server Error!");
   }
 };

@@ -9,6 +9,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { ReactiveFormsModule } from '@angular/forms';
 import { ModulesModule } from '../../modules.module';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+
 const routes: Routes = [
   {
     path: '',
@@ -29,6 +31,7 @@ const routes: Routes = [
     ReactiveFormsModule,
     RouterModule.forChild(routes),
     ModulesModule,
+    MatProgressSpinnerModule,
   ],
 })
 export class ProjectDetailsModule {}
