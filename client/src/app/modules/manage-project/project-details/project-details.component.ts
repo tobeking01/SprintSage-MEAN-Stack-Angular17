@@ -1,28 +1,27 @@
-import { HttpErrorResponse } from '@angular/common/http';
-import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import {
-  FormArray,
   FormBuilder,
-  FormControl,
   FormGroup,
+  FormArray,
+  FormControl,
   Validators,
 } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import { Observable, Subject, forkJoin } from 'rxjs';
+import { Subject } from 'rxjs';
 import { tap, takeUntil } from 'rxjs/operators';
-import { AuthService } from 'src/app/services/auth.service';
+import { HttpErrorResponse } from '@angular/common/http';
+
 import {
-  ProjectFull,
-  SingleProjectFullResponseData,
+  MultipleProjectsResponseData,
+  ProjectPopulated,
 } from 'src/app/services/model/project.model';
 import {
   MultipleTeamsResponseData,
   TeamPopulated,
 } from 'src/app/services/model/team.model';
-import { ResponseData, User } from 'src/app/services/model/user.model';
+import { User, UserPopulated } from 'src/app/services/model/user.model';
 import { ProjectService } from 'src/app/services/project.service';
 import { TeamService } from 'src/app/services/team.service';
-import { UserService } from 'src/app/services/user.service';
 
 @Component({
   selector: 'app-project-details',
@@ -30,102 +29,95 @@ import { UserService } from 'src/app/services/user.service';
   styleUrls: ['./project-details.component.scss'],
 })
 export class ProjectDetailsComponent implements OnInit {
-  addMemberForm!: FormGroup;
-  isExistingTeamSelected = false;
-  selectedProject?: ProjectFull;
-  @Output() close = new EventEmitter<void>();
+  selectedProject?: ProjectPopulated;
   users: User[] = [];
   teams: TeamPopulated[] = [];
-  loggedInUserId: string = '';
-  teamMembersDetails: { [key: string]: string } = {};
-  loggedInUser: User | null = null;
-  projectMembers: User[] = [];
-  isLoading: boolean = false;
-  error: string | null = null;
-  private ngUnsubscribe = new Subject<void>();
-  membersVisible = false;
+  projectMembers: UserPopulated[] = [];
   roleNames: { [id: string]: string } = {};
+  addMemberForm!: FormGroup;
+  isLoading = false;
+  membersVisible = false;
+  errorMessage = '';
+
+  private ngUnsubscribe = new Subject<void>();
 
   constructor(
     private fb: FormBuilder,
     private teamService: TeamService,
-    private userService: UserService,
-    private authService: AuthService,
-    private route: ActivatedRoute,
-    private projectService: ProjectService
+    private projectService: ProjectService,
+    private route: ActivatedRoute
   ) {}
 
   ngOnInit(): void {
-    this.combineObservables();
-    this.loadLoggedInUser();
+    this.route.paramMap
+      .pipe(
+        tap((params) => {
+          const projectId = params.get('id');
+          if (projectId) {
+            this.fetchProjectDetails(projectId);
+            console.log(projectId);
+          } else {
+            console.error('Project ID not provided in route parameters.');
+          }
+        }),
+        takeUntil(this.ngUnsubscribe)
+      )
+      .subscribe();
+
+    this.loadAllTeamDetails();
     this.initializeForm();
-    this.fetchRoleNames();
   }
 
-  initializeForm() {
+  private initializeForm(): void {
     this.addMemberForm = this.fb.group({
       teamMembers: this.fb.array([], Validators.minLength(1)),
     });
   }
 
-  toggleMembersVisibility(): void {
-    // If members are not loaded yet, load them
-    if (!this.membersVisible && this.projectMembers.length === 0) {
-      this.viewMembers();
-    }
-    this.membersVisible = !this.membersVisible;
-  }
-
-  removeMemberFromProject(member: User): void {
-    // Logic to remove the member from the project
-    // For example, you can splice them from the projectMembers array
-    const index = this.projectMembers.indexOf(member);
-    if (index > -1) {
-      this.projectMembers.splice(index, 1);
-    }
-
-    // Additionally, you'll want to update the backend to reflect this change
-    // (e.g., by calling a service method to update the project's members in the database).
-  }
-
-  fetchRoleNames(): void {
-    this.userService.getRoleMappings().subscribe(
-      (mappings) => {
-        console.log('Fetched role mappings:', mappings);
-        this.roleNames = mappings;
+  private fetchProjectDetails(projectId: string): void {
+    this.projectService.getProjectById(projectId).subscribe(
+      (response: MultipleProjectsResponseData) => {
+        this.selectedProject = response.data[0];
+        console.log('Project Data:', this.selectedProject);
       },
-      (error) => {
-        console.error('Error fetching role mappings:', error);
-        this.error = 'Error fetching role mappings.';
+      (error: HttpErrorResponse) => {
+        this.errorMessage = `Error Code: ${error.status}, Message: ${error.message}`;
+        console.error('Error fetching project details:', error.error.message);
       }
     );
   }
 
-  getRoleName(roleId: string[]): string {
-    if (roleId && roleId.length > 0) {
-      return this.roleNames[roleId[0]] || 'Unknown Role';
-    }
-    return 'No Role Assigned';
-  }
-
-  private loadLoggedInUser(): void {
-    this.loggedInUser = this.authService.currentUserValue;
-    if (this.loggedInUser?._id) {
-      this.loggedInUserId = this.loggedInUser._id;
-    }
-
-    // Optionally: If you want the full details of the logged-in user, you can use the UserService
-    // to fetch it by the ID.
-    // this.loadUserDetailsById(this.loggedInUserId);
-  }
-
-  private combineObservables(): void {
-    forkJoin([this.loadUsers(), this.loadTeams()])
+  private loadAllTeamDetails(): void {
+    this.route.paramMap
       .pipe(
-        tap(() => {
-          const projectId = this.route.snapshot.paramMap.get('projectId');
+        tap((params) => {
+          const projectId = params.get('id');
           if (projectId) {
-            this.fetchProjectDetails(projectId);
+            this.teamService
+              .getTeamsByProjectDetails(projectId)
+              .pipe(takeUntil(this.ngUnsubscribe))
+              .subscribe(
+                (response: MultipleTeamsResponseData) => {
+                  this.teams = response.data;
+                  this.teams.forEach((team) => {
+                    team.teamMembers.forEach((member) => {
+                      this.roleNames[member._id] = member.roles[0].name;
+                      if (
+                        !this.projectMembers.find((m) => m._id === member._id)
+                      ) {
+                        this.projectMembers.push(member); // populate the projectMembers array
+                      }
+                    });
+                  });
+                },
+                (error: HttpErrorResponse) => {
+                  this.errorMessage = `Error Code: ${error.status}, Message: ${error.message}`;
+                  console.error('Error fetching teams:', error.error.message);
+                  this.teams = [];
+                }
+              );
+          } else {
+            console.error('Project ID not provided in route parameters.');
           }
         }),
         takeUntil(this.ngUnsubscribe)
@@ -133,138 +125,53 @@ export class ProjectDetailsComponent implements OnInit {
       .subscribe();
   }
 
-  private fetchProjectDetails(id: string): void {
-    this.projectService.getProjectById(id).subscribe(
-      (response: SingleProjectFullResponseData) => {
-        // If the response data is an array, take the first element
-        this.selectedProject = Array.isArray(response.data)
-          ? response.data[0]
-          : response.data;
-      },
-      (error: HttpErrorResponse) => {
-        console.error('Error fetching project details:', error.error.message);
-        // Optionally show a user-friendly message or redirect the user.
-      }
-    );
-  }
-
-  saveTeamsToProject(): void {
-    if (this.addMemberForm.invalid) {
-      // TODO: Show a user-friendly notification about the invalid form
-      return;
-    }
-
-    if (!this.selectedProject?._id) {
-      // TODO: Show a user-friendly notification that no project is selected
-      return;
-    }
-
-    const selectedTeamIds = this.addMemberForm.value.teamMembers;
-
-    if (!Array.isArray(selectedTeamIds) || selectedTeamIds.length === 0) {
-      // TODO: Show a user-friendly notification that no teams are selected
-      return;
-    }
-
-    this.projectService
-      .addTeamsToProject(this.selectedProject._id, selectedTeamIds)
-      .subscribe(
-        () => {
-          // TODO: Show a user-friendly notification about the successful addition of teams
-        },
-        (error) => {
-          console.error('Error adding teams:', error);
-          // TODO: Show a user-friendly notification about the error
-        }
-      );
-  }
-
-  private loadUsers(): Observable<ResponseData> {
-    return this.userService.getLoggedInUserDetails().pipe(
-      tap((response: ResponseData) => {
-        this.users = response.data[0];
-        console.log('Users fetched:', this.users);
-      })
-    );
-  }
-
-  private loadTeams(): Observable<MultipleTeamsResponseData> {
-    return this.teamService.getTeamsByUserId().pipe(
-      tap((response: MultipleTeamsResponseData) => {
-        if (Array.isArray(response.data)) {
-          this.teams = response.data;
-        } else {
-          this.teams = [response.data];
-        }
-        console.log('Teams fetched:', this.teams);
-      })
-    );
-  }
-
-  viewMembers(): void {
-    console.log('Selected Project:', this.selectedProject);
-
-    if (
-      !this.selectedProject?.teams ||
-      this.selectedProject?.teams.length === 0
-    ) {
-      console.error(
-        'No teams associated with the selected project or project is not loaded yet!'
-      );
-      return;
-    }
-
-    const projectTeamId = this.selectedProject.teams[0]._id; // Taking the first team's ID
-
-    const projectTeam = this.teams.find((team) => team._id === projectTeamId);
-    console.log('Project members:', this.projectMembers);
-
-    if (projectTeam) {
-      this.projectMembers = projectTeam.teamMembers;
-    } else {
-      console.error('Team not found in the teams array:', projectTeamId);
-    }
-  }
-
-  getCurrentUser(): User | null {
-    return this.authService.currentUserValue;
-  }
-
-  get teamMembersFormArray(): FormArray {
-    return this.addMemberForm.get('teamMembers') as FormArray;
-  }
-
   get teamMembersControls(): FormControl[] {
-    return this.teamMembersFormArray.controls as FormControl[];
+    return (this.addMemberForm.get('teamMembers') as FormArray)
+      .controls as FormControl[];
   }
 
-  addMembers() {
-    this.teamMembersFormArray.push(new FormControl('', Validators.required));
+  // Add these methods to your ProjectDetailsComponent class.
+
+  toggleMembersVisibility(): void {
+    this.membersVisible = !this.membersVisible;
   }
 
-  removeMembers(index: number) {
-    this.teamMembersFormArray.removeAt(index);
+  addMembers(): void {
+    // Here you'd typically want to show a modal or a form to add members.
+    // Fetch the list of users, let the user select one, and then add that user to the project.
+    // After adding the user, you'd typically want to refresh the list of members for this project.
   }
 
   deleteProject(): void {
-    const confirmDeletion = window.confirm(
-      'Are you sure you want to delete this project?'
-    );
-    if (confirmDeletion) {
-      this.projectService
-        .deleteProjectById(this.selectedProject?._id as string)
-        .subscribe(
-          () => {
-            // Handle successful deletion, e.g., close the component or notify the user
-          },
-          (error) => {
-            console.error('Failed to delete the project:', error);
-            // Optionally show an error message to the user
-          }
-        );
-    }
+    // Show a confirmation dialog to the user.
+    // If they confirm, send a request to your backend to delete the project.
+    // Handle errors gracefully - e.g., show an error message if the deletion fails.
+    // If the deletion is successful, you might want to navigate the user back to a list of all projects.
   }
-  ngOnDestroy() {
+
+  removeMemberFromProject(member: any): void {
+    // Show a confirmation dialog to the user.
+    // If they confirm, send a request to your backend to remove this member from the project.
+    // After removing the user, you'd typically want to refresh the list of members for this project.
+  }
+
+  saveTeamsToProject(): void {
+    // Validate the form.
+    // If valid, extract the team members from the form.
+    // Send a request to your backend to add these members to the project.
+    // Handle the response - if successful, show a success message and possibly refresh the list of project members.
+    // If unsuccessful, show an error message.
+  }
+
+  removeMembers(index: number): void {
+    (this.addMemberForm.get('teamMembers') as FormArray).removeAt(index);
+  }
+
+  get MembersControls() {
+    return (this.addMemberForm.get('teamMembers') as FormArray).controls;
+  }
+
+  ngOnDestroy(): void {
     this.ngUnsubscribe.next();
     this.ngUnsubscribe.complete();
   }

@@ -8,15 +8,22 @@ import { Router } from '@angular/router';
   styleUrls: ['./header.component.scss'],
 })
 export class HeaderComponent implements OnInit {
+  isProfessor: boolean = false; // Store the state here
   @Output() toggleSideBarForMe: EventEmitter<any> = new EventEmitter();
-  constructor(private authService: AuthService, private router: Router) {} // Inject AuthService and Router
-  ngOnInit() {}
+
+  constructor(private authService: AuthService, private router: Router) {}
+
+  ngOnInit() {
+    this.isProfessor = this.authService.isProfessor();
+  }
+
   toggleSidebar() {
     this.toggleSideBarForMe.emit();
     setTimeout(() => {
       window.dispatchEvent(new Event('resize'));
     }, 300);
   }
+
   onLogout() {
     this.authService.logout().subscribe(
       () => {
@@ -26,7 +33,7 @@ export class HeaderComponent implements OnInit {
       (error) => {
         // Handle error during logout.
         console.error('Error during logout:', error);
-        //  navigate to the login page.
+        // Navigate to the login page.
         this.router.navigate(['/login']);
       }
     );

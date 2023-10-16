@@ -55,6 +55,12 @@ export const createTeam = async (req, res, next) => {
     // Here we are setting the createdBy field using req.userId
     const newTeam = new Team({ teamName, teamMembers, createdBy: req.user.id });
     await newTeam.save();
+
+    // Update each user's teams array with the new team's ID
+    for (let userId of teamMembers) {
+      await User.findByIdAndUpdate(userId, { $push: { teams: newTeam._id } });
+    }
+
     // When a new team is created, ensure the response contains the team in an array.
     sendSuccess(res, 201, "Team Created!", [newTeam]);
   } catch (error) {
@@ -63,10 +69,47 @@ export const createTeam = async (req, res, next) => {
   }
 };
 
+export const getTeamsByProjectDetails = async (req, res, next) => {
+  try {
+    const projectId = String(req.query.projectId); // get projectId from frontend as string
+    const loggedInUserId = req.user.id;
+
+    if (!projectId) {
+      return sendError(res, 400, "Project ID is required!");
+    }
+
+    if (!loggedInUserId) {
+      return sendError(res, 401, "User not authenticated!");
+    }
+
+    const teams = await Team.find({
+      projects: projectId,
+      teamMembers: loggedInUserId, // Ensures the logged-in user is a member of the team.
+    })
+      .populate({
+        path: "teamMembers",
+        populate: {
+          path: "roles",
+          model: "Role", // Assuming 'Role' is the name of your role model
+        },
+      })
+      .populate("projects");
+
+    if (!teams.length) {
+      return sendSuccess(res, 200, "No teams found for the given project.", []);
+    }
+
+    sendSuccess(res, 200, "Teams fetched successfully!", teams);
+  } catch (error) {
+    console.error("Error fetching teams by project:", error);
+    sendError(res, 500, `Internal Server Error: ${error.message}`);
+  }
+};
+
 // getall teams by user Id
 export const getTeamsByUserId = async (req, res, next) => {
   try {
-    const loggedInUserId = req.user.id.toString();
+    const loggedInUserId = req.user.id.toString(); // endpoint to return teams for the currently authenticated user
 
     // If the user isn't found (which should be rare if they're authenticated), return a 404 error.
     if (!loggedInUserId) return sendError(res, 404, "User not found!");
@@ -76,7 +119,12 @@ export const getTeamsByUserId = async (req, res, next) => {
     }).populate("teamMembers");
 
     if (!teams.length) {
-      return sendError(res, 404, "No teams found!");
+      return sendSuccess(
+        res,
+        200,
+        "No teams found for the authenticated user.",
+        []
+      );
     }
 
     sendSuccess(res, 200, "Teams fetched successfully!", teams);
@@ -93,10 +141,8 @@ export const updateTeamById = async (req, res, next) => {
     const updates = req.body;
     const allowedUpdates = ["teamName", "teamMembers"];
 
-    // Check if logged-in user is an admin
-    if (!(await isUserAdmin(loggedInUserId))) {
-      return sendError(res, 403, "Permission denied.");
-    }
+    // If the user isn't found (which should be rare if they're authenticated), return a 404 error.
+    if (!loggedInUserId) return sendError(res, 404, "User not found!");
 
     const isValidOperation = Object.keys(updates).every((update) =>
       allowedUpdates.includes(update)
@@ -122,15 +168,20 @@ export const deleteTeamById = async (req, res, next) => {
   try {
     const loggedInUserId = req.user.id;
 
-    // Check if logged-in user is an admin
-    if (!(await isUserAdmin(loggedInUserId))) {
-      return sendError(res, 403, "Permission denied.");
-    }
+    // If the user isn't found (which should be rare if they're authenticated), return a 404 error.
+    if (!loggedInUserId) return sendError(res, 404, "User not found!");
 
     const { id } = req.params;
     const deletedTeam = await Team.findByIdAndDelete(id);
     if (!deletedTeam) return sendError(res, 404, "Team not found!");
-    // When a new team is created, ensure the response contains the team in an array.
+
+    // Remove the deleted team's reference from all user's teams arrays
+    await User.updateMany(
+      { teams: deletedTeam._id },
+      { $pull: { teams: deletedTeam._id } }
+    );
+
+    // When a team is deleted, ensure the response contains the deleted team in an array.
     sendSuccess(res, 200, "Team deleted successfully!", [deletedTeam]);
   } catch (error) {
     console.error("Error deleting team:", error);
@@ -143,10 +194,8 @@ export const removeUserFromTeam = async (req, res, next) => {
     const { teamId, userId } = req.params;
     const loggedInUserId = req.user.id;
 
-    // Check if logged-in user is an admin or is removing themselves from the team
-    if (loggedInUserId !== userId && !(await isUserAdmin(loggedInUserId))) {
-      return sendError(res, 403, "Permission denied.");
-    }
+    // If the user isn't found (which should be rare if they're authenticated), return a 404 error.
+    if (!loggedInUserId) return sendError(res, 404, "User not found!");
 
     if (!isValidObjectId(teamId) || !isValidObjectId(userId)) {
       return sendError(res, 400, "Invalid ID format.");
@@ -175,10 +224,9 @@ export const addUserToTeam = async (req, res, next) => {
     const { teamId, userId } = req.params;
     const loggedInUserId = req.user.id;
 
-    // Check if logged-in user is an admin or is adding themselves to the team
-    if (loggedInUserId !== userId && !(await isUserAdmin(loggedInUserId))) {
-      return sendError(res, 403, "Permission denied.");
-    }
+    // If the user isn't found (which should be rare if they're authenticated), return a 404 error.
+    if (!loggedInUserId) return sendError(res, 404, "User not found!");
+
     // Validate ObjectIds
     if (!isValidObjectId(teamId) || !isValidObjectId(userId)) {
       return sendError(res, 400, "Invalid ID format.");
@@ -208,34 +256,34 @@ export const addUserToTeam = async (req, res, next) => {
   }
 };
 
-// Controller to get teams by a specific project ID.
-export const getTeamByProjectId = async (req, res, next) => {
-  try {
-    const { projectId } = req.params;
+// // Controller to get teams by a specific project ID.
+// export const getTeamByProjectId = async (req, res, next) => {
+//   try {
+//     const { projectId } = req.params;
 
-    // Find project by ID to get its associated teams
-    const project = await Project.findById(projectId).populate("teams");
+//     // Find project by ID to get its associated teams
+//     const project = await Project.findById(projectId).populate("teams");
 
-    if (!project) {
-      return sendError(res, 404, "Project not found.");
-    }
+//     if (!project) {
+//       return sendError(res, 404, "Project not found.");
+//     }
 
-    // Check if project has teams
-    if (!project.teams || project.teams.length === 0) {
-      return sendError(res, 404, "No teams associated with this project.");
-    }
+//     // Check if project has teams
+//     if (!project.teams || project.teams.length === 0) {
+//       return sendError(res, 404, "No teams associated with this project.");
+//     }
 
-    // Now, fetch team details
-    const teams = await Team.find({ _id: { $in: project.teams } }).populate(
-      "teamMembers"
-    );
+//     // Now, fetch team details
+//     const teams = await Team.find({ _id: { $in: project.teams } }).populate(
+//       "teamMembers"
+//     );
 
-    return sendSuccess(res, 200, "Teams fetched successfully!", teams);
-  } catch (error) {
-    console.error("Error fetching teams by project ID:", error);
-    sendError(res, 500, "Internal Server Error!");
-  }
-};
+//     return sendSuccess(res, 200, "Teams fetched successfully!", teams);
+//   } catch (error) {
+//     console.error("Error fetching teams by project ID:", error);
+//     sendError(res, 500, "Internal Server Error!");
+//   }
+// };
 
 // Controller to get projects by a specific team ID.
 export const getProjectsByTeamId = async (req, res, next) => {
@@ -254,12 +302,9 @@ export const getProjectsByTeamId = async (req, res, next) => {
       return sendError(res, 404, "No projects associated with this team.");
     }
 
-    return sendSuccess(
-      res,
-      200,
-      "Projects fetched successfully!",
-      team.projects
-    );
+    return sendSuccess(res, 200, "Projects fetched successfully!", [
+      team.projects,
+    ]);
   } catch (error) {
     console.error("Error fetching projects by team ID:", error);
     sendError(res, 500, "Internal Server Error!");

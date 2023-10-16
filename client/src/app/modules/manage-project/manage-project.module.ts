@@ -28,7 +28,7 @@ import { CreateProjectModule } from './create-project/create-project.module';
 // routes
 const routes: Routes = [
   {
-    path: 'manage',
+    path: 'm',
     component: ManageProjectComponent,
   },
 ];

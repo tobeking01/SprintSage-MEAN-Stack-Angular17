@@ -19,6 +19,7 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 // routes
 const routes: Routes = [
@@ -50,6 +51,7 @@ const routes: Routes = [
     MatIconModule,
     MatSelectModule,
     MatTooltipModule,
+    MatProgressSpinnerModule,
   ],
   exports: [RouterModule],
 })

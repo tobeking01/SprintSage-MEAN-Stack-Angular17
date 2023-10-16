@@ -65,10 +65,10 @@
         <!-- Projects Section -->
         <div class="projects-section">
           <ng-container
-            *ngIf="MyDataSource.data.length; else noProjectTemplate"
+            *ngIf="projectDataSource.data.length; else noProjectTemplate"
           >
             <div
-              *ngFor="let project of MyDataSource.data"
+              *ngFor="let project of projectDataSource.data"
               class="project-item"
               @listAnimation
               (click)="openProjectDetails(project)"

@@ -49,6 +49,17 @@
         <div class="my-team">
           <h2>My Teams</h2>
           <!-- Teams Section -->
+          <div class="create-team">
+            <button
+              class="action-button"
+              mat-raised-button
+              color="accent"
+              (click)="openAddEditTeamDialog()"
+            >
+              CREATE TEAM
+            </button>
+          </div>
+          <br />
           <div *ngFor="let team of teams">
             <!-- Updated line below -->
             <h4>

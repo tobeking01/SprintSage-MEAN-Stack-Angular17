@@ -33,9 +33,12 @@ router.post("/register-admin", registerAdmin);
 router.post("/send-email", sendEmail);
 
 router.post("/reset", resetPassword);
-router.post("/logout", logout);
 
 // ... in your route
 router.get("/profile", verifyToken, getAuthenticatedUserProfile);
+
+// logout
+router.post("/logout", logout);
+
 // Export the router for use in other parts of the application.
 export default router;

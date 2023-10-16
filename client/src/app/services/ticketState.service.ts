@@ -26,7 +26,6 @@ export class TicketStateService {
     ticketId: string,
     newState: string
   ): Observable<SingleTicketStateResponseData> {
-    // Use the single response type here
     return this.http
       .post<SingleTicketStateResponseData>(`${this.apiUrl}changeTicketState`, {
         ticketId,
@@ -36,7 +35,6 @@ export class TicketStateService {
   }
 
   getAllLogs(): Observable<MultipleTicketStateResponseData> {
-    // multiple logs get
     return this.http
       .get<MultipleTicketStateResponseData>(`${this.apiUrl}logs`)
       .pipe(catchError(this.handleError));
@@ -45,7 +43,6 @@ export class TicketStateService {
   getLogsForTicket(
     ticketId: string
   ): Observable<MultipleTicketStateResponseData> {
-    // Multiple logs for a ticket
     return this.http
       .get<MultipleTicketStateResponseData>(
         `${this.apiUrl}logs/ticket/${ticketId}`
@@ -54,7 +51,6 @@ export class TicketStateService {
   }
 
   getLogsByUser(userId: string): Observable<MultipleTicketStateResponseData> {
-    // Multiple logs by a user
     return this.http
       .get<MultipleTicketStateResponseData>(`${this.apiUrl}logs/user/${userId}`)
       .pipe(catchError(this.handleError));

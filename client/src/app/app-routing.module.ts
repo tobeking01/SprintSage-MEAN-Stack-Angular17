@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { DefaultComponent } from './layouts/default/default.component';
-import { FullwidthComponent } from './layouts/fullwidth/fullwidth.component';
+import { FullWidthComponent } from './layouts/fullWidth/fullWidth.component';
 import { HomeComponent } from './modules/home/home.component';
 import { LoginComponent } from './modules/login/login.component';
 import { RegisterComponent } from './modules/register/register.component';
@@ -38,7 +38,7 @@ const routes: Routes = [
         data: { expectedRole: ['Student', 'Professor', 'Admin'] },
       },
       {
-        path: 'project-details/:projectId',
+        path: 'project-details/:id',
         loadChildren: () =>
           import(
             './modules/manage-project/project-details/project-details.module'
@@ -47,7 +47,7 @@ const routes: Routes = [
         data: { expectedRole: ['Student', 'Professor', 'Admin'] },
       },
       {
-        path: 'ticket-details/:ticketId',
+        path: 'ticket-details/:id',
         component: TicketDetailsComponent,
         canActivate: [RoleAndUserIdGuard],
         data: { expectedRole: ['Student', 'Professor', 'Admin'] },
@@ -59,7 +59,7 @@ const routes: Routes = [
         data: { expectedRole: ['Student', 'Professor', 'Admin'] },
       },
       {
-        path: 'team-details/:teamId',
+        path: 'team-details/:id',
         component: TeamDetailsComponent,
         canActivate: [RoleAndUserIdGuard],
         data: { expectedRole: ['Student', 'Professor', 'Admin'] },
@@ -86,10 +86,10 @@ const routes: Routes = [
   },
   {
     path: '',
-    component: FullwidthComponent,
+    component: FullWidthComponent,
     children: [
       {
-        path: '',
+        path: 'home',
         component: HomeComponent,
       },
       {
@@ -115,8 +115,8 @@ const routes: Routes = [
 ];
 
 @NgModule({
-  imports: [RouterModule.forRoot(routes, { enableTracing: true })], // for debugging
-  // imports: [RouterModule.forRoot(routes)],
+  // imports: [RouterModule.forRoot(routes, { enableTracing: true })], // for debugging
+  imports: [RouterModule.forRoot(routes)],
 
   exports: [RouterModule],
 })

@@ -3,7 +3,7 @@
 </div>
 
 <div class="team-form">
-  <form [formGroup]="createTeamMemberForm" (ngSubmit)="onSubmit()">
+  <form [formGroup]="createTeamForm" (ngSubmit)="onSubmit()">
     <div mat-dialog-content class="content">
       <!-- Team Name Input -->
       <mat-form-field class="full-width">
@@ -16,8 +16,8 @@
         />
         <mat-error
           *ngIf="
-            createTeamMemberForm.get('teamName')?.invalid &&
-            createTeamMemberForm.get('teamName')?.touched
+            createTeamForm.get('teamName')?.invalid &&
+            createTeamForm.get('teamName')?.touched
           "
         >
           Please enter team name
@@ -33,11 +33,11 @@
           <mat-form-field class="full-width">
             <mat-label>Team Member</mat-label>
             <mat-select [formControlName]="i" placeholder="Select Member">
+              <!-- Loop through users array to populate options -->
               <mat-option *ngFor="let user of users" [value]="user._id">
                 {{ user.firstName }} {{ user.lastName }}
               </mat-option>
             </mat-select>
-
             <mat-error *ngIf="memberCtrl.hasError('required')">
               Name is required!
             </mat-error>
@@ -48,16 +48,13 @@
         </div>
         <button mat-button (click)="addUser()">+ Add Member</button>
       </div>
-      <button (click)="logFormValue()">Log Form Value</button>
 
       <!-- Action Buttons -->
       <button
         mat-raised-button
         color="primary"
         type="submit"
-        [disabled]="
-          !createTeamMemberForm.valid || !isAtLeastOneMemberSelected()
-        "
+        [disabled]="!createTeamForm.valid || !isAtLeastOneMemberSelected()"
       >
         Create New Team
       </button>

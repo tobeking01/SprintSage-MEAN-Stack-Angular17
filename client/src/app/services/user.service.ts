@@ -5,6 +5,7 @@ import { ResponseData, User } from './model/user.model';
 import { catchError } from 'rxjs/operators';
 
 import { apiUrls } from '../api.urls';
+import { AuthService } from './auth.service';
 
 @Injectable({
   providedIn: 'root',
@@ -13,16 +14,18 @@ export class UserService {
   private apiUrl = apiUrls.userServiceApi;
   private roleMappings: { [id: string]: string } = {};
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private authService: AuthService) {}
 
   private handleError(error: any): Observable<never> {
     console.error('An error occurred:', error); // Log to console instead
     return throwError(error.message || 'Unknown server error in user service');
   }
+
+  getLoggedInUserId(): string | null {
+    return this.authService.getCurrentUserId();
+  }
+
   getLoggedInUserDetails(): Observable<ResponseData> {
-    console.log(
-      `Fetching users from URL in User: ${this.apiUrl}getLoggedInUserDetails`
-    );
     return this.http
       .get<ResponseData>(`${this.apiUrl}getLoggedInUserDetails`)
       .pipe(catchError(this.handleError));
@@ -34,20 +37,33 @@ export class UserService {
       .pipe(catchError(this.handleError));
   }
 
-  updateUser(id: string, updates: Partial<User>): Observable<User> {
+  updateStudentProfile(
+    id: string,
+    updates: Partial<User>
+  ): Observable<ResponseData> {
     return this.http
-      .put<User>(`${this.apiUrl}updateUser/${id}`, updates)
+      .put<ResponseData>(`${this.apiUrl}updateStudentProfile/${id}`, updates)
       .pipe(catchError(this.handleError));
   }
-  updateProfile(id: string, updates: Partial<User>): Observable<User> {
+
+  updateProfessorProfile(
+    id: string,
+    updates: Partial<User>
+  ): Observable<ResponseData> {
     return this.http
-      .put<User>(`${this.apiUrl}updateProfile/${id}`, updates)
+      .put<ResponseData>(`${this.apiUrl}updateProfessorProfile/${id}`, updates)
       .pipe(catchError(this.handleError));
   }
 
   deleteUser(id: string): Observable<{ message: string }> {
     return this.http
       .delete<{ message: string }>(`${this.apiUrl}deleteUser/${id}`)
+      .pipe(catchError(this.handleError));
+  }
+
+  getAllUsersForTeam(): Observable<User[]> {
+    return this.http
+      .get<User[]>(`${this.apiUrl}getUsersForTeam`)
       .pipe(catchError(this.handleError));
   }
 

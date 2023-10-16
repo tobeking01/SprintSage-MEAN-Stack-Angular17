@@ -5,12 +5,11 @@ import { catchError } from 'rxjs/operators';
 
 import { apiUrls } from '../api.urls';
 import {
-  Team,
   SingleTeamResponseData,
   MultipleTeamsResponseData,
   TeamPopulated,
 } from './model/team.model';
-import { MultipleProjectsFullResponseData } from './model/project.model';
+import { MultipleProjectsResponseData } from './model/project.model';
 
 @Injectable({
   providedIn: 'root',
@@ -82,17 +81,21 @@ export class TeamService {
       .pipe(catchError(this.handleError));
   }
 
-  getTeamByProjectId(projectId: string): Observable<SingleTeamResponseData> {
-    return this.http.get<SingleTeamResponseData>(
-      `${this.apiUrl}getTeamByProjectId/${projectId}`
-    );
+  getTeamsByProjectDetails(
+    projectId: string
+  ): Observable<MultipleTeamsResponseData> {
+    return this.http
+      .get<MultipleTeamsResponseData>(
+        `${this.apiUrl}getTeamsByProjectDetails?projectId=${projectId}`
+      )
+      .pipe(catchError(this.handleError));
   }
 
   getProjectsByTeamId(
     teamId: string
-  ): Observable<MultipleProjectsFullResponseData> {
+  ): Observable<MultipleProjectsResponseData> {
     return this.http
-      .get<MultipleProjectsFullResponseData>(
+      .get<MultipleProjectsResponseData>(
         `${this.apiUrl}getProjectsByTeamId/${teamId}`
       )
       .pipe(catchError(this.handleError));

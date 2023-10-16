@@ -8,6 +8,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { ReactiveFormsModule } from '@angular/forms';
+import { ModulesModule } from '../../modules.module';
 const routes: Routes = [
   {
     path: '',
@@ -17,6 +18,7 @@ const routes: Routes = [
 
 @NgModule({
   declarations: [ProjectDetailsComponent],
+  exports: [ProjectDetailsComponent],
   imports: [
     CommonModule,
     MatFormFieldModule,
@@ -26,7 +28,7 @@ const routes: Routes = [
     MatIconModule,
     ReactiveFormsModule,
     RouterModule.forChild(routes),
+    ModulesModule,
   ],
-  exports: [ProjectDetailsComponent],
 })
 export class ProjectDetailsModule {}

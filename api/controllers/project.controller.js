@@ -9,7 +9,9 @@ const isValidDate = (startDateString, endDateString) => {
   const startDate = new Date(startDateString);
   const endDate = new Date(endDateString);
   return (
-    startDate instanceof Date && endDate instanceof Date && startDate <= endDate
+    !isNaN(startDate.getTime()) &&
+    !isNaN(endDate.getTime()) &&
+    startDate <= endDate
   );
 };
 
@@ -82,6 +84,16 @@ export const createProject = async (req, res, next) => {
         return sendError(res, 400, "One or more tickets are invalid.");
       }
     }
+    const userIdsFromTeams = [];
+
+    // Extract user IDs from the teams
+    for (let team of validTeams) {
+      if (team.teamMembers && Array.isArray(team.teamMembers)) {
+        userIdsFromTeams.push(...team.teamMembers);
+      } else {
+        console.error("Invalid team members data for team:", team);
+      }
+    }
 
     const newProject = new Project({
       projectName,
@@ -89,10 +101,17 @@ export const createProject = async (req, res, next) => {
       startDate,
       endDate,
       teams,
+      users: userIdsFromTeams,
       tickets,
       createdBy: req.user.id,
     });
     await newProject.save();
+    // Update teams with the new project ID
+    for (let teamId of teams) {
+      await Team.findByIdAndUpdate(teamId, {
+        $push: { projects: newProject._id },
+      });
+    }
 
     sendSuccess(res, 201, "Project Created!", [newProject]);
   } catch (error) {
@@ -101,17 +120,58 @@ export const createProject = async (req, res, next) => {
   }
 };
 
-// Controller to get all projects related to a logged-in user
+/**
+ * Controller to get a specific project by its ID.
+ * @async
+ * @function
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @param {function} next - Express next middleware function.
+ */
+export const getProjectById = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    // Fetch the project and populate the createdBy field with both 'firstName' and 'lastName' from the User model
+    const project = await Project.findById(id)
+      .populate({
+        path: "createdBy",
+        select: "firstName lastName", // Only get the 'firstName' and 'lastName' fields
+      })
+      .populate({
+        path: "teams",
+        populate: {
+          path: "teamMembers",
+          select: "firstName lastName", // Only get the 'firstName' and 'lastName' of team members
+        },
+      });
+
+    if (!project) {
+      return sendError(res, 404, "Project not found!");
+    }
+
+    return sendSuccess(res, 200, "Project fetched successfully!", [project]);
+  } catch (error) {
+    console.error("Error fetching project:", error);
+    sendError(res, 500, "Internal Server Error!");
+    next(error); // Pass the error to a potential error-handling middleware
+  }
+};
+
 export const getProjectsByUserId = async (req, res, next) => {
   try {
     const loggedInUserId = req.user.id.toString();
-    let projects = [];
 
-    projects = await Project.find({
-      $or: [
-        { createdBy: loggedInUserId },
-        { "teams.teamMembers": loggedInUserId },
-      ],
+    // Step 1: Fetch teams that have Alice as a member
+    const teamsWithUser = await Team.find({
+      teamMembers: loggedInUserId,
+    });
+
+    const teamIds = teamsWithUser.map((team) => team._id);
+
+    // Step 2: Fetch projects associated with those teams
+    const projects = await Project.find({
+      $or: [{ createdBy: loggedInUserId }, { teams: { $in: teamIds } }],
     }).populate({
       path: "teams",
       populate: {
@@ -121,36 +181,22 @@ export const getProjectsByUserId = async (req, res, next) => {
     });
 
     if (!projects.length) {
-      return sendError(res, 404, "No projects found!");
+      return sendSuccess(
+        res,
+        200,
+        "No projects found for the authenticated user.",
+        []
+      );
     }
 
     sendSuccess(res, 200, "Projects fetched successfully!", projects);
   } catch (error) {
-    console.error("Error fetching projects:", error);
-    sendError(res, 500, "Internal Server Error!");
-  }
-};
-
-// Controller to get a specific project by its ID.
-export const getProjectById = async (req, res, next) => {
-  try {
-    const { id } = req.params;
-    const project = await getProjectByIdHelper(id);
-
-    if (!project) {
-      return sendError(res, 404, "Project not found!");
-    }
-
-    if (
-      !(await isUserAdmin(req.user.id.toString())) &&
-      project.createdBy !== req.user.id.toString()
-    ) {
-      return sendError(res, 403, "Access denied!");
-    }
-
-    sendSuccess(res, 200, "Project fetched successfully!", [project]);
-  } catch (error) {
-    console.error("Error fetching project:", error);
+    console.error(
+      "Error fetching projects for user:",
+      loggedInUserId,
+      "Error:",
+      error
+    );
     sendError(res, 500, "Internal Server Error!");
   }
 };

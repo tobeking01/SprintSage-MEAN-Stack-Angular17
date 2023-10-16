@@ -20,7 +20,7 @@ import { createStudentProfessorUser } from "./user.controller.js";
 // `registerStudentProfessor` function handles the process of registering a new Student or Professor.
 export const registerStudentProfessor = async (req, res, next) => {
   try {
-    const createdUser = await createStudentProfessorUser(req.body);
+    await createStudentProfessorUser(req.body);
     // Continue with other logic if any...
     return sendSuccess(res, 200, "Registration Successfully!");
   } catch (error) {

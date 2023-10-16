@@ -5,25 +5,18 @@ import {
   deleteTeamById,
   removeUserFromTeam,
   addUserToTeam,
-  getTeamByProjectId,
   getTeamsByUserId,
   getProjectsByTeamId,
+  getTeamsByProjectDetails,
 } from "../controllers/team.controller.js";
-import {
-  verifyToken,
-  requireRoles,
-  ROLES,
-} from "../middleware/verify-validate.js";
+import { verifyToken } from "../middleware/verify-validate.js";
 
 const router = express.Router();
 
-// Middleware for verifying tokens
-// Middleware for verifying tokens
-const selfRoles = requireRoles([ROLES.STUDENT, ROLES.PROFESSOR, ROLES.ADMIN]);
-const selfRoleAdmin = requireRoles([ROLES.ADMIN]);
-
 // Route to create a new team. Requires self/Admin privileges.
-router.post("/createTeam", verifyToken, selfRoles, createTeam);
+router.post("/createTeam", verifyToken, createTeam);
+
+router.get("/getTeamsByProjectDetails", verifyToken, getTeamsByProjectDetails);
 
 // Get all teams
 router.get("/getTeamsByUserId", verifyToken, getTeamsByUserId);
@@ -32,12 +25,7 @@ router.get("/getTeamsByUserId", verifyToken, getTeamsByUserId);
 router.put("/updateTeamById/:id", verifyToken, updateTeamById);
 
 // Delete a team by its ID. Requires self/Admin privileges.
-router.delete(
-  "/deleteTeamById/:id",
-  verifyToken,
-  selfRoleAdmin,
-  deleteTeamById
-);
+router.delete("/deleteTeamById/:id", verifyToken, deleteTeamById);
 
 // Add a user to a team
 router.post(
@@ -54,7 +42,7 @@ router.post(
 );
 
 // Get teams associated with a specific project
-router.get("/getTeamByProjectId/:projectId", verifyToken, getTeamByProjectId);
+// router.get("/getTeamByProjectId/:projectId", verifyToken, getTeamByProjectId);
 
 // Get projects associated with a specific team
 router.get(
@@ -64,6 +52,6 @@ router.get(
 );
 
 // Get teams associated with a specific user
-router.get("/getTeamsByUserId/:userId", verifyToken, getTeamsByUserId);
+router.get("/getTeamsByUserId/:id", verifyToken, getTeamsByUserId);
 
 export default router;

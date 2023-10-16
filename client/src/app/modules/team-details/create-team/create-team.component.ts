@@ -11,13 +11,9 @@ import { TeamService } from 'src/app/services/team.service';
 import { UserService } from 'src/app/services/user.service';
 import { User } from 'src/app/services/model/user.model';
 import {
-  Team,
   SingleTeamResponseData,
-  MultipleTeamsResponseData,
   TeamPopulated,
 } from 'src/app/services/model/team.model';
-import { HttpErrorResponse } from '@angular/common/http';
-import { ResponseData } from 'src/app/services/model/user.model';
 
 @Component({
   selector: 'app-create-team',
@@ -25,7 +21,7 @@ import { ResponseData } from 'src/app/services/model/user.model';
   styleUrls: ['./create-team.component.scss'],
 })
 export class CreateTeamComponent implements OnInit {
-  createTeamMemberForm!: FormGroup;
+  createTeamForm!: FormGroup;
   isExistingTeamSelected = false;
   users: User[] = [];
   teams: TeamPopulated[] = [];
@@ -42,22 +38,21 @@ export class CreateTeamComponent implements OnInit {
 
   ngOnInit(): void {
     this.initializeForm();
-    this.loadUsers();
-    this.loadTeams();
+    this.loadAllUsersForTeamCreation();
   }
   logFormValue() {
-    console.log(this.createTeamMemberForm.value);
+    console.log(this.createTeamForm.value);
   }
 
   // Initializes the form controls
   initializeForm() {
-    this.createTeamMemberForm = this.fb.group({
+    this.createTeamForm = this.fb.group({
       teamName: ['', Validators.required],
       teamMembers: this.fb.array([new FormControl(null, Validators.required)]),
     });
 
     // Log changes in the entire form value
-    this.createTeamMemberForm.valueChanges.subscribe((value) => {
+    this.createTeamForm.valueChanges.subscribe((value) => {
       console.log('Form Value:', value);
     });
 
@@ -111,7 +106,7 @@ export class CreateTeamComponent implements OnInit {
 
   // Returns the form array for team members
   get teamMembersFormArray(): FormArray {
-    return this.createTeamMemberForm.get('teamMembers') as FormArray;
+    return this.createTeamForm.get('teamMembers') as FormArray;
   }
 
   // Returns the form controls for team members
@@ -129,45 +124,26 @@ export class CreateTeamComponent implements OnInit {
     this.teamMembersFormArray.removeAt(index);
   }
 
-  // API call to load all teams
-  loadTeams(): void {
-    this.teamService.getTeamsByUserId().subscribe(
-      (response: MultipleTeamsResponseData) => {
-        if (Array.isArray(response.data)) {
-          this.teams = response.data;
-        } else {
-          this.teams = [response.data]; // Convert the single team into an array
-        }
-        console.log('Teams fetched:', this.teams);
+  private loadAllUsersForTeamCreation(): void {
+    this.userService.getAllUsersForTeam().subscribe(
+      (users: User[]) => {
+        this.users = users;
+        console.log('All users fetched for team creation:', this.users);
       },
-      (error: HttpErrorResponse) => {
-        console.error('Error fetching teams:', error);
-        this.teams = [];
+      (error: any) => {
+        console.error('Error fetching users for team creation:', error);
       }
     );
   }
-  // API call to load all users
-  loadUsers() {
-    console.log('Fetching users...');
-    this.userService.getLoggedInUserDetails().subscribe(
-      (response: ResponseData) => {
-        // Access the first element from the nested array.
-        this.users = response.data[0];
-        console.log('Users fetched:', this.users);
-      },
-      (error: HttpErrorResponse) => {
-        console.error('Error:', error);
-      }
-    );
-  }
+
   // Handles form submission
   onSubmit() {
-    if (this.createTeamMemberForm.valid) {
+    if (this.createTeamForm.valid) {
       const teamData = {
-        teamName: this.createTeamMemberForm.value.teamName,
-        teamMembers: this.createTeamMemberForm.value.teamMembers,
+        teamName: this.createTeamForm.value.teamName,
+        teamMembers: this.createTeamForm.value.teamMembers,
       };
-      console.log(this.createTeamMemberForm.value);
+      console.log(this.createTeamForm.value);
 
       this.teamService.createTeam(teamData).subscribe(
         (response: SingleTeamResponseData) => {
