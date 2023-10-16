@@ -9,7 +9,9 @@ const isValidDate = (startDateString, endDateString) => {
   const startDate = new Date(startDateString);
   const endDate = new Date(endDateString);
   return (
-    startDate instanceof Date && endDate instanceof Date && startDate <= endDate
+    !isNaN(startDate.getTime()) &&
+    !isNaN(endDate.getTime()) &&
+    startDate <= endDate
   );
 };
 
@@ -130,7 +132,19 @@ export const getProjectById = async (req, res, next) => {
   try {
     const { id } = req.params;
 
-    const project = await getProjectByIdHelper(id);
+    // Fetch the project and populate the createdBy field with both 'firstName' and 'lastName' from the User model
+    const project = await Project.findById(id)
+      .populate({
+        path: "createdBy",
+        select: "firstName lastName", // Only get the 'firstName' and 'lastName' fields
+      })
+      .populate({
+        path: "teams",
+        populate: {
+          path: "teamMembers",
+          select: "firstName lastName", // Only get the 'firstName' and 'lastName' of team members
+        },
+      });
 
     if (!project) {
       return sendError(res, 404, "Project not found!");
@@ -140,6 +154,7 @@ export const getProjectById = async (req, res, next) => {
   } catch (error) {
     console.error("Error fetching project:", error);
     sendError(res, 500, "Internal Server Error!");
+    next(error); // Pass the error to a potential error-handling middleware
   }
 };
 

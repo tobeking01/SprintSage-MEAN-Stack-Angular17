@@ -12,6 +12,7 @@ import { tap, takeUntil } from 'rxjs/operators';
 import { HttpErrorResponse } from '@angular/common/http';
 
 import {
+  MultipleProjectsResponseData,
   ProjectPopulated,
   SingleProjectResponseData,
 } from 'src/app/services/model/project.model';
@@ -19,7 +20,7 @@ import {
   MultipleTeamsResponseData,
   TeamPopulated,
 } from 'src/app/services/model/team.model';
-import { User } from 'src/app/services/model/user.model';
+import { User, UserPopulated } from 'src/app/services/model/user.model';
 import { ProjectService } from 'src/app/services/project.service';
 import { TeamService } from 'src/app/services/team.service';
 
@@ -32,9 +33,8 @@ export class ProjectDetailsComponent implements OnInit {
   selectedProject?: ProjectPopulated;
   users: User[] = [];
   teams: TeamPopulated[] = [];
-  projectMembers: User[] = [];
+  projectMembers: UserPopulated[] = [];
   roleNames: { [id: string]: string } = {};
-  teamMembersVisible = false;
   addMemberForm!: FormGroup;
   isLoading = false;
   membersVisible = false;
@@ -77,8 +77,9 @@ export class ProjectDetailsComponent implements OnInit {
 
   private fetchProjectDetails(projectId: string): void {
     this.projectService.getProjectById(projectId).subscribe(
-      (response: SingleProjectResponseData) => {
-        this.selectedProject = response.data;
+      (response: MultipleProjectsResponseData) => {
+        this.selectedProject = response.data[0];
+        console.log('Project Data:', this.selectedProject);
       },
       (error: HttpErrorResponse) => {
         this.errorMessage = `Error Code: ${error.status}, Message: ${error.message}`;
@@ -103,6 +104,11 @@ export class ProjectDetailsComponent implements OnInit {
                     team.teamMembers.forEach((member) => {
                       this.roleNames[member._id] = member.roles[0].name;
                       // Note: adjust the property access as per your actual API response
+                      if (
+                        !this.projectMembers.find((m) => m._id === member._id)
+                      ) {
+                        this.projectMembers.push(member); // populate the projectMembers array
+                      }
                     });
                   });
                 },
@@ -160,9 +166,7 @@ export class ProjectDetailsComponent implements OnInit {
   }
 
   removeMembers(index: number): void {
-    // Use the index to remove the member from the list (or form array).
-    // If you're maintaining this list in a local variable, you'd splice the array to remove this member.
-    // If you're using a form array, you'd remove the control at this index.
+    (this.addMemberForm.get('teamMembers') as FormArray).removeAt(index);
   }
 
   // Fix for the form array name:

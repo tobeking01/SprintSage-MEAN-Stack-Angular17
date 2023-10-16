@@ -4,12 +4,19 @@
     <div class="project-info">
       <div>
         <strong>Project Name</strong>
+        <!-- <pre>{{ selectedProject | json }}</pre> -->
+
         <p>{{ selectedProject?.projectName }}</p>
       </div>
       <div>
-        <strong>Created By:</strong>
-        {{ selectedProject?.createdBy?.firstName }}
-        {{ selectedProject?.createdBy?.lastName }}
+        <div>
+          <strong>Created By: </strong>
+          <span
+            >{{ selectedProject?.createdBy?.firstName }}
+            {{ selectedProject?.createdBy?.lastName }}
+          </span>
+        </div>
+
         <br />
         <strong>Created At:</strong>
         {{ selectedProject?.createdAt | date : "yyyy-MM-dd HH:mm" }}
@@ -53,6 +60,7 @@
           <td>{{ teamMember.userName }}</td>
           <td>{{ roleNames[teamMember._id] }}</td>
           <td>{{ selectedProject?.createdAt | date }}</td>
+          TODO change to date added!
           <td>
             <button (click)="removeMemberFromProject(teamMember)">
               Remove
