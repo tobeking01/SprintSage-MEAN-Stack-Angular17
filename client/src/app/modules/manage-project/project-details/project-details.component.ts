@@ -14,7 +14,6 @@ import { HttpErrorResponse } from '@angular/common/http';
 import {
   MultipleProjectsResponseData,
   ProjectPopulated,
-  SingleProjectResponseData,
 } from 'src/app/services/model/project.model';
 import {
   MultipleTeamsResponseData,
@@ -103,7 +102,6 @@ export class ProjectDetailsComponent implements OnInit {
                   this.teams.forEach((team) => {
                     team.teamMembers.forEach((member) => {
                       this.roleNames[member._id] = member.roles[0].name;
-                      // Note: adjust the property access as per your actual API response
                       if (
                         !this.projectMembers.find((m) => m._id === member._id)
                       ) {
@@ -168,8 +166,6 @@ export class ProjectDetailsComponent implements OnInit {
   removeMembers(index: number): void {
     (this.addMemberForm.get('teamMembers') as FormArray).removeAt(index);
   }
-
-  // Fix for the form array name:
 
   get MembersControls() {
     return (this.addMemberForm.get('teamMembers') as FormArray).controls;
