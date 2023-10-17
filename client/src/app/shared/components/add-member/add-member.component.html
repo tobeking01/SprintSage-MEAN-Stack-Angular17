@@ -9,9 +9,13 @@
 </div>
 
 <!-- Form field to select user to add -->
+<!-- Form field to select user to add -->
 <mat-form-field>
   <mat-label>Select User</mat-label>
-  <mat-select [(ngModel)]="currentSelectedUserId">
+  <mat-select
+    [(ngModel)]="currentSelectedUserId"
+    (selectionChange)="selectUser()"
+  >
     <mat-option *ngFor="let user of users" [value]="user._id">
       {{ user.firstName }} {{ user.lastName }}
     </mat-option>
@@ -19,16 +23,16 @@
 </mat-form-field>
 
 <!-- Button to add selected user to the local array -->
-<button mat-button (click)="addUser()">+ Add Member</button>
+<button mat-button (click)="addMoreUsers()">+ Add More Members</button>
 
 <!-- Button to add all selected users to the team -->
 <button
   mat-raised-button
   color="accent"
   (click)="addMemberToTeam()"
-  [disabled]="selectedUsers.length === 0 || !teamId"
+  [disabled]="isAddButtonDisabled"
 >
-  Add Members to Team
+  Confirm & Add Members to Team
 </button>
 
 <button mat-button color="warn" (click)="dialogRef.close()">Cancel</button>

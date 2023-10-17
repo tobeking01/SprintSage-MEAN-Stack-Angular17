@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core';
+import { ChangeDetectorRef, Component, Inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { Team } from 'src/app/services/model/team.model';
 import { User } from 'src/app/services/model/user.model';
@@ -21,9 +21,12 @@ export class AddMemberComponent {
     private userService: UserService,
     private teamService: TeamService,
     public dialogRef: MatDialogRef<AddMemberComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: any
+    @Inject(MAT_DIALOG_DATA) public data: any,
+    private cdr: ChangeDetectorRef // <-- Inject this
   ) {
     this.teamId = data.teamId;
+    console.log('Team ID:', this.teamId);
+
     this.loadUsers();
   }
 
@@ -31,6 +34,11 @@ export class AddMemberComponent {
     this.userService.getAllUsersForTeam().subscribe((users) => {
       this.users = users;
     });
+  }
+  get isAddButtonDisabled(): boolean {
+    const disabled = this.selectedUsers.length === 0 || !this.teamId;
+    console.log('Is Button Disabled:', disabled);
+    return disabled;
   }
 
   addMemberToTeam(): void {
@@ -53,17 +61,31 @@ export class AddMemberComponent {
     if (index > -1) {
       this.selectedUsers.splice(index, 1);
     }
+    this.cdr.markForCheck(); // add this line
   }
-
-  addUser(): void {
-    console.log('Adding user with ID:', this.currentSelectedUserId); // <-- Add this
+  // This method is triggered when a user is selected from the dropdown
+  selectUser(): void {
     const userToAdd = this.users.find(
       (user) => user._id === this.currentSelectedUserId
     );
-    if (userToAdd) {
+    if (userToAdd && !this.selectedUsers.includes(userToAdd)) {
       this.selectedUsers.push(userToAdd);
-      console.log('User added:', userToAdd); // <-- Add this
-      this.currentSelectedUserId = undefined;
+      this.currentSelectedUserId = undefined; // Reset the dropdown
+      this.cdr.markForCheck();
+      console.log('Selected Users Count:', this.selectedUsers.length);
+    }
+  }
+  // Use this method when you want to add more users to the selectedUsers array
+  addMoreUsers(): void {
+    const userToAdd = this.users.find(
+      (user) => user._id === this.currentSelectedUserId
+    );
+    if (userToAdd && !this.selectedUsers.includes(userToAdd)) {
+      // Ensure the user isn't already selected
+      this.selectedUsers.push(userToAdd);
+      this.currentSelectedUserId = undefined; // Reset the select dropdown
+      this.cdr.markForCheck();
+      console.log('Selected Users Count:', this.selectedUsers.length);
     }
   }
 }

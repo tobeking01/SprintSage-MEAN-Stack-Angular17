@@ -71,8 +71,8 @@ UserSchema.pre("remove", async function (next) {
     await mongoose
       .model("Team")
       .updateMany(
-        { teamMembers: this._id },
-        { $pull: { teamMembers: this._id } }
+        { "teamMembers.user": this._id },
+        { $pull: { teamMembers: { user: this._id } } }
       );
 
     next(); // Move to the next middleware or operation

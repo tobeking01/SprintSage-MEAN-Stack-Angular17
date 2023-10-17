@@ -2,67 +2,76 @@
 import mongoose from "mongoose";
 const { Schema } = mongoose;
 
-// Define the schema for the "Team" collection
+// TeamSchema definition
 const TeamSchema = new Schema(
   {
-    // The name of the team, ensuring it's unique across all teams
+    // Unique name of the team
     teamName: {
       type: String,
       unique: true,
       required: true,
     },
-    // List of members in the team. Each member is a reference to a user in the "User" collection
+    // Array of team members with their added date
     teamMembers: [
       {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User", // ref userIDs for team
+        user: {
+          // Reference to a user document
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+        },
+        addedDate: {
+          // Timestamp for when the user was added
+          type: Date,
+          default: Date.now,
+        },
       },
-    ], // user who created the Team
-    createdBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
-    // List of projects associated with the team. Each project is a reference to an entry in the "Project" collection
+    ],
+    // Array of associated projects with their added date
     projects: [
       {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Project", // ref projectIDs for team
+        project: {
+          // Reference to a project document
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Project",
+        },
+        addedDate: {
+          // Timestamp for when the project was associated
+          type: Date,
+          default: Date.now,
+        },
       },
     ],
   },
   {
-    // Automatically generate "createdAt" and "updatedAt" timestamps for each team entry
+    // Auto-generate creation and update timestamps
     timestamps: true,
-    // Enable automatic indexing for better performance
+    // Enable automatic indexing
     autoIndex: true,
   }
 );
 
-// Middleware to ensure that when a team is deleted,
-// its association is also removed from all projects it was linked with
+// Middleware to clean up associations when a team is deleted
 TeamSchema.pre("remove", async function (next) {
   try {
-    // Remove the team's ID from the teams list of every project it was associated with
+    // If the team is deleted, dissociate it from any project it's linked to
     await mongoose
       .model("Project")
       .updateMany({ teams: this._id }, { $pull: { teams: this._id } });
     next();
   } catch (err) {
-    next(err); // Pass any errors to the error-handling middleware
+    next(err);
   }
 });
 
-// Method to add a user to the team, ensuring there are no duplicates
+// Method to add a user to the team
 TeamSchema.methods.addUser = async function (userId) {
-  // Check if the user is already a member of the team
   const isAlreadyAMember = this.teamMembers.some(
-    (id) => id.toString() === userId.toString()
+    (member) => member.user.toString() === userId.toString()
   );
 
+  // If user is not already a member, add them
   if (!isAlreadyAMember) {
-    // If not, add the user to the team and save
-    this.teamMembers.addToSet(userId);
+    this.teamMembers.addToSet({ user: userId, addedDate: new Date() });
     const user = await mongoose.model("User").findById(userId);
     user.teams.push(this._id);
 
@@ -73,34 +82,38 @@ TeamSchema.methods.addUser = async function (userId) {
 
 // Method to remove a user from the team
 TeamSchema.methods.removeUser = async function (userId) {
-  const index = this.teamMembers.indexOf(userId);
-  if (index > -1) {
-    this.teamMembers.pull(userId);
+  const memberIndex = this.teamMembers.findIndex(
+    (member) => member.user.toString() === userId.toString()
+  );
+  if (memberIndex > -1) {
+    this.teamMembers.splice(memberIndex, 1);
     await this.save();
   }
 };
 
-// Method to associate a project with the team, ensuring there are no duplicates
+// Method to associate a project with the team
 TeamSchema.methods.addProject = async function (projectId) {
   const isAlreadyAssociated = this.projects.some(
-    (id) => id.toString() === projectId.toString()
+    (project) => project.project.toString() === projectId.toString()
   );
 
+  // If the project is not already associated, add it
   if (!isAlreadyAssociated) {
-    this.projects.addToSet(projectId);
+    this.projects.addToSet({ project: projectId, addedDate: new Date() });
     await this.save();
   }
 };
 
 // Method to disassociate a project from the team
 TeamSchema.methods.removeProject = async function (projectId) {
-  const index = this.projects.indexOf(projectId);
-  if (index > -1) {
-    this.projects.pull(projectId);
+  const projectIndex = this.projects.findIndex(
+    (project) => project.project.toString() === projectId.toString()
+  );
+  if (projectIndex > -1) {
+    this.projects.splice(projectIndex, 1);
     await this.save();
   }
 };
 
-// Export the defined schema as the "Team" model for use in other parts of the application.
-// The third argument "Team" ensures that the collection name in MongoDB is "Team".
+// Exporting the TeamSchema as the "Team" model
 export default mongoose.model("Team", TeamSchema, "Team");

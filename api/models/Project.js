@@ -19,8 +19,17 @@ const ProjectSchema = new Schema(
     // List of teams associated with the project
     teams: [
       {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Team", // Reference to the "Team" ObjectIds
+        // Reference to the associated team
+        team: {
+          type: mongoose.Schema.Types.ObjectId, // The type is an ObjectId, used to reference other documents
+          ref: "Team", // This tells Mongoose that the ObjectId refers to a "Team" document
+        },
+
+        // Date when the team was added to the project
+        addedDate: {
+          type: Date, // The type is a Date
+          default: Date.now, // If no date is provided when creating the document, it defaults to the current date/time
+        },
       },
     ],
     // List of tickets associated with the project
