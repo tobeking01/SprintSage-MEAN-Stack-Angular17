@@ -21,6 +21,7 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { AddMemberComponent } from './components/add-member/add-member.component';
 import { FormsModule } from '@angular/forms';
 import { MatSelectModule } from '@angular/material/select';
+import { ReactiveFormsModule } from '@angular/forms'; // For reactive forms
 
 @NgModule({
   declarations: [
@@ -48,6 +49,7 @@ import { MatSelectModule } from '@angular/material/select';
     MatNativeDateModule,
     FormsModule,
     MatSelectModule,
+    ReactiveFormsModule,
   ],
   exports: [
     HeaderComponent,

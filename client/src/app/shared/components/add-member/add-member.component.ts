@@ -56,13 +56,14 @@ export class AddMemberComponent {
   }
 
   addUser(): void {
-    // Add the currently selected user to the selectedUsers array
+    console.log('Adding user with ID:', this.currentSelectedUserId); // <-- Add this
     const userToAdd = this.users.find(
       (user) => user._id === this.currentSelectedUserId
     );
     if (userToAdd) {
       this.selectedUsers.push(userToAdd);
-      this.currentSelectedUserId = undefined; // Reset current selection
+      console.log('User added:', userToAdd); // <-- Add this
+      this.currentSelectedUserId = undefined;
     }
   }
 }
