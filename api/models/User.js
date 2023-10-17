@@ -20,8 +20,28 @@ const UserSchema = new Schema(
     roles: [{ type: mongoose.Schema.Types.ObjectId, ref: "Role" }],
     teams: [
       {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Team",
+        team: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Team",
+        },
+        addedDate: {
+          // Timestamp for when the team was associated
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
+    projects: [
+      {
+        project: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Project",
+        },
+        addedDate: {
+          // Timestamp for when the project was associated
+          type: Date,
+          default: Date.now,
+        },
       },
     ],
     // Fields specific to users with the 'Student' role
@@ -67,6 +87,15 @@ UserSchema.pre("remove", async function (next) {
       );
     }
 
+    // Check if the user manages any projects
+    const userProjects = await mongoose
+      .model("Project")
+      .find({ createdBy: this._id });
+    if (userProjects.length > 0) {
+      throw new Error(
+        "User has associated projects. Reassign or resolve those before deletion."
+      );
+    }
     // If there are no associated tickets, remove the user from any teams they are part of.
     await mongoose
       .model("Team")
@@ -94,9 +123,9 @@ UserSchema.pre("save", async function (next) {
     // For each ticket, verify if the user's teams align with the project's teams.
     userTickets.forEach(async (ticket) => {
       const project = await mongoose.model("Project").findById(ticket.project);
-      if (!this.teams.some((team) => project.teams.includes(team))) {
-        // If none of the user's teams are in the project's teams
-        // implemented in frontend.
+      if (!this.teams.some((team) => project.teams.includes(team.team))) {
+        // Note the change here, since teams is now a subDocument
+        // Handle the situation (e.g., log the mismatch, send a notification, etc.)
       }
     });
   }

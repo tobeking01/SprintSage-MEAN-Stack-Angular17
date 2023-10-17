@@ -4,31 +4,47 @@ import { ProjectPopulated } from './project.model';
 
 // Interface for teams
 export interface Team {
-  _id?: string; // Optional because when creating a new team, an ID might not be present yet.
-  teamName: string; // Team's name
+  _id?: string;
+  teamName: string;
 
-  // An array of user IDs referencing team members
-  teamMembers: (string | mongoose.Types.ObjectId)[];
-  createdBy: string | mongoose.Types.ObjectId; // User who created the Team
-  // An array of project IDs referencing associated projects
-  projects?: (string | mongoose.Types.ObjectId)[];
+  // Adjusted to include addedDate and direct reference to user/project
+  teamMembers: {
+    user: string | mongoose.Types.ObjectId;
+    addedDate?: Date; // default is managed by mongoose, but can be provided
+  }[];
 
-  // Timestamps
-  createdAt?: Date; // Optional because they might not always be present in every context.
-  updatedAt?: Date; // Similarly optional
-  __v?: number; // MongoDB document version key. Added by Mongoose by default.
+  projects?: {
+    project: string | mongoose.Types.ObjectId;
+    addedDate?: Date;
+  }[];
+
+  createdBy: string | mongoose.Types.ObjectId;
+  createdAt?: Date;
+  updatedAt?: Date;
+  __v?: number;
 }
 
 export interface TeamPopulated {
   _id: string;
   teamName: string;
-  teamMembers: UserPopulated[];
-  createdBy: User; // User who created the Team
-  projects?: ProjectPopulated[];
-  createdAt?: Date;
-  updatedAt?: Date;
-  __v?: number;
+
+  // Using the populated versions of User and Project
+  teamMembers: {
+    user: UserPopulated;
+    addedDate: Date;
+  }[];
+
+  projects: {
+    project: ProjectPopulated;
+    addedDate: Date;
+  }[];
+
+  createdBy: User;
+  createdAt: Date;
+  updatedAt: Date;
+  __v: number;
 }
+
 // For singular team responses
 export interface SingleTeamResponseData {
   success: boolean;
