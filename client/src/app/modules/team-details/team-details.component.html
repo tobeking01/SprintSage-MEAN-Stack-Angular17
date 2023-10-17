@@ -10,9 +10,18 @@
       </mat-list-item>
     </mat-list>
   </mat-toolbar>
-
+  <br />
+  <div class="create-team">
+    <button
+      class="action-button"
+      mat-raised-button
+      color="accent"
+      (click)="openAddEditTeamDialog()"
+    >
+      CREATE TEAM
+    </button>
+  </div>
   <div class="bottom-section">
-    <!-- Adapt the bottom-section class here -->
     <!-- Left Section: Team Details -->
     <div class="left-side">
       <section class="team-details my-projects">
@@ -23,10 +32,11 @@
             <strong>Team Name:</strong> {{ team.teamName }}
           </p>
         </div>
+        <!-- Error message if any -->
+        <div *ngIf="!teams.length">
+          <p>You don't have any teams yet.</p>
+        </div>
       </section>
-
-      <!-- Error message if any -->
-      <div *ngIf="errorMessage" class="error-message">{{ errorMessage }}</div>
     </div>
 
     <!-- Right Section: Team Members -->

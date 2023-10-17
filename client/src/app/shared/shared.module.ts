@@ -11,13 +11,18 @@ import { MatListModule } from '@angular/material/list';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatIconModule } from '@angular/material/icon';
-import { HeaderFullWidthComponent } from './components/header-fullWidth/header-fullWidth.component';
+import { HeaderFullWidthComponent } from './components/header-fullWidth/header-fullwidth.component';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatCardModule } from '@angular/material/card';
 import { ConfirmationDialogComponent } from './components/confirmation-dialog/confirmation-dialog.component';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
+import { AddMemberComponent } from './components/add-member/add-member.component';
+import { FormsModule } from '@angular/forms';
+import { MatSelectModule } from '@angular/material/select';
+import { ReactiveFormsModule } from '@angular/forms'; // For reactive forms
+
 @NgModule({
   declarations: [
     HeaderComponent,
@@ -25,6 +30,7 @@ import { MatNativeDateModule } from '@angular/material/core';
     FooterComponent,
     HeaderFullWidthComponent,
     ConfirmationDialogComponent,
+    AddMemberComponent,
   ],
   imports: [
     CommonModule,
@@ -41,6 +47,9 @@ import { MatNativeDateModule } from '@angular/material/core';
     MatDialogModule,
     MatDatepickerModule,
     MatNativeDateModule,
+    FormsModule,
+    MatSelectModule,
+    ReactiveFormsModule,
   ],
   exports: [
     HeaderComponent,

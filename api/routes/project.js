@@ -5,9 +5,10 @@ import {
   createProject,
   updateProjectById,
   deleteProjectById,
-  addMembersToProject,
+  addTeamsToProject,
   getProjectById,
   getProjectsByUserId,
+  removeMemberFromProject,
 } from "../controllers/project.controller.js";
 import { verifyToken } from "../middleware/verify-validate.js";
 
@@ -27,17 +28,15 @@ router.delete("/deleteProjectById/:id", verifyToken, deleteProjectById);
 
 // Endpoint to add teams to a project by its ID
 // Only accessible to authenticated users
-router.put(
-  "/addMembersToProject/:id/addTeams",
-  verifyToken,
-  addMembersToProject
-);
+router.put("/addTeamsToProject/:id/addTeams", verifyToken, addTeamsToProject);
 
 router.get("/getProjectById/:id", verifyToken, getProjectById);
 
 // Endpoint to get all projects
 // Only accessible to authenticated users
 router.get("/getProjectsByUserId", verifyToken, getProjectsByUserId);
+
+router.delete("/:id/members/:memberId", verifyToken, removeMemberFromProject);
 
 // Export the router for use in other parts of the application
 export default router;

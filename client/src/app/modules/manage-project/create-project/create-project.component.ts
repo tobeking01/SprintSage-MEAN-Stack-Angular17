@@ -60,13 +60,18 @@ export class CreateProjectComponent implements OnInit, OnDestroy {
   }
 
   initializeForm() {
-    this.createProjectForm = this.fb.group({
-      projectName: ['', Validators.required],
-      description: [''],
-      startDate: [null],
-      endDate: [null],
-      existingTeam: ['', Validators.required],
-    });
+    this.createProjectForm = this.fb.group(
+      {
+        projectName: ['', Validators.required],
+        description: [''],
+        startDate: [null, this.dateNotInThePast],
+        endDate: [null],
+        existingTeam: ['', Validators.required],
+      },
+      {
+        validators: this.endDateAfterStartDate('startDate', 'endDate'),
+      }
+    );
   }
 
   get teamMembersFormArray(): FormArray {
@@ -223,6 +228,44 @@ export class CreateProjectComponent implements OnInit, OnDestroy {
         duration: 3000,
       });
     }
+  }
+
+  dateNotInThePast(control: FormControl) {
+    const selectedDate = control.value;
+    const currentDate = new Date();
+    currentDate.setHours(0, 0, 0, 0); // Set the time to midnight to compare only the date part
+    if (selectedDate && selectedDate < currentDate) {
+      return { dateInThePast: true };
+    }
+    return null;
+  }
+
+  endDateAfterStartDate(
+    startDateControlName: string,
+    endDateControlName: string
+  ) {
+    return (formGroup: FormGroup) => {
+      const startDateControl = formGroup.controls[startDateControlName];
+      const endDateControl = formGroup.controls[endDateControlName];
+
+      if (
+        endDateControl.errors &&
+        !endDateControl.errors['mustBeAfterStartDate']
+      ) {
+        // return if another validator has already found an error on the endDate
+        return;
+      }
+
+      if (
+        startDateControl.value &&
+        endDateControl.value &&
+        startDateControl.value > endDateControl.value
+      ) {
+        endDateControl.setErrors({ mustBeAfterStartDate: true });
+      } else {
+        endDateControl.setErrors(null);
+      }
+    };
   }
 
   ngOnDestroy(): void {

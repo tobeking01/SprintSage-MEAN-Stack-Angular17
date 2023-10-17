@@ -6,15 +6,15 @@ import {
   FormControl,
   Validators,
 } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Subject } from 'rxjs';
 import { tap, takeUntil } from 'rxjs/operators';
 import { HttpErrorResponse } from '@angular/common/http';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 import {
   MultipleProjectsResponseData,
   ProjectPopulated,
-  SingleProjectResponseData,
 } from 'src/app/services/model/project.model';
 import {
   MultipleTeamsResponseData,
@@ -23,6 +23,10 @@ import {
 import { User, UserPopulated } from 'src/app/services/model/user.model';
 import { ProjectService } from 'src/app/services/project.service';
 import { TeamService } from 'src/app/services/team.service';
+import { CreateTeamComponent } from '../../team-details/create-team/create-team.component';
+import { MatDialog } from '@angular/material/dialog';
+import { AddMemberComponent } from 'src/app/shared/components/add-member/add-member.component';
+import { UserService } from 'src/app/services/user.service';
 
 @Component({
   selector: 'app-project-details',
@@ -41,12 +45,17 @@ export class ProjectDetailsComponent implements OnInit {
   errorMessage = '';
 
   private ngUnsubscribe = new Subject<void>();
+  returnUrl: string | null =
+    this.router.getCurrentNavigation()?.extras.state?.['returnUrl'];
 
   constructor(
     private fb: FormBuilder,
     private teamService: TeamService,
     private projectService: ProjectService,
-    private route: ActivatedRoute
+    private dialog: MatDialog,
+    private snackBar: MatSnackBar,
+    private route: ActivatedRoute,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -103,7 +112,6 @@ export class ProjectDetailsComponent implements OnInit {
                   this.teams.forEach((team) => {
                     team.teamMembers.forEach((member) => {
                       this.roleNames[member._id] = member.roles[0].name;
-                      // Note: adjust the property access as per your actual API response
                       if (
                         !this.projectMembers.find((m) => m._id === member._id)
                       ) {
@@ -132,44 +140,131 @@ export class ProjectDetailsComponent implements OnInit {
       .controls as FormControl[];
   }
 
-  // Add these methods to your ProjectDetailsComponent class.
-
   toggleMembersVisibility(): void {
     this.membersVisible = !this.membersVisible;
   }
 
   addMembers(): void {
-    // Here you'd typically want to show a modal or a form to add members.
-    // Fetch the list of users, let the user select one, and then add that user to the project.
-    // After adding the user, you'd typically want to refresh the list of members for this project.
+    const teamId = this.selectedProject?.teams[0]?._id;
+    if (!teamId) {
+      console.error('No team associated with the selected project.');
+      return;
+    }
+
+    const dialogRef = this.dialog.open(AddMemberComponent, {
+      data: { teamId },
+    });
+
+    dialogRef.afterClosed().subscribe({
+      next: (isMemberAdded) => {
+        if (isMemberAdded) {
+          this.loadAllTeamDetails();
+        }
+      },
+    });
   }
 
-  deleteProject(): void {
-    // Show a confirmation dialog to the user.
-    // If they confirm, send a request to your backend to delete the project.
-    // Handle errors gracefully - e.g., show an error message if the deletion fails.
-    // If the deletion is successful, you might want to navigate the user back to a list of all projects.
-  }
+  removeMemberFromProject(memberId: string): void {
+    const confirmed = window.confirm(
+      'Are you sure you want to remove this member from the project?'
+    );
 
-  removeMemberFromProject(member: any): void {
-    // Show a confirmation dialog to the user.
-    // If they confirm, send a request to your backend to remove this member from the project.
-    // After removing the user, you'd typically want to refresh the list of members for this project.
+    if (!confirmed) {
+      return;
+    }
+
+    if (this.selectedProject && this.selectedProject._id) {
+      this.projectService
+        .removeMemberFromProject(this.selectedProject._id, memberId)
+        .subscribe(
+          () => {
+            console.log('Member removed successfully');
+            this.loadAllTeamDetails(); // Refresh the list of members.
+          },
+          (error: HttpErrorResponse) => {
+            console.error('Error removing member:', error.error.message);
+          }
+        );
+    }
   }
 
   saveTeamsToProject(): void {
-    // Validate the form.
-    // If valid, extract the team members from the form.
-    // Send a request to your backend to add these members to the project.
-    // Handle the response - if successful, show a success message and possibly refresh the list of project members.
-    // If unsuccessful, show an error message.
+    if (!this.addMemberForm.valid) {
+      this.snackBar.open('Please add valid team members', 'Close', {
+        duration: 3000,
+      });
+      return;
+    }
+
+    if (!this.selectedProject || !this.selectedProject._id) {
+      console.error('No project selected to add members.');
+      return;
+    }
+
+    const teamMembersToAdd = this.addMemberForm!.get('teamMembers')!.value;
+
+    this.projectService
+      .addTeamsToProject(this.selectedProject._id, teamMembersToAdd)
+      .subscribe(
+        () => {
+          console.log('Members added successfully');
+          this.snackBar.open('Members added successfully', 'Close', {
+            duration: 3000,
+          });
+          // Refresh the list of members after adding new members
+          this.loadAllTeamDetails();
+        },
+        (error: HttpErrorResponse) => {
+          const errorMsg =
+            error.error?.message || 'An unexpected error occurred';
+          this.snackBar.open(errorMsg, 'Close', {
+            duration: 5000,
+          });
+          console.error('Error adding members:', errorMsg);
+        }
+      );
+  }
+
+  deleteProject(): void {
+    this.isLoading = true;
+    // Check if the project is selected.
+    if (!this.selectedProject || !this.selectedProject._id) {
+      console.error('No project selected to delete.');
+      return;
+    }
+
+    // Show a confirmation dialog to the user.
+    const confirmed = window.confirm(
+      'Are you sure you want to delete this project?'
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    this.projectService.deleteProjectById(this.selectedProject._id).subscribe(
+      () => {
+        console.log('Project deleted successfully');
+        this.snackBar.open('Project deleted successfully', 'Close', {
+          duration: 3000,
+        });
+        this.isLoading = false;
+        this.router.navigate([this.returnUrl || 'manage-project']);
+      },
+      (error: HttpErrorResponse) => {
+        const errorMsg = error.error?.message || 'An unexpected error occurred';
+        this.snackBar.open(errorMsg, 'Close', {
+          duration: 5000,
+        });
+        this.isLoading = false;
+        console.error('Error deleting project:', errorMsg);
+      }
+    );
   }
 
   removeMembers(index: number): void {
     (this.addMemberForm.get('teamMembers') as FormArray).removeAt(index);
   }
-
-  // Fix for the form array name:
 
   get MembersControls() {
     return (this.addMemberForm.get('teamMembers') as FormArray).controls;

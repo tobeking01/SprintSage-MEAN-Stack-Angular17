@@ -4,7 +4,11 @@ body {
   padding: 0;
   background-color: #f4f4f4;
 }
-
+.create-team {
+  display: flex;
+  justify-content: left;
+  margin: 20px;
+}
 .team-header {
   display: flex;
   justify-content: center;

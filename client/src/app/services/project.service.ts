@@ -76,4 +76,14 @@ export class ProjectService {
       .put<SingleProjectResponseData>(endpointUrl, { teams: teamIds })
       .pipe(catchError(this.handleError));
   }
+
+  removeMemberFromProject(
+    projectId: string,
+    memberId: string
+  ): Observable<SingleProjectResponseData> {
+    const url = `${this.apiUrl}/${projectId}/members/${memberId}`;
+    return this.http
+      .delete<SingleProjectResponseData>(url)
+      .pipe(catchError(this.handleError));
+  }
 }

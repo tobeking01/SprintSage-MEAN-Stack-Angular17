@@ -197,7 +197,9 @@ export class ManageProjectComponent implements OnInit, OnDestroy {
 
   openProjectDetails(project: ProjectPopulated): void {
     console.log(`Navigating to project details with ID: ${project._id}`);
-    this.router.navigate([`/project-details/${project._id}`]);
+    this.router.navigate([`/project-details/${project._id}`], {
+      state: { returnUrl: this.router.url },
+    });
   }
 
   closeProjectDetails(): void {

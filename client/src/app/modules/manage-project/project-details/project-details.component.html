@@ -36,6 +36,10 @@
       <button mat-raised-button color="warn" (click)="deleteProject()">
         DELETE PROJECT
       </button>
+      <mat-progress-spinner
+        *ngIf="isLoading"
+        mode="indeterminate"
+      ></mat-progress-spinner>
     </div>
   </div>
 
@@ -50,20 +54,23 @@
           <th>Username</th>
           <th>Role</th>
           <th>Date Added to Project</th>
-          <th>Actions</th>
+          <th>Remove</th>
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let teamMember of projectMembers">
+        <tr *ngFor="let teamMember of projectMembers; let i = index">
           <td>{{ teamMember.firstName }}</td>
           <td>{{ teamMember.lastName }}</td>
           <td>{{ teamMember.userName }}</td>
           <td>{{ roleNames[teamMember._id] }}</td>
           <td>{{ selectedProject?.createdAt | date }}</td>
-          TODO change to date added!
           <td>
-            <button (click)="removeMemberFromProject(teamMember)">
-              Remove
+            <button
+              mat-icon-button
+              color="warn"
+              (click)="removeMemberFromProject(teamMember._id)"
+            >
+              <mat-icon>remove_circle</mat-icon>
             </button>
           </td>
         </tr>
@@ -92,18 +99,11 @@
             Name is required!
           </mat-error>
         </mat-form-field>
-        <button
-          mat-icon-button
-          color="warn"
-          (click)="removeMembers(i)"
-          aria-label="Remove member"
-        >
-          <mat-icon>delete</mat-icon>
+        <button mat-icon-button color="warn" (click)="removeMembers(i)">
+          <mat-icon>remove_circle</mat-icon>
         </button>
       </div>
-      <button mat-button (click)="addMembers()">+ Add Another Member</button>
     </div>
-    <button mat-raised-button color="accent" type="submit">Save Members</button>
   </form>
   <br />
   <!-- Tickets Section -->

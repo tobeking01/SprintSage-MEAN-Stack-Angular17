@@ -1,0 +1,26 @@
+// add-member.component.scss
+
+:host {
+  width: 30vw;
+  text-align: center;
+  margin: 1rem 0;
+
+  // Style for the individual user display section
+  div {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+
+    button {
+      margin-left: 1rem;
+    }
+  }
+
+  // Styling for the mat-form-field and button
+  mat-form-field,
+  button {
+    width: 100%;
+    margin: 0.5rem 0;
+  }
+}

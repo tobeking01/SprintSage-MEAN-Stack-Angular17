@@ -63,7 +63,12 @@
           matInput
           [matDatepicker]="startPicker"
           formControlName="startDate"
-        />
+        /><mat-error
+          *ngIf="createProjectForm.get('startDate')?.hasError('dateInThePast')"
+        >
+          Start date cannot be in the past.
+        </mat-error>
+
         <mat-datepicker-toggle
           matSuffix
           [for]="startPicker"
@@ -79,7 +84,12 @@
           matSuffix
           [for]="endPicker"
         ></mat-datepicker-toggle>
-        <mat-datepicker #endPicker></mat-datepicker>
+        <mat-datepicker #endPicker></mat-datepicker
+        ><mat-error
+          *ngIf="createProjectForm.get('endDate')?.errors?.['mustBeAfterStartDate']"
+        >
+          End date must be after the start date.
+        </mat-error>
       </mat-form-field>
     </div>
 
