@@ -24,6 +24,7 @@ import {
   ProjectPopulated,
   MultipleProjectsResponseData,
   SingleProjectResponseData,
+  projectUpdateData,
 } from 'src/app/services/model/project.model';
 
 @Component({
@@ -171,24 +172,25 @@ export class CreateProjectComponent implements OnInit, OnDestroy {
       // Find the selected team
       const selectedTeam = this.teams.find((team) => team._id === existingTeam);
 
-      let teamIds: string[] = [];
+      // Prepare teams data as an array of objects with `team` and `addedDate` properties
+      let teamData: { team: string; addedDate?: Date }[] = [];
       if (selectedTeam && selectedTeam._id) {
-        teamIds.push(selectedTeam._id);
+        teamData.push({ team: selectedTeam._id, addedDate: new Date() }); // added current date as `addedDate`
       }
 
       // Extract user IDs from the selected team
       let userIds: string[] = [];
       if (selectedTeam && Array.isArray(selectedTeam.teamMembers)) {
         userIds = selectedTeam.teamMembers
-          .map((member) => member._id)
-          .filter((id): id is string => !!id); // This filters out undefined or falsy values.
+          .map((member) => member.user._id)
+          .filter((id): id is string => typeof id === 'string'); // This filters out any non-string values.
       }
 
-      const formData = {
+      const formData: projectUpdateData = {
         projectName,
         description,
-        teams: teamIds,
-        users: userIds,
+        teams: teamData, // Updated to match the expected shape
+        tickets: [], // Added a default empty array for tickets, you can modify this as required
         startDate,
         endDate,
       };

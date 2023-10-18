@@ -53,27 +53,29 @@
           <th>Last Name</th>
           <th>Username</th>
           <th>Role</th>
-          <th>Date Added to Project</th>
+          <th>Date Added to Team</th>
           <th>Remove</th>
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let teamMember of projectMembers; let i = index">
-          <td>{{ teamMember.firstName }}</td>
-          <td>{{ teamMember.lastName }}</td>
-          <td>{{ teamMember.userName }}</td>
-          <td>{{ roleNames[teamMember._id] }}</td>
-          <td>{{ selectedProject?.createdAt | date }}</td>
-          <td>
-            <button
-              mat-icon-button
-              color="warn"
-              (click)="removeMemberFromProject(teamMember._id)"
-            >
-              <mat-icon>remove_circle</mat-icon>
-            </button>
-          </td>
-        </tr>
+        <ng-container *ngFor="let teamInfo of selectedProject?.teams">
+          <tr *ngFor="let teamMember of teamInfo.team.teamMembers">
+            <td>{{ teamMember.user.firstName }}</td>
+            <td>{{ teamMember.user.lastName }}</td>
+            <td>{{ teamMember.user.userName }}</td>
+            <td>{{ roleNames[teamMember.user._id] }}</td>
+            <td>{{ teamMember.addedDate | date : "shortDate" }}</td>
+            <td>
+              <button
+                mat-icon-button
+                color="warn"
+                (click)="removeMemberFromProject(teamMember.user._id)"
+              >
+                <mat-icon>remove_circle</mat-icon>
+              </button>
+            </td>
+          </tr>
+        </ng-container>
       </tbody>
     </table>
   </div>

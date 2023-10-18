@@ -78,22 +78,22 @@
 
               <!-- Teams Section -->
               <div *ngFor="let team of project.teams">
-                <h4>{{ team.teamName }}</h4>
+                <h4>{{ team.team.teamName }}</h4>
 
                 <ng-container
                   *ngIf="
-                    team.teamMembers && team.teamMembers.length;
+                    team.team.teamMembers && team.team.teamMembers.length;
                     else noMembersTemplate
                   "
                 >
                   <ul>
-                    <li *ngFor="let member of team.teamMembers">
+                    <li *ngFor="let member of team.team.teamMembers">
                       <span
-                        matTooltip="{{ member.firstName }} {{
-                          member.lastName
-                        }} - {{ member.userName }}"
+                        matTooltip="{{ member.user.firstName }} {{
+                          member.user.lastName
+                        }} - {{ member.user.userName }}"
                       >
-                        {{ member.firstName }} {{ member.lastName }}
+                        {{ member.user.firstName }} {{ member.user.lastName }}
                       </span>
                     </li>
                   </ul>

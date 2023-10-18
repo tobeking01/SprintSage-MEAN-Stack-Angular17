@@ -11,7 +11,6 @@ import Role from "../models/Role.js"; // Importing Role model.
 const SALT_ROUNDS = 10;
 
 export const createStudentProfessorUser = async (userData) => {
-  // Extract relevant fields from userData
   const {
     firstName,
     lastName,
@@ -29,15 +28,14 @@ export const createStudentProfessorUser = async (userData) => {
   if (!userRole) {
     throw new Error(`Role '${role}' not found in the database.`);
   }
-  const userExists = await User.findOne({
-    $or: [{ email }, { userName }],
-  });
-  if (userExists) throw new Error("Email or Username already exists.");
 
-  const salt = await bcrypt.genSalt(SALT_ROUNDS);
-  const hashedPassword = await bcrypt.hash(password, salt);
+  if (await User.findOne({ $or: [{ email }, { userName }] })) {
+    throw new Error("Email or Username already exists.");
+  }
 
-  const newUser = {
+  const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
+
+  let newUser = {
     firstName,
     lastName,
     userName,
@@ -46,12 +44,15 @@ export const createStudentProfessorUser = async (userData) => {
     roles: [userRole._id],
   };
 
-  if (role === "Student") {
-    newUser.schoolYear = schoolYear;
-    newUser.expectedGraduation = expectedGraduation;
-  } else if (role === "Professor") {
-    newUser.professorTitle = professorTitle;
-    newUser.professorDepartment = professorDepartment;
+  switch (role) {
+    case "Student":
+      newUser = { ...newUser, schoolYear, expectedGraduation };
+      break;
+    case "Professor":
+      newUser = { ...newUser, professorTitle, professorDepartment };
+      break;
+    default:
+      throw new Error("Invalid role provided.");
   }
 
   const user = new User(newUser);
@@ -87,7 +88,7 @@ export const createUser = async (req, res, next) => {
 export const getLoggedInUserDetails = async (req, res, next) => {
   try {
     // Retrieve the logged-in user's details from the database using their ID.
-    const user = await User.findById(req.user.id);
+    const user = await User.findById(req.user.id).populate("roles");
 
     // If the user isn't found (which should be rare if they're authenticated), return a 404 error.
     if (!user) return sendError(res, 404, "User not found!");
@@ -97,7 +98,7 @@ export const getLoggedInUserDetails = async (req, res, next) => {
     delete responseUser.password;
 
     // Send the response.
-    sendSuccess(res, 200, "User Retrieved Successfully", [responseUser]);
+    sendSuccess(res, 200, "User Retrieved Successfully", responseUser);
   } catch (error) {
     console.error("Error fetching user:", error);
     return next(sendError(res, 500, "Internal Server Error!"));

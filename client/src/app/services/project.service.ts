@@ -22,14 +22,9 @@ export class ProjectService {
     return throwError(error);
   }
 
-  createProject(projectData: {
-    projectName: string;
-    description?: string;
-    teams: string[];
-    tickets?: string[];
-    startDate?: Date;
-    endDate?: Date;
-  }): Observable<SingleProjectResponseData> {
+  createProject(
+    projectData: projectUpdateData
+  ): Observable<SingleProjectResponseData> {
     return this.http
       .post<SingleProjectResponseData>(
         `${this.apiUrl}createProject`,

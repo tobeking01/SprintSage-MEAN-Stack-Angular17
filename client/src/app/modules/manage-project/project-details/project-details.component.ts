@@ -108,14 +108,14 @@ export class ProjectDetailsComponent implements OnInit {
               .pipe(takeUntil(this.ngUnsubscribe))
               .subscribe(
                 (response: MultipleTeamsResponseData) => {
-                  this.teams = response.data;
                   this.teams.forEach((team) => {
-                    team.teamMembers.forEach((member) => {
+                    team.teamMembers.forEach((memberObj) => {
+                      const member = memberObj.user; // adjust to get the user object from teamMembers
                       this.roleNames[member._id] = member.roles[0].name;
                       if (
                         !this.projectMembers.find((m) => m._id === member._id)
                       ) {
-                        this.projectMembers.push(member); // populate the projectMembers array
+                        this.projectMembers.push(member);
                       }
                     });
                   });
@@ -145,7 +145,7 @@ export class ProjectDetailsComponent implements OnInit {
   }
 
   addMembers(): void {
-    const teamId = this.selectedProject?.teams[0]?._id;
+    const teamId = this.selectedProject?.teams[0]?.team?._id;
     if (!teamId) {
       console.error('No team associated with the selected project.');
       return;

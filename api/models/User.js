@@ -18,32 +18,6 @@ const UserSchema = new Schema(
     password: { type: String, required: true },
     // Array of roles associated with the user, references the "Role" model
     roles: [{ type: mongoose.Schema.Types.ObjectId, ref: "Role" }],
-    teams: [
-      {
-        team: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "Team",
-        },
-        addedDate: {
-          // Timestamp for when the team was associated
-          type: Date,
-          default: Date.now,
-        },
-      },
-    ],
-    projects: [
-      {
-        project: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "Project",
-        },
-        addedDate: {
-          // Timestamp for when the project was associated
-          type: Date,
-          default: Date.now,
-        },
-      },
-    ],
     // Fields specific to users with the 'Student' role
     schoolYear: { type: String }, // Year or level of the student
     expectedGraduation: { type: Date }, // Expected date of graduation
