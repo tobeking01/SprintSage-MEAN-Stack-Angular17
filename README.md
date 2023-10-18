@@ -83,4 +83,4 @@ Contributing
 If you would like to contribute to this project, please feel free to fork the repository, create a feature branch, and open a pull request.
 
 License
-This project is licensed under the Loon Project Team - see the LICENSE.md file for details
+This project is licensed under the Loon Project Team - see the LICENSE.md file for details.
