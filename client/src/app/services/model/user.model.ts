@@ -1,5 +1,6 @@
 import { Role } from './role.model';
 
+// Interface to define the structure of User
 export interface User {
   _id: string;
   firstName: string;
@@ -7,18 +8,7 @@ export interface User {
   userName: string;
   email: string;
   password: string;
-  roles: string[]; // This represents the Role IDs.
-
-  // New fields for teams and projects
-  teams: {
-    team: string;
-    addedDate?: Date;
-  }[];
-
-  projects: {
-    project: string;
-    addedDate?: Date;
-  }[];
+  roles: string[]; // This will store Role IDs.
 
   // Student-specific fields
   schoolYear?: string;
@@ -38,7 +28,6 @@ export interface User {
 export interface UserPopulated extends Omit<User, 'roles'> {
   roles: Role[];
 }
-
 export interface ResponseData {
   success: boolean;
   status: number;

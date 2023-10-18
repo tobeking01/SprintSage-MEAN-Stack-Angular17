@@ -14,8 +14,16 @@ const ProjectSchema = new Schema(
     // List of tickets associated with the project
     tickets: [
       {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Ticket", // Reference to the "Ticket" ObjectIds
+        ticket: {
+          // Reference to a user document
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Ticket",
+        },
+        addedDate: {
+          // Timestamp for when the user was added
+          type: Date,
+          default: Date.now,
+        },
       },
     ], // user who created the project
     createdBy: {

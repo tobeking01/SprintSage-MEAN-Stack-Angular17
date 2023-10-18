@@ -33,7 +33,7 @@
             placeholder="Team"
             (selectionChange)="applyTeamFilter($event)"
           >
-            <mat-option *ngFor="let team of teams" [value]="team._id">{{
+            <mat-option *ngFor="let team of teamInfo" [value]="team._id">{{
               team.teamName
             }}</mat-option>
           </mat-select>
@@ -65,7 +65,7 @@
         <!-- Projects Section -->
         <div class="projects-section">
           <ng-container
-            *ngIf="projectDataSource.data.length; else noProjectTemplate"
+            *ngIf="projectDataSource.data?.length; else noProjectTemplate"
           >
             <div
               *ngFor="let project of projectDataSource.data"
@@ -73,40 +73,37 @@
               @listAnimation
               (click)="openProjectDetails(project)"
             >
-              <h3>{{ project.projectName }}</h3>
-              <p>{{ project.description }}</p>
+              <h3>{{ project?.projectName }}</h3>
 
               <!-- Teams Section -->
-              <div *ngFor="let team of project.teams">
-                <h4>{{ team.team.teamName }}</h4>
-
+              <ng-container *ngFor="let team of project?.teams">
+                <h3>{{ team?.teamName }}</h3>
                 <ng-container
                   *ngIf="
-                    team.team.teamMembers && team.team.teamMembers.length;
+                    team?.teamMembers && team?.teamMembers?.length;
                     else noMembersTemplate
                   "
                 >
                   <ul>
-                    <li *ngFor="let member of team.team.teamMembers">
-                      <span
-                        matTooltip="{{ member.user.firstName }} {{
-                          member.user.lastName
-                        }} - {{ member.user.userName }}"
-                      >
-                        {{ member.user.firstName }} {{ member.user.lastName }}
-                      </span>
-                    </li>
+                    <ng-container *ngFor="let member of team?.teamMembers">
+                      <li *ngIf="isUserPopulated(member?.user)">
+                        <span [matTooltip]="getMemberTooltip(member?.user)">
+                          {{ member?.user?.firstName }}
+                          {{ member?.user?.lastName }}
+                        </span>
+                      </li>
+                    </ng-container>
                   </ul>
                 </ng-container>
-              </div>
+              </ng-container>
 
               <p>Number of Tickets: {{ project.tickets?.length || 0 }}</p>
               <p>
-                <mat-icon>date_range</mat-icon>Start Date:
+                <mat-icon>date_range</mat-icon> Start Date:
                 {{ project.startDate | date : "MMM d, y" }}
               </p>
               <p>
-                <mat-icon>date_range</mat-icon>End Date:
+                <mat-icon>date_range</mat-icon> End Date:
                 {{ project.endDate | date : "MMM d, y" }}
               </p>
             </div>

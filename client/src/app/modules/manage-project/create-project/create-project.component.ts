@@ -188,9 +188,7 @@ export class CreateProjectComponent implements OnInit, OnDestroy {
 
       const formData: projectUpdateData = {
         projectName,
-        description,
-        teams: teamData, // Updated to match the expected shape
-        tickets: [], // Added a default empty array for tickets, you can modify this as required
+        tickets: [],
         startDate,
         endDate,
       };

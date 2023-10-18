@@ -34,7 +34,7 @@ import {
   MultipleTeamsResponseData,
   TeamPopulated,
 } from 'src/app/services/model/team.model';
-import { User } from 'src/app/services/model/user.model';
+import { User, UserPopulated } from 'src/app/services/model/user.model';
 
 // Component Imports
 import { CreateProjectComponent } from './create-project/create-project.component';
@@ -44,6 +44,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 // Add Subject for unsubscribing from observables
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { UserService } from 'src/app/services/user.service';
 @Component({
   selector: 'app-manage-project',
   templateUrl: './manage-project.component.html',
@@ -71,7 +72,7 @@ export class ManageProjectComponent implements OnInit, OnDestroy {
 
   teamDetails: { [key: string]: Team } = {};
   users: User[] = [];
-  teams: TeamPopulated[] = [];
+  teamInfo: TeamPopulated[] = [];
   projects: ProjectPopulated[] = [];
   showProjectDetails: boolean = false;
   selectedProject: ProjectPopulated | null = null;
@@ -83,12 +84,16 @@ export class ManageProjectComponent implements OnInit, OnDestroy {
   constructor(
     private projectService: ProjectService,
     private teamService: TeamService,
+    private userService: UserService,
     private dialog: MatDialog,
     private router: Router
   ) {}
   // Private Subject to trigger unSubscription
   private ngUnsubscribe = new Subject<void>();
   ngOnInit(): void {
+    this.userService.getAllUsersForTeam().subscribe((fetchedUsers) => {
+      this.users = fetchedUsers;
+    });
     this.loadAllTeamDetails();
     this.loadAllProjectDetails();
     this.listenToRouterEvents();
@@ -132,25 +137,25 @@ export class ManageProjectComponent implements OnInit, OnDestroy {
   }
 
   private loadAllTeamDetails(): void {
-    console.log('Fetching teams... studentDashboard');
+    console.log('Fetching teams... ');
     this.teamService
       .getTeamsByUserId()
       .pipe(takeUntil(this.onDestroy$))
       .subscribe(
         (response: MultipleTeamsResponseData) => {
-          this.teams = response.data;
-          console.log('Teams fetched:', this.teams);
+          this.teamInfo = response.data;
+          console.log('Teams fetched:', this.teamInfo);
           this.isLoading = false; // <-- Add this line
         },
         (error: HttpErrorResponse) => {
           this.handleError(error, 'Error fetching teams');
-          this.teams = [];
+          this.teamInfo = [];
         }
       );
   }
 
   private loadAllProjectDetails(): void {
-    console.log('Fetching project... studentDashboard');
+    console.log('Fetching project... ');
     this.projectService
       .getProjectsByUserId()
       .pipe(takeUntil(this.onDestroy$))
@@ -170,6 +175,15 @@ export class ManageProjectComponent implements OnInit, OnDestroy {
           this.projectDataSource.data = []; // <-- Add this line
         }
       );
+  }
+  getMemberTooltip(user: any): string {
+    // Logic to get the tooltip for the member.
+    // Adjust based on your requirements.
+    // For now, let's just return the user's ID as an example.
+    return `User ID: ${user?.id}`;
+  }
+  isUserPopulated(user: any): user is UserPopulated {
+    return user && typeof user === 'object' && 'firstName' in user;
   }
 
   openTeamDialog(): void {
@@ -218,9 +232,5 @@ export class ManageProjectComponent implements OnInit, OnDestroy {
 
   applyTeamFilter(event: any): void {
     // Logic to filter projects by selected team
-  }
-
-  getMemberTooltip(member: User): string {
-    return `${member.firstName} ${member.lastName} - ${member.userName}`;
   }
 }

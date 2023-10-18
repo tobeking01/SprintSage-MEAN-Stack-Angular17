@@ -1,21 +1,16 @@
 import mongoose from 'mongoose';
-import { Team, TeamPopulated } from './team.model';
 import { Ticket } from './ticket.model';
 import { User } from './user.model';
+import { Team } from './team.model';
 
 // Interface for Project with only ObjectId references
 export interface Project {
   _id?: string;
   projectName: string;
-  description?: string;
-
-  // Adjusted to include addedDate and direct reference to team
-  teams: {
-    team: string | mongoose.Types.ObjectId;
+  tickets?: {
+    ticket: string | mongoose.Types.ObjectId;
     addedDate?: Date;
   }[];
-
-  tickets?: (string | mongoose.Types.ObjectId)[];
   createdBy: string | mongoose.Types.ObjectId;
   startDate?: Date;
   endDate?: Date;
@@ -27,15 +22,11 @@ export interface Project {
 export interface ProjectPopulated {
   _id: string;
   projectName: string;
-  description?: string;
-
-  // Using the populated version of Team
-  teams: {
-    team: TeamPopulated;
-    addedDate: Date;
+  teams?: Team[];
+  tickets?: {
+    ticket: Ticket;
+    addedDate?: Date;
   }[];
-
-  tickets?: Ticket[];
   createdBy: User;
   startDate?: Date;
   endDate?: Date;
@@ -46,15 +37,10 @@ export interface ProjectPopulated {
 
 export interface projectUpdateData {
   projectName: string;
-  description?: string;
-
-  // Adjusted to match the new structure of teams in the schema
-  teams: {
-    team: string;
+  tickets?: {
+    ticket: string;
     addedDate?: Date;
   }[];
-
-  tickets?: string[];
   startDate?: Date;
   endDate?: Date;
 }
@@ -73,11 +59,4 @@ export interface MultipleProjectsResponseData {
   status: number;
   message: string;
   data: ProjectPopulated[];
-}
-
-export interface projectAddTeamsData {
-  teams: {
-    team: string;
-    addedDate?: Date;
-  }[];
 }

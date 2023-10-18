@@ -1,5 +1,4 @@
 import Team from "../models/Team.js";
-import Project from "../models/Project.js";
 import { sendError, sendSuccess } from "../utils/createResponse.js";
 import mongoose from "mongoose";
 import User from "../models/User.js";
@@ -106,7 +105,7 @@ export const getTeamsByProjectDetails = async (req, res, next) => {
   }
 };
 
-// getall teams by user Id
+// getall teams by user Id... keep
 export const getTeamsByUserId = async (req, res, next) => {
   try {
     const loggedInUserId = req.user.id.toString(); // endpoint to return teams for the currently authenticated user
@@ -114,9 +113,13 @@ export const getTeamsByUserId = async (req, res, next) => {
     // If the user isn't found (which should be rare if they're authenticated), return a 404 error.
     if (!loggedInUserId) return sendError(res, 404, "User not found!");
 
+    // Adjust the query to look within teamMembers for the user ID
     const teams = await Team.find({
-      $or: [{ createdBy: loggedInUserId }, { teamMembers: loggedInUserId }],
-    }).populate("teamMembers");
+      $or: [
+        { createdBy: loggedInUserId },
+        { "teamMembers.user": mongoose.Types.ObjectId(loggedInUserId) },
+      ],
+    }).populate("teamMembers.user"); // Adjusted to populate user details
 
     if (!teams.length) {
       return sendSuccess(

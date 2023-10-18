@@ -157,39 +157,51 @@ export const getProjectById = async (req, res, next) => {
     next(error); // Pass the error to a potential error-handling middleware
   }
 };
-
+// keep
 export const getProjectsByUserId = async (req, res, next) => {
   try {
     const loggedInUserId = req.user.id.toString();
 
-    // Step 1: Fetch teams that have Alice as a member
-    const teamsWithUser = await Team.find({
-      teamMembers: loggedInUserId,
-    });
-
-    const teamIds = teamsWithUser.map((team) => team._id);
-
-    // Step 2: Fetch projects associated with those teams
-    const projects = await Project.find({
-      $or: [{ createdBy: loggedInUserId }, { teams: { $in: teamIds } }],
+    // Step 1: Fetch teams where the logged-in user is a member
+    const userTeams = await Team.find({
+      "teamMembers.user": mongoose.Types.ObjectId(loggedInUserId),
     }).populate({
-      path: "teams",
-      populate: {
-        path: "teamMembers",
-        model: "User",
-      },
+      path: "teamMembers.user",
+      model: "User",
     });
+
+    // If the user is not part of any teams, no need to fetch projects
+    if (!userTeams.length) {
+      return sendSuccess(
+        res,
+        200,
+        "No teams found for the authenticated user.",
+        []
+      );
+    }
+
+    // Extract team IDs for the next query
+    const teamIds = userTeams.map((team) => team._id);
+
+    // Step 2: Fetch projects associated with the logged-in user's teams
+    const projects = await Project.find({
+      "teams.project": { $in: teamIds }, // Fetch projects associated with the user's teams
+    }).populate("createdBy"); // Populate the createdBy field if needed
 
     if (!projects.length) {
       return sendSuccess(
         res,
         200,
-        "No projects found for the authenticated user.",
+        "No projects found for the authenticated user's teams.",
         []
       );
     }
 
-    sendSuccess(res, 200, "Projects fetched successfully!", projects);
+    // Return the projects and teams associated with each project
+    sendSuccess(res, 200, "Projects and teams fetched successfully!", {
+      projects,
+      teams: userTeams,
+    });
   } catch (error) {
     console.error(
       "Error fetching projects for user:",
