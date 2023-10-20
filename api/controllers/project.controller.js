@@ -1,5 +1,6 @@
 // Import the Project model to interact with the "Project" collection in the database.
 import Project from "../models/Project.js";
+import mongoose from "mongoose";
 import Team from "../models/Team.js";
 import Ticket from "../models/Ticket.js"; // Import the Ticket model at the top of your file
 import { sendError, sendSuccess } from "../utils/createResponse.js";
@@ -15,19 +16,24 @@ const isValidDate = (startDateString, endDateString) => {
   );
 };
 
-// populate 1
 const getProjectByIdHelper = async (id) => {
-  return await Project.findById(id)
-    .populate({
-      path: "teams",
-      populate: {
-        path: "teamMembers",
-        model: "User",
-      },
-    })
-    .populate("tickets");
+  const project = await Project.findById(id).populate("tickets");
+
+  // Find teams associated with the given project
+  const teams = await Team.find({ "projects.project": id }).populate({
+    path: "teamMembers.user",
+    model: "User",
+    populate: {
+      path: "roles",
+      model: "Role",
+    },
+  });
+
+  project.teams = teams;
+  return project;
 };
 
+// Good with model change
 /**
  * Controller to create a new project.
  * @async
@@ -40,13 +46,16 @@ const getProjectByIdHelper = async (id) => {
 // Controller to create a new project.
 export const createProject = async (req, res, next) => {
   try {
+    if (!req.user || !req.user.id) {
+      return sendError(res, 401, "Authentication required.");
+    }
+
     const {
       projectName,
-      description = "Default Description",
-      teams = [],
       tickets = [],
       startDate = new Date(),
       endDate = new Date(),
+      teamId,
     } = req.body;
 
     if (
@@ -62,58 +71,51 @@ export const createProject = async (req, res, next) => {
       return sendError(res, 400, "A project with this name already exists.");
     }
 
-    if (!Array.isArray(teams)) {
-      return sendError(res, 400, "Teams must be an array.");
-    }
-    const validTeams = await Team.find({ _id: { $in: teams } });
-    if (validTeams.length !== teams.length) {
-      return sendError(res, 400, "One or more teams are invalid.");
-    }
-
-    if (!isValidDate(startDate, endDate)) {
-      return sendError(
-        res,
-        400,
-        "Invalid start or end date format, or start date is after end date."
-      );
-    }
-
     if (tickets && Array.isArray(tickets)) {
       const validTickets = await Ticket.find({ _id: { $in: tickets } });
       if (validTickets.length !== tickets.length) {
         return sendError(res, 400, "One or more tickets are invalid.");
       }
     }
-    const userIdsFromTeams = [];
 
-    // Extract user IDs from the teams
-    for (let team of validTeams) {
-      if (team.teamMembers && Array.isArray(team.teamMembers)) {
-        userIdsFromTeams.push(...team.teamMembers);
-      } else {
-        console.error("Invalid team members data for team:", team);
-      }
-    }
+    // Constructing the tickets data for the project schema
+    const ticketsForProject = tickets.map((ticketId) => ({
+      ticket: ticketId,
+      addedDate: new Date(),
+    }));
 
     const newProject = new Project({
       projectName,
-      description,
       startDate,
       endDate,
-      teams,
-      users: userIdsFromTeams,
-      tickets,
+      tickets: ticketsForProject,
       createdBy: req.user.id,
     });
     await newProject.save();
-    // Update teams with the new project ID
-    for (let teamId of teams) {
-      await Team.findByIdAndUpdate(teamId, {
-        $push: { projects: newProject._id },
-      });
-    }
 
-    sendSuccess(res, 201, "Project Created!", [newProject]);
+    // Check if teamId is provided and is valid
+    if (teamId) {
+      const team = await mongoose.model("Team").findById(teamId);
+      if (team) {
+        await team.addProject(newProject._id);
+        sendSuccess(
+          res,
+          201,
+          `Project '${newProject.projectName}' Created and Associated with Team '${team.teamName}'!`,
+          newProject
+        );
+      } else {
+        await newProject.remove(); // Removing the project as the team association failed
+        sendError(res, 404, `Team not found with ID: ${teamId}`);
+      }
+    } else {
+      sendSuccess(
+        res,
+        201,
+        `Project '${newProject.projectName}' Created Successfully!`,
+        newProject
+      );
+    }
   } catch (error) {
     console.error("Error creating project:", error);
     sendError(res, 500, "Internal Server Error!");
@@ -132,25 +134,14 @@ export const getProjectById = async (req, res, next) => {
   try {
     const { id } = req.params;
 
-    // Fetch the project and populate the createdBy field with both 'firstName' and 'lastName' from the User model
-    const project = await Project.findById(id)
-      .populate({
-        path: "createdBy",
-        select: "firstName lastName", // Only get the 'firstName' and 'lastName' fields
-      })
-      .populate({
-        path: "teams",
-        populate: {
-          path: "teamMembers",
-          select: "firstName lastName", // Only get the 'firstName' and 'lastName' of team members
-        },
-      });
+    // Use the helper function to get the project enriched with teams and their members
+    const project = await getProjectByIdHelper(id);
 
     if (!project) {
       return sendError(res, 404, "Project not found!");
     }
 
-    return sendSuccess(res, 200, "Project fetched successfully!", [project]);
+    return sendSuccess(res, 200, "Project fetched successfully!", project);
   } catch (error) {
     console.error("Error fetching project:", error);
     sendError(res, 500, "Internal Server Error!");
@@ -162,46 +153,30 @@ export const getProjectsByUserId = async (req, res, next) => {
   try {
     const loggedInUserId = req.user.id.toString();
 
-    // Step 1: Fetch teams where the logged-in user is a member
+    if (!loggedInUserId) return sendError(res, 404, "User not found!");
+
+    // Fetch teams where the logged-in user is a member
     const userTeams = await Team.find({
-      "teamMembers.user": mongoose.Types.ObjectId(loggedInUserId),
-    }).populate({
-      path: "teamMembers.user",
-      model: "User",
+      "teamMembers.user": new mongoose.Types.ObjectId(loggedInUserId),
     });
 
-    // If the user is not part of any teams, no need to fetch projects
-    if (!userTeams.length) {
-      return sendSuccess(
-        res,
-        200,
-        "No teams found for the authenticated user.",
-        []
-      );
+    let projectIds = [];
+
+    if (userTeams.length) {
+      // Extract project IDs from the user's teams using 'reduce'
+      projectIds = userTeams.reduce((acc, team) => {
+        const teamProjectIds = team.projects.map((p) => p.project.toString());
+        return [...acc, ...teamProjectIds];
+      }, []);
     }
 
-    // Extract team IDs for the next query
-    const teamIds = userTeams.map((team) => team._id);
-
-    // Step 2: Fetch projects associated with the logged-in user's teams
+    // Fetch projects associated with the logged-in user's teams
     const projects = await Project.find({
-      "teams.project": { $in: teamIds }, // Fetch projects associated with the user's teams
-    }).populate("createdBy"); // Populate the createdBy field if needed
+      _id: { $in: projectIds },
+    }).populate("createdBy");
 
-    if (!projects.length) {
-      return sendSuccess(
-        res,
-        200,
-        "No projects found for the authenticated user's teams.",
-        []
-      );
-    }
-
-    // Return the projects and teams associated with each project
-    sendSuccess(res, 200, "Projects and teams fetched successfully!", {
-      projects,
-      teams: userTeams,
-    });
+    // Return the projects
+    sendSuccess(res, 200, "Projects fetched successfully!", projects);
   } catch (error) {
     console.error(
       "Error fetching projects for user:",
@@ -224,14 +199,11 @@ export const updateProjectById = async (req, res, next) => {
       return sendError(res, 404, "Project not found!");
     }
     // Ensure only the project's creator or an admin can update it
-    if (
-      existingProject.createdBy.toString() !== req.user.id.toString() &&
-      !(await isUserAdmin(req.user.id))
-    ) {
+    if (existingProject.createdBy.toString() !== req.user.id.toString()) {
       return sendError(
         res,
         403,
-        "Access denied! Only the project creator or an admin can update this project."
+        "Access denied! Only the project creator can update this project."
       );
     }
     // Validate projectName for uniqueness
@@ -306,14 +278,11 @@ export const deleteProjectById = async (req, res, next) => {
     }
 
     // Ensure only the project's creator or an admin can delete it
-    if (
-      projectToDelete.createdBy.toString() !== req.user.id.toString() &&
-      !(await isUserAdmin(req.user.id.toString()))
-    ) {
+    if (projectToDelete.createdBy.toString() !== req.user.id.toString()) {
       return sendError(
         res,
         403,
-        "Access denied! Only the project creator or an admin can delete this project."
+        "Access denied! Only the project creator can delete this project."
       );
     }
 
@@ -371,14 +340,11 @@ export const addTeamsToProject = async (req, res, next) => {
     }
 
     // Ensure that only the project's creator or an admin can add members to the project.
-    if (
-      existingProject.createdBy.toString() !== req.user.id.toString() &&
-      !(await isUserAdmin(req.user.id.toString()))
-    ) {
+    if (existingProject.createdBy.toString() !== req.user.id.toString()) {
       return sendError(
         res,
         403,
-        "Access denied! Only the project creator or an admin can add members to this project."
+        "Access denied! Only the project creator can add members to this project."
       );
     }
 
@@ -397,7 +363,7 @@ export const addTeamsToProject = async (req, res, next) => {
       res,
       200,
       "Teams (and their members) added to project successfully!",
-      [existingProject]
+      existingProject
     );
   } catch (error) {
     // Log and respond with any errors.
@@ -425,14 +391,11 @@ export const removeMemberFromProject = async (req, res, next) => {
     }
 
     // Ensure that only the project's creator or an admin can remove members from the project.
-    if (
-      project.createdBy.toString() !== req.user.id.toString() &&
-      !(await isUserAdmin(req.user.id.toString()))
-    ) {
+    if (project.createdBy.toString() !== req.user.id.toString()) {
       return sendError(
         res,
         403,
-        "Access denied! Only the project creator or an admin can remove members from this project."
+        "Access denied! Only the project creator can remove members from this project."
       );
     }
 

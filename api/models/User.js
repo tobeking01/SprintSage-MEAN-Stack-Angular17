@@ -84,28 +84,6 @@ UserSchema.pre("remove", async function (next) {
   }
 });
 
-// Middleware to handle changes to the user's teams.
-// When the teams associated with a user change, this middleware checks any tickets submitted by the user.
-// It ensures that the user's teams align with the project's teams.
-UserSchema.pre("save", async function (next) {
-  if (this.isModified("teams")) {
-    // Fetch all active tickets submitted by this user
-    const userTickets = await mongoose.model("Ticket").find({
-      submittedByUser: this._id,
-      state: { $in: ["New", "In Progress", "In QC", "Ready for QC"] },
-    });
-    // For each ticket, verify if the user's teams align with the project's teams.
-    userTickets.forEach(async (ticket) => {
-      const project = await mongoose.model("Project").findById(ticket.project);
-      if (!this.teams.some((team) => project.teams.includes(team.team))) {
-        // Note the change here, since teams is now a subDocument
-        // Handle the situation (e.g., log the mismatch, send a notification, etc.)
-      }
-    });
-  }
-  next(); // Move to the next middleware or operation
-});
-
 // Export the User model for use in other parts of the application.
 // The third argument explicitly sets the collection name in the MongoDB database to 'User'.
 export default mongoose.model("User", UserSchema, "User");

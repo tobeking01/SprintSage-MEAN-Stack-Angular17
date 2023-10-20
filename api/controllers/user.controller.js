@@ -4,7 +4,6 @@ import bcrypt from "bcryptjs"; // Used for password hashing.
 import User from "../models/User.js"; // User model.
 import { sendError, sendSuccess } from "../utils/createResponse.js";
 import Role from "../models/Role.js"; // Importing Role model.
-// ... other imports ...
 
 // Constant to represent the number of rounds that bcrypt will use when salting passwords.
 // The higher the number, the more secure the hash, but the longer it will take to generate.
@@ -85,8 +84,14 @@ export const createUser = async (req, res, next) => {
  * @param {Object} res - Express response object for sending the response.
  * @param {function} next - Express next middleware function.
  */
-export const getLoggedInUserDetails = async (req, res, next) => {
+export const getUserProfile = async (req, res, next) => {
   try {
+    console.log(req.user.id);
+    // Check if user is logged in.
+    if (!req.user || !req.user.id) {
+      return sendError(res, 401, "Authentication required!");
+    }
+
     // Retrieve the logged-in user's details from the database using their ID.
     const user = await User.findById(req.user.id).populate("roles");
 
@@ -97,10 +102,16 @@ export const getLoggedInUserDetails = async (req, res, next) => {
     const responseUser = user.toObject();
     delete responseUser.password;
 
+    // Disable ETag for this response (if needed).
+    res.set("ETag", null);
+
     // Send the response.
     sendSuccess(res, 200, "User Retrieved Successfully", responseUser);
   } catch (error) {
     console.error("Error fetching user:", error);
+    if (error.kind === "ObjectId" && error.name === "CastError") {
+      return next(sendError(res, 400, "Invalid User ID!"));
+    }
     return next(sendError(res, 500, "Internal Server Error!"));
   }
 };

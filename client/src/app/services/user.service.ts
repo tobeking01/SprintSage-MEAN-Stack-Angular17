@@ -17,17 +17,13 @@ export class UserService {
   constructor(private http: HttpClient, private authService: AuthService) {}
 
   private handleError(error: any): Observable<never> {
-    console.error('An error occurred:', error); // Log to console instead
+    console.error('An error occurred:', error);
     return throwError(error.message || 'Unknown server error in user service');
   }
 
-  getLoggedInUserId(): string | null {
-    return this.authService.getCurrentUserId();
-  }
-
-  getLoggedInUserDetails(): Observable<ResponseData> {
+  getUserProfile(): Observable<ResponseData> {
     return this.http
-      .get<ResponseData>(`${this.apiUrl}getLoggedInUserDetails`)
+      .get<ResponseData>(`${this.apiUrl}getUserProfile`)
       .pipe(catchError(this.handleError));
   }
 

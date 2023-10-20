@@ -24,7 +24,7 @@ import {
   ProjectPopulated,
   MultipleProjectsResponseData,
   SingleProjectResponseData,
-  projectUpdateData,
+  ProjectUpdateData,
 } from 'src/app/services/model/project.model';
 
 @Component({
@@ -55,7 +55,6 @@ export class CreateProjectComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.initializeForm();
-    this.loadLoggedInUser();
     this.loadAllTeamDetails();
     this.loadAllProjectDetails();
   }
@@ -92,22 +91,6 @@ export class CreateProjectComponent implements OnInit, OnDestroy {
     this.teamMembersFormArray.removeAt(index);
   }
 
-  loadLoggedInUser() {
-    console.log('Fetching users...');
-    this.userService
-      .getLoggedInUserDetails()
-      .pipe(takeUntil(this.onDestroy$))
-      .subscribe(
-        (response: ResponseData) => {
-          this.users = response.data;
-          console.log('Users fetched:', this.users);
-        },
-        (error: any) => {
-          console.error('Error:', error);
-        }
-      );
-  }
-
   handleError(err: HttpErrorResponse, defaultMsg: string) {
     let errorMessage = defaultMsg;
     if (err instanceof HttpErrorResponse) {
@@ -122,7 +105,7 @@ export class CreateProjectComponent implements OnInit, OnDestroy {
   }
 
   private loadAllTeamDetails(): void {
-    console.log('Fetching teams... studentDashboard');
+    console.log('Fetching teams... ');
     this.teamService
       .getTeamsByUserId()
       .pipe(takeUntil(this.onDestroy$))
@@ -140,7 +123,7 @@ export class CreateProjectComponent implements OnInit, OnDestroy {
   }
 
   private loadAllProjectDetails(): void {
-    console.log('Fetching project... studentDashboard');
+    console.log('Fetching project... ');
     this.projectService
       .getProjectsByUserId()
       .pipe(takeUntil(this.onDestroy$))
@@ -166,31 +149,15 @@ export class CreateProjectComponent implements OnInit, OnDestroy {
 
   onSubmit() {
     if (this.createProjectForm.valid) {
-      const { projectName, description, existingTeam, startDate, endDate } =
+      const { projectName, existingTeam, startDate, endDate } =
         this.createProjectForm.value;
 
-      // Find the selected team
-      const selectedTeam = this.teams.find((team) => team._id === existingTeam);
-
-      // Prepare teams data as an array of objects with `team` and `addedDate` properties
-      let teamData: { team: string; addedDate?: Date }[] = [];
-      if (selectedTeam && selectedTeam._id) {
-        teamData.push({ team: selectedTeam._id, addedDate: new Date() }); // added current date as `addedDate`
-      }
-
-      // Extract user IDs from the selected team
-      let userIds: string[] = [];
-      if (selectedTeam && Array.isArray(selectedTeam.teamMembers)) {
-        userIds = selectedTeam.teamMembers
-          .map((member) => member.user._id)
-          .filter((id): id is string => typeof id === 'string'); // This filters out any non-string values.
-      }
-
-      const formData: projectUpdateData = {
+      const formData: ProjectUpdateData = {
         projectName,
         tickets: [],
         startDate,
         endDate,
+        teamId: existingTeam,
       };
 
       if (this.data && this.data._id) {
@@ -205,7 +172,7 @@ export class CreateProjectComponent implements OnInit, OnDestroy {
                   duration: 3000,
                 }
               );
-              this.dialogRef.close(true); // Close the dialog with a success indicator
+              this.dialogRef.close(true);
             },
             (error: HttpErrorResponse) =>
               this.handleError(error, 'Error fetching projects')
@@ -217,7 +184,7 @@ export class CreateProjectComponent implements OnInit, OnDestroy {
           .subscribe(
             (response: SingleProjectResponseData) => {
               this.snackBar.open(response.message, 'Close', { duration: 3000 });
-              this.dialogRef.close(true); // Close the dialog with a success indicator
+              this.dialogRef.close(true);
             },
             (error: HttpErrorResponse) =>
               this.handleError(error, 'Error fetching projects')

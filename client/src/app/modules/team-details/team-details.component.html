@@ -44,7 +44,7 @@
       <section class="team-members my-tickets">
         <h4>Team Members</h4>
 
-        <<!-- Display the members of the selected team -->
+        <!-- Display the members of the selected team -->
         <ul *ngIf="selectedTeam && selectedTeam.teamMembers.length">
           <li *ngFor="let teamMember of selectedTeam.teamMembers">
             {{ teamMember.user.firstName }} {{ teamMember.user.lastName }}

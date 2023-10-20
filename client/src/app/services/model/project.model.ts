@@ -1,17 +1,16 @@
 import mongoose from 'mongoose';
 import { Ticket } from './ticket.model';
 import { User } from './user.model';
-import { Team } from './team.model';
 
 // Interface for Project with only ObjectId references
 export interface Project {
-  _id?: string;
+  _id: string;
   projectName: string;
   tickets?: {
-    ticket: string | mongoose.Types.ObjectId;
+    ticket: mongoose.Types.ObjectId;
     addedDate?: Date;
   }[];
-  createdBy: string | mongoose.Types.ObjectId;
+  createdBy: mongoose.Types.ObjectId;
   startDate?: Date;
   endDate?: Date;
   createdAt?: Date;
@@ -22,7 +21,6 @@ export interface Project {
 export interface ProjectPopulated {
   _id: string;
   projectName: string;
-  teams?: Team[];
   tickets?: {
     ticket: Ticket;
     addedDate?: Date;
@@ -35,7 +33,7 @@ export interface ProjectPopulated {
   __v?: number;
 }
 
-export interface projectUpdateData {
+export interface ProjectUpdateData {
   projectName: string;
   tickets?: {
     ticket: string;
@@ -43,6 +41,7 @@ export interface projectUpdateData {
   }[];
   startDate?: Date;
   endDate?: Date;
+  teamId?: string;
 }
 
 // For singular project responses with references

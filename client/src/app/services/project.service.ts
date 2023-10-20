@@ -6,7 +6,7 @@ import { apiUrls } from '../api.urls';
 import {
   MultipleProjectsResponseData,
   SingleProjectResponseData,
-  projectUpdateData,
+  ProjectUpdateData,
 } from './model/project.model';
 
 @Injectable({
@@ -23,7 +23,7 @@ export class ProjectService {
   }
 
   createProject(
-    projectData: projectUpdateData
+    projectData: ProjectUpdateData
   ): Observable<SingleProjectResponseData> {
     return this.http
       .post<SingleProjectResponseData>(
@@ -47,7 +47,7 @@ export class ProjectService {
 
   updateProjectById(
     id: string,
-    updateProjectData: projectUpdateData
+    updateProjectData: ProjectUpdateData
   ): Observable<SingleProjectResponseData> {
     return this.http
       .put<SingleProjectResponseData>(
@@ -71,7 +71,6 @@ export class ProjectService {
       .put<SingleProjectResponseData>(endpointUrl, { teams: teamIds })
       .pipe(catchError(this.handleError));
   }
-
   removeMemberFromProject(
     projectId: string,
     memberId: string

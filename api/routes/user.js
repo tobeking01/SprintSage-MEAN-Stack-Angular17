@@ -3,7 +3,7 @@ import {
   createUser,
   updateStudentProfile,
   updateProfessorProfile,
-  getLoggedInUserDetails,
+  getUserProfile,
   deleteUser,
   getUsersForTeam,
   getRoleMappings,
@@ -27,7 +27,7 @@ router.put("/updateStudentProfile/:id", verifyToken, updateStudentProfile);
 // update professor profile
 router.put("/updateProfessorProfile/:id", verifyToken, updateProfessorProfile);
 
-router.get("/getLoggedInUserDetails", verifyToken, getLoggedInUserDetails);
+router.get("/getUserProfile", verifyToken, getUserProfile);
 
 router.delete("/deleteUser/:id", verifyToken, selfRoleAdmin, deleteUser);
 

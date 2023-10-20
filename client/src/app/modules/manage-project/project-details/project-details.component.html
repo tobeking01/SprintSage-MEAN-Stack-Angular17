@@ -58,8 +58,8 @@
         </tr>
       </thead>
       <tbody>
-        <ng-container *ngFor="let teamInfo of selectedProject?.teams">
-          <tr *ngFor="let teamMember of teamInfo.team.teamMembers">
+        <ng-container *ngFor="let team of teamInfo">
+          <tr *ngFor="let teamMember of team.teamMembers">
             <td>{{ teamMember.user.firstName }}</td>
             <td>{{ teamMember.user.lastName }}</td>
             <td>{{ teamMember.user.userName }}</td>

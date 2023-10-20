@@ -9,16 +9,16 @@ export interface Team {
 
   // Adjusted to include addedDate and direct reference to user/project
   teamMembers: {
-    user: string | mongoose.Types.ObjectId;
+    user: mongoose.Types.ObjectId;
     addedDate?: Date; // default is managed by mongoose, but can be provided
   }[];
 
   projects?: {
-    project: string | mongoose.Types.ObjectId;
+    project: mongoose.Types.ObjectId;
     addedDate?: Date;
   }[];
 
-  createdBy: string | mongoose.Types.ObjectId;
+  createdBy: mongoose.Types.ObjectId;
   createdAt?: Date;
   updatedAt?: Date;
   __v?: number;

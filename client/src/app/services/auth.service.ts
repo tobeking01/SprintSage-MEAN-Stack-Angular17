@@ -13,7 +13,7 @@ import {
 } from './model/auth.model';
 import { Router } from '@angular/router';
 
-const USER_KEY = 'auth-user';
+const USER_KEY = 'session-auth-user';
 
 @Injectable({
   providedIn: 'root',
@@ -35,7 +35,7 @@ export class AuthService {
   }
 
   private loadUserFromStorage(): void {
-    const user = localStorage.getItem(USER_KEY); // use local storage to store session login
+    const user = sessionStorage.getItem(USER_KEY);
     if (user) {
       this.currentUserSubject.next(JSON.parse(user));
       console.debug('User loaded from storage:', user);
@@ -52,13 +52,14 @@ export class AuthService {
             const user = response.data;
             this.currentUserSubject.next(user);
             this.isLoggedIn$.next(true);
-            localStorage.setItem(USER_KEY, JSON.stringify(user)); // Changed from sessionStorage
+            sessionStorage.setItem(USER_KEY, JSON.stringify(user));
             console.debug('User successfully logged in:', user);
           } else {
             console.error('User data is not available from login response.');
             throw new Error('User data is not available');
           }
         }),
+
         catchError((error) => {
           console.error('Error during login:', error);
           if (error.status === 401) {
@@ -83,9 +84,10 @@ export class AuthService {
         tap(() => {
           this.currentUserSubject.next(null);
           this.isLoggedIn$.next(false);
-          localStorage.removeItem(USER_KEY);
+          sessionStorage.removeItem(USER_KEY);
           console.debug('User successfully logged out.');
         }),
+
         catchError((error) => {
           console.error('Logout error', error);
           this.currentUserSubject.next(null);

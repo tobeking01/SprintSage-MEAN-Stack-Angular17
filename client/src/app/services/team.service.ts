@@ -81,7 +81,16 @@ export class TeamService {
       .pipe(catchError(this.handleError));
   }
 
-  getTeamsByProjectDetails(
+  getProjectsByTeamId(
+    teamId: string
+  ): Observable<MultipleProjectsResponseData> {
+    return this.http
+      .get<MultipleProjectsResponseData>(
+        `${this.apiUrl}getProjectsByTeamId/${teamId}`
+      )
+      .pipe(catchError(this.handleError));
+  }
+  getTeamsByProjectId(
     projectId: string
   ): Observable<MultipleTeamsResponseData> {
     return this.http
@@ -91,13 +100,9 @@ export class TeamService {
       .pipe(catchError(this.handleError));
   }
 
-  getProjectsByTeamId(
-    teamId: string
-  ): Observable<MultipleProjectsResponseData> {
+  getAllTeamsWithProjectsForUser(): Observable<MultipleTeamsResponseData> {
     return this.http
-      .get<MultipleProjectsResponseData>(
-        `${this.apiUrl}getProjectsByTeamId/${teamId}`
-      )
+      .get<MultipleTeamsResponseData>(`${this.apiUrl}teamsWithProjectsForUser`)
       .pipe(catchError(this.handleError));
   }
 }

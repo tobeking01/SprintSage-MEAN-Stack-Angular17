@@ -11,8 +11,8 @@ export enum TicketStateAction {
 export interface TicketState {
   _id?: string;
   action: TicketStateAction;
-  ticketId: string | mongoose.Types.ObjectId;
-  changedBy: string | mongoose.Types.ObjectId;
+  ticketId: mongoose.Types.ObjectId;
+  changedBy: mongoose.Types.ObjectId;
   oldValue?: string; // Default: 'N/A' in schema so it can be optional
   newValue?: string; // Default: 'N/A' in schema so it can be optional
   timestamp?: Date; // Default: current timestamp in schema so it can be optional

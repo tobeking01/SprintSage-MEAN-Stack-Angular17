@@ -23,10 +23,8 @@ import {
 import { User, UserPopulated } from 'src/app/services/model/user.model';
 import { ProjectService } from 'src/app/services/project.service';
 import { TeamService } from 'src/app/services/team.service';
-import { CreateTeamComponent } from '../../team-details/create-team/create-team.component';
 import { MatDialog } from '@angular/material/dialog';
 import { AddMemberComponent } from 'src/app/shared/components/add-member/add-member.component';
-import { UserService } from 'src/app/services/user.service';
 
 @Component({
   selector: 'app-project-details',
@@ -36,7 +34,7 @@ import { UserService } from 'src/app/services/user.service';
 export class ProjectDetailsComponent implements OnInit {
   selectedProject?: ProjectPopulated;
   users: User[] = [];
-  teams: TeamPopulated[] = [];
+  teamInfo: TeamPopulated[] = [];
   projectMembers: UserPopulated[] = [];
   roleNames: { [id: string]: string } = {};
   addMemberForm!: FormGroup;
@@ -104,13 +102,14 @@ export class ProjectDetailsComponent implements OnInit {
           const projectId = params.get('id');
           if (projectId) {
             this.teamService
-              .getTeamsByProjectDetails(projectId)
+              .getTeamsByProjectId(projectId)
               .pipe(takeUntil(this.ngUnsubscribe))
               .subscribe(
                 (response: MultipleTeamsResponseData) => {
-                  this.teams.forEach((team) => {
+                  this.teamInfo = response.data;
+                  this.teamInfo.forEach((team) => {
                     team.teamMembers.forEach((memberObj) => {
-                      const member = memberObj.user; // adjust to get the user object from teamMembers
+                      const member = memberObj.user;
                       this.roleNames[member._id] = member.roles[0].name;
                       if (
                         !this.projectMembers.find((m) => m._id === member._id)
@@ -123,7 +122,7 @@ export class ProjectDetailsComponent implements OnInit {
                 (error: HttpErrorResponse) => {
                   this.errorMessage = `Error Code: ${error.status}, Message: ${error.message}`;
                   console.error('Error fetching teams:', error.error.message);
-                  this.teams = [];
+                  this.teamInfo = [];
                 }
               );
           } else {
@@ -145,7 +144,7 @@ export class ProjectDetailsComponent implements OnInit {
   }
 
   addMembers(): void {
-    const teamId = this.selectedProject?.teams[0]?.team?._id;
+    const teamId = this.teamInfo[0]?.teamMembers[0]?.user?._id;
     if (!teamId) {
       console.error('No team associated with the selected project.');
       return;

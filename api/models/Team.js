@@ -72,11 +72,8 @@ TeamSchema.methods.addUser = async function (userId) {
   // If user is not already a member, add them
   if (!isAlreadyAMember) {
     this.teamMembers.addToSet({ user: userId, addedDate: new Date() });
-    const user = await mongoose.model("User").findById(userId);
-    user.teams.push(this._id);
-
+    // Just save the team since we're not modifying the user directly in this method
     await this.save();
-    await user.save();
   }
 };
 

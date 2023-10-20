@@ -1,5 +1,5 @@
 // role.controller.js
-
+import mongoose from "mongoose";
 // Importing the Role model to interact with the 'Role' collection in the database.
 import Role from "../models/Role.js";
 import User from "../models/User.js"; // Assuming User model is in the models directory

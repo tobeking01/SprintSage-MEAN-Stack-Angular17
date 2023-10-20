@@ -4,8 +4,8 @@
   <mat-toolbar class="project-header">
     <mat-list>
       <mat-list-item>
-        <span matListItemTitle>Manage Projects</span>
-        <span matListItemLine>List of all created and joined projects</span>
+        <h3>Manage Projects</h3>
+        <p>List of all your created and added to projects</p>
       </mat-list-item>
     </mat-list>
   </mat-toolbar>
@@ -58,64 +58,67 @@
         </button>
       </div>
       <br />
+      <!-- Projects display -->
       <div class="projects-display">
         <!-- Loading Spinner -->
         <mat-spinner *ngIf="isLoading"></mat-spinner>
 
-        <!-- Projects Section -->
-        <div class="projects-section">
-          <ng-container
-            *ngIf="projectDataSource.data?.length; else noProjectTemplate"
-          >
-            <div
-              *ngFor="let project of projectDataSource.data"
-              class="project-item"
-              @listAnimation
-              (click)="openProjectDetails(project)"
+        <!-- Teams and their associated projects -->
+        <ng-container
+          *ngIf="teamInfo && teamInfo.length; else noProjectTemplate"
+        >
+          <div *ngFor="let team of teamInfo" class="team-item">
+            <h3>{{ team.teamName }}</h3>
+
+            <!-- Projects associated with the current team -->
+            <ng-container
+              *ngIf="
+                team.projects && team.projects.length;
+                else noProjectForTeamTemplate
+              "
             >
-              <h3>{{ project?.projectName }}</h3>
+              <div
+                *ngFor="let project of team.projects"
+                class="individual-project"
+                (click)="openProjectDetails(project.project)"
+              >
+                <h4>{{ project.project.projectName }}</h4>
+                <p>
+                  Number of Tickets: {{ project.project.tickets?.length || 0 }}
+                </p>
+                <p>
+                  <mat-icon>date_range</mat-icon> Start Date:
+                  {{ project.project.startDate | date : "MMM d, y" }}
+                </p>
+                <p>
+                  <mat-icon>date_range</mat-icon> End Date:
+                  {{ project.project.endDate | date : "MMM d, y" }}
+                </p>
+              </div>
+            </ng-container>
 
-              <!-- Teams Section -->
-              <ng-container *ngFor="let team of project?.teams">
-                <h3>{{ team?.teamName }}</h3>
-                <ng-container
-                  *ngIf="
-                    team?.teamMembers && team?.teamMembers?.length;
-                    else noMembersTemplate
-                  "
-                >
-                  <ul>
-                    <ng-container *ngFor="let member of team?.teamMembers">
-                      <li *ngIf="isUserPopulated(member?.user)">
-                        <span [matTooltip]="getMemberTooltip(member?.user)">
-                          {{ member?.user?.firstName }}
-                          {{ member?.user?.lastName }}
-                        </span>
-                      </li>
-                    </ng-container>
-                  </ul>
-                </ng-container>
+            <!-- Members of the current team -->
+            <ul>
+              <ng-container *ngFor="let member of team.teamMembers">
+                <li>
+                  <span [matTooltip]="getMemberTooltip(member.user)">
+                    {{ member.user.firstName }} {{ member.user.lastName }}
+                  </span>
+                </li>
               </ng-container>
+            </ul>
+          </div>
+        </ng-container>
 
-              <p>Number of Tickets: {{ project.tickets?.length || 0 }}</p>
-              <p>
-                <mat-icon>date_range</mat-icon> Start Date:
-                {{ project.startDate | date : "MMM d, y" }}
-              </p>
-              <p>
-                <mat-icon>date_range</mat-icon> End Date:
-                {{ project.endDate | date : "MMM d, y" }}
-              </p>
-            </div>
-          </ng-container>
+        <!-- Template to show when no projects are available for the whole system -->
+        <ng-template #noProjectTemplate>
+          <div class="no-projects">No Projects Available!</div>
+        </ng-template>
 
-          <ng-template #noProjectTemplate>
-            <div class="no-projects">No Projects Available!</div>
-          </ng-template>
-          <ng-template #noMembersTemplate>
-            <p>No Members in this Team</p>
-          </ng-template>
-        </div>
+        <!-- Template to show when no projects are available for a specific team -->
+        <ng-template #noProjectForTeamTemplate>
+          <div class="no-projects">No Projects Available for this Team!</div>
+        </ng-template>
       </div>
     </div>
   </div>

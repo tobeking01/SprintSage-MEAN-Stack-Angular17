@@ -20,6 +20,26 @@ const allowedTransitions = {
   IN_BACKLOG: [ticketStates.IN_PROGRESS],
 };
 
+const getTicketStateByIdHelper = async (ticketStateId) => {
+  const ticketState = await mongoose
+    .model("TicketState")
+    .findById(ticketStateId)
+    .populate("ticketId")
+    .populate("changedBy")
+    .populate({
+      path: "ticketId",
+      populate: {
+        path: "submittedByUser assignedToUser team project",
+        populate: {
+          path: "teamMembers.user roles",
+          model: "User",
+        },
+      },
+    });
+
+  return ticketState;
+};
+
 export const changeTicketState = async (req, res) => {
   const { ticketId, newState } = req.body;
 

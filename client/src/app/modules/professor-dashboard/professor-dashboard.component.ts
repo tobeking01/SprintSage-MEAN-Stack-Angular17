@@ -44,25 +44,10 @@ export class ProfessorDashboardComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.loadLoggedInUser();
     this.loadAllTeamDetails();
     this.loadAllProjectDetails();
   }
-  loadLoggedInUser() {
-    console.log('Fetching users...');
-    this.userService
-      .getLoggedInUserDetails()
-      .pipe(takeUntil(this.onDestroy$))
-      .subscribe(
-        (response: ResponseData) => {
-          this.users = response.data;
-          console.log('Users fetched:', this.users);
-        },
-        (error: any) => {
-          console.error('Error:', error);
-        }
-      );
-  }
+
   handleError(err: HttpErrorResponse, defaultMsg: string) {
     let errorMessage = defaultMsg;
     if (err instanceof HttpErrorResponse) {

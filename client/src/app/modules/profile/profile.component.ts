@@ -33,11 +33,11 @@ export class ProfileComponent implements OnInit {
 
   fetchUserProfile(): void {
     if (this.authService.isLoggedIn()) {
-      this.userService.getLoggedInUserDetails().subscribe(
+      this.userService.getUserProfile().subscribe(
         (response: ResponseData) => {
-          if (response.success && response.data && response.data.length) {
-            const userData = response.data[0];
-            this.user = this.convertDatesForUser(userData);
+          console.log(response);
+          if (response.success && response.data) {
+            this.user = this.convertDatesForUser(response.data as User);
             console.log('User after conversion:', this.user);
 
             // Determine the role based on the user data.
