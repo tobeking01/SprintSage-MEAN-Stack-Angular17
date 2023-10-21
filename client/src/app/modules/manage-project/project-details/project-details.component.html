@@ -67,7 +67,15 @@
             <td>{{ teamMember.user.firstName }}</td>
             <td>{{ teamMember.user.lastName }}</td>
             <td>{{ teamMember.user.userName }}</td>
-            <td>{{ roleNames[teamMember.user._id] }}</td>
+            <td>
+              <ng-container *ngIf="teamMember.user.roles.length; else noRole">
+                <span *ngFor="let role of teamMember.user.roles">{{
+                  role.name
+                }}</span>
+              </ng-container>
+              <ng-template #noRole>N/A</ng-template>
+            </td>
+
             <td>{{ teamMember.addedDate | date : "shortDate" }}</td>
             <td>
               <button

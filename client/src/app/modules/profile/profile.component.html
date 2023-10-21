@@ -1,7 +1,7 @@
 <div class="profile-container" *ngIf="user">
   <!-- Header Section -->
   <div class="header">
-    <h1>{{ UserRole }} Profile</h1>
+    <h1>{{ roleName }} Profile</h1>
     <p>View and manage your profile details.</p>
     <button mat-raised-button color="accent" (click)="openUpdateDialog()">
       Update Profile
@@ -45,6 +45,10 @@
       <div class="profile-detail" *ngIf="user?.professorDepartment">
         <strong>Professor Department:</strong>
         <span>{{ user.professorDepartment }}</span>
+      </div>
+      <div class="profile-detail" *ngIf="roleName">
+        <strong>Role:</strong>
+        <span>{{ roleName }}</span>
       </div>
     </div>
   </div>

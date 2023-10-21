@@ -18,16 +18,20 @@ const isValidDate = (startDateString, endDateString) => {
 
 export const getProjectByIdHelper = async (projectId) => {
   try {
-    // Fetch the project and populate the 'createdBy' field with User data
     const project = await Project.findById(projectId)
       .populate({
         path: "createdBy",
-        model: "User", // This will fetch the user object corresponding to the createdBy ObjectId
-        select: "firstName lastName", // Select only the necessary fields from the User document
+        model: "User",
+        select: "firstName lastName userName roles",
+        populate: {
+          path: "roles",
+          model: "Role",
+          select: "name",
+        },
       })
       .populate({
         path: "tickets.ticket",
-        model: "Ticket", // This populates each ticket in the tickets array
+        model: "Ticket",
       })
       .exec();
 
@@ -36,28 +40,25 @@ export const getProjectByIdHelper = async (projectId) => {
       return null;
     }
 
-    // Find teams associated with the given project
     const teams = await Team.find({ "projects.project": projectId })
       .populate({
         path: "teamMembers.user",
         model: "User",
-        select: "firstName lastName", // Select only necessary fields
+        select: "firstName lastName userName roles",
         populate: {
           path: "roles",
           model: "Role",
+          select: "name",
         },
       })
-      .select("teamName teamMembers"); // Select only the necessary fields from the Team document
+      .select("teamName teamMembers");
 
-    // Add the teams to the project object. Since 'teams' isn't a field in the Project schema,
-    // this won't persist to the database unless you save the project. It's just added to the
-    // returned object for the sake of this function.
     project.set("teams", teams, { strict: false });
 
     return project;
   } catch (error) {
     console.error("Error fetching project in helper:", error);
-    throw error; // Propagate the error so it can be handled by the caller
+    throw error;
   }
 };
 

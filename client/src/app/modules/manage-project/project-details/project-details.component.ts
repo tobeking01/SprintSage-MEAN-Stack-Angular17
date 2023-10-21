@@ -34,7 +34,7 @@ import { AddMemberComponent } from 'src/app/shared/components/add-member/add-mem
 })
 export class ProjectDetailsComponent implements OnInit {
   selectedProject?: ProjectPopulated;
-  users: User[] = [];
+  users: UserPopulated[] = [];
   teamInfo: TeamPopulated[] = [];
   projectMembersSet = new Set<UserPopulated>();
   roleNames: { [id: string]: string } = {};
@@ -262,6 +262,7 @@ export class ProjectDetailsComponent implements OnInit {
     this.projectService.getProjectById(projectId).subscribe(
       (response: SingleProjectResponseData) => {
         if (response.data) {
+          console.log(this.selectedProject);
           this.selectedProject = response.data;
           this.cdr.detectChanges();
           console.log('Selected Project:', this.selectedProject);

@@ -4,6 +4,7 @@ import { UserService } from 'src/app/services/user.service';
 import { AuthService } from '../../services/auth.service';
 import { MatDialog } from '@angular/material/dialog';
 import { UpdateProfileComponent } from './update-profile/update-profile.component';
+import { take } from 'rxjs';
 
 @Component({
   selector: 'app-profile',
@@ -12,7 +13,7 @@ import { UpdateProfileComponent } from './update-profile/update-profile.componen
 })
 export class ProfileComponent implements OnInit {
   user: User | null = null;
-  UserRole: 'Student' | 'Professor' | '' = '';
+  roleName: string = 'Unknown Role';
 
   constructor(
     private userService: UserService,
@@ -33,27 +34,21 @@ export class ProfileComponent implements OnInit {
 
   fetchUserProfile(): void {
     if (this.authService.isLoggedIn()) {
-      this.userService.getUserProfile().subscribe(
-        (response: ResponseData) => {
-          console.log(response);
-          if (response.success && response.data) {
-            this.user = this.convertDatesForUser(response.data as User);
-            console.log('User after conversion:', this.user);
+      this.userService.getUserProfile().subscribe((response: ResponseData) => {
+        console.log('User Roles:', response.data.roles);
+        console.log(response);
+        if (response.success && response.data) {
+          this.user = this.convertDatesForUser(response.data as User);
+          console.log('User after conversion:', this.user);
 
-            // Determine the role based on the user data.
-            if (this.user.schoolYear) {
-              this.UserRole = 'Student';
-            } else if (this.user.professorTitle) {
-              this.UserRole = 'Professor';
-            } else {
-              this.UserRole = '';
-            }
-
-            this.cd.detectChanges();
+          // Fetch role name from user data
+          if (this.user?.roles && this.user.roles.length > 0) {
+            this.roleName = this.user.roles[0] || 'Unknown Role';
+            console.log('Role name:', this.roleName);
           }
-        },
-        (error) => console.error('Error fetching user profile:', error)
-      );
+        }
+      });
+      (error: any) => console.error('Error fetching user profile:', error);
     }
   }
 

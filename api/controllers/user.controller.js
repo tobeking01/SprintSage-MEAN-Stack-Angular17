@@ -86,33 +86,23 @@ export const createUser = async (req, res, next) => {
  */
 export const getUserProfile = async (req, res, next) => {
   try {
-    console.log(req.user.id);
-    // Check if user is logged in.
-    if (!req.user || !req.user.id) {
-      return sendError(res, 401, "Authentication required!");
-    }
+    const user = await User.findById(req.user.id)
+      .populate({
+        path: "roles",
+        select: "name",
+      })
+      .select("-password");
 
-    // Retrieve the logged-in user's details from the database using their ID.
-    const user = await User.findById(req.user.id).populate("roles");
-
-    // If the user isn't found (which should be rare if they're authenticated), return a 404 error.
     if (!user) return sendError(res, 404, "User not found!");
 
-    // Prepare user for response (excluding password).
-    const responseUser = user.toObject();
-    delete responseUser.password;
+    const responseUser = {
+      ...user.toObject(),
+      roles: user.roles.map((role) => role.name),
+    };
 
-    // Disable ETag for this response (if needed).
-    res.set("ETag", null);
-
-    // Send the response.
     sendSuccess(res, 200, "User Retrieved Successfully", responseUser);
   } catch (error) {
-    console.error("Error fetching user:", error);
-    if (error.kind === "ObjectId" && error.name === "CastError") {
-      return next(sendError(res, 400, "Invalid User ID!"));
-    }
-    return next(sendError(res, 500, "Internal Server Error!"));
+    next(error);
   }
 };
 
@@ -270,17 +260,12 @@ export const updateProfessorProfile = async (req, res, next) => {
   }
 };
 
-export const getRoleMappings = async (req, res, next) => {
-  try {
-    const roles = await Role.find();
-    const mappings = {};
-    roles.forEach((role) => {
-      mappings[role._id] = role.name;
-    });
-    console.log("Role mappings:", mappings);
-    sendSuccess(res, 200, "Role Mappings Retrieved Successfully!", mappings);
-  } catch (error) {
-    console.error("Error fetching role mappings:", error);
-    sendError(res, 500, "Internal Server Error while fetching role mappings!");
+// Error handling middleware
+export const errorHandler = (error, req, res, next) => {
+  console.error(error.message);
+  if (error.kind === "ObjectId" && error.name === "CastError") {
+    sendError(res, 400, "Invalid ID provided");
+  } else {
+    sendError(res, 500, error.message || "Internal Server Error!");
   }
 };

@@ -12,7 +12,6 @@ import { AuthService } from './auth.service';
 })
 export class UserService {
   private apiUrl = apiUrls.userServiceApi;
-  private roleMappings: { [id: string]: string } = {};
 
   constructor(private http: HttpClient, private authService: AuthService) {}
 
@@ -61,33 +60,5 @@ export class UserService {
     return this.http
       .get<User[]>(`${this.apiUrl}getUsersForTeam`)
       .pipe(catchError(this.handleError));
-  }
-
-  getRoleMappings(): Observable<{ [id: string]: string }> {
-    if (Object.keys(this.roleMappings).length) {
-      return of(this.roleMappings); // if roleMappings is already fetched
-    }
-
-    return this.http
-      .get<{ [id: string]: string }>(`${this.apiUrl}role-mappings`)
-      .pipe(
-        tap((mappings) => {
-          this.roleMappings = mappings;
-        })
-      );
-  }
-
-  getRoleNameById(roleId: string): Observable<string> {
-    return this.getRoleMappings().pipe(
-      map((mappings) => {
-        console.log(
-          'Converting Role ID:',
-          roleId,
-          'to Name:',
-          mappings[roleId]
-        );
-        return mappings[roleId] || 'Unknown Role';
-      })
-    );
   }
 }

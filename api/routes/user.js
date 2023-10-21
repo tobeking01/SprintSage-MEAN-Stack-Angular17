@@ -6,7 +6,6 @@ import {
   getUserProfile,
   deleteUser,
   getUsersForTeam,
-  getRoleMappings,
 } from "../controllers/user.controller.js";
 import {
   verifyToken,
@@ -32,7 +31,5 @@ router.get("/getUserProfile", verifyToken, getUserProfile);
 router.delete("/deleteUser/:id", verifyToken, selfRoleAdmin, deleteUser);
 
 router.get("/getUsersForTeam", verifyToken, getUsersForTeam);
-
-router.get("/role-mappings", verifyToken, getRoleMappings);
 
 export default router;
