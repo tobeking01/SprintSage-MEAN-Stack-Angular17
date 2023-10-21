@@ -56,7 +56,7 @@ router.get(
 router.get("/getTeamsByUserId/:id", verifyToken, getTeamsByUserId);
 
 router.get(
-  "/teamsWithProjectsForUser",
+  "/getAllTeamsWithProjectsForUser",
   verifyToken,
   getAllTeamsWithProjectsForUser
 );

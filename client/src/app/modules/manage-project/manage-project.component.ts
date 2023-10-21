@@ -96,39 +96,6 @@ export class ManageProjectComponent implements OnInit, OnDestroy {
     this.onDestroy$.complete();
   }
 
-  handleError(err: HttpErrorResponse, defaultMsg: string) {
-    let errorMessage = defaultMsg;
-    if (err.status) {
-      errorMessage = `Error Code: ${err.status}, Message: ${err.message}`;
-    } else {
-      errorMessage = err.message || defaultMsg;
-    }
-    console.error(errorMessage, err);
-    this.errorMessage = errorMessage;
-    this.isLoading = false;
-  }
-
-  private loadTeamProjectDetails(): void {
-    console.log('Fetching teams with their projects...');
-
-    this.teamService
-      .getAllTeamsWithProjectsForUser()
-      .pipe(takeUntil(this.onDestroy$))
-      .subscribe(
-        (response: MultipleTeamsResponseData) => {
-          this.teamInfo = response.data;
-          console.log('Teams with projects fetched:', this.teamInfo);
-        },
-        (error: HttpErrorResponse) => {
-          this.handleError(error, 'Error fetching teams with projects');
-          this.teamInfo = [];
-        },
-        () => {
-          this.isLoading = false;
-        }
-      );
-  }
-
   getMemberTooltip(user: User | UserPopulated): string {
     // Improved type safety.
     return `User ID: ${user?._id}`;
@@ -197,5 +164,37 @@ export class ManageProjectComponent implements OnInit, OnDestroy {
 
   applyTeamFilter(event: any): void {
     // TODO: Implement the logic to filter projects by selected team
+  }
+
+  handleError(err: HttpErrorResponse, defaultMsg: string) {
+    let errorMessage = defaultMsg;
+    if (err.status) {
+      errorMessage = `Error Code: ${err.status}, Message: ${err.message}`;
+    } else {
+      errorMessage = err.message || defaultMsg;
+    }
+    console.error(errorMessage, err);
+    this.errorMessage = errorMessage;
+    this.isLoading = false;
+  }
+  private loadTeamProjectDetails(): void {
+    console.log('Fetching teams with their projects...');
+
+    this.teamService
+      .getAllTeamsWithProjectsForUser()
+      .pipe(takeUntil(this.onDestroy$))
+      .subscribe(
+        (response: MultipleTeamsResponseData) => {
+          this.teamInfo = response.data;
+          console.log('Teams with projects fetched:', this.teamInfo);
+        },
+        (error: HttpErrorResponse) => {
+          this.handleError(error, 'Error fetching teams with projects');
+          this.teamInfo = [];
+        },
+        () => {
+          this.isLoading = false;
+        }
+      );
   }
 }

@@ -4,7 +4,6 @@
     <div class="project-info">
       <div>
         <strong>Project Name</strong>
-        <!-- <pre>{{ selectedProject | json }}</pre> -->
 
         <p>{{ selectedProject?.projectName }}</p>
       </div>
@@ -33,6 +32,9 @@
       <button mat-raised-button color="accent" (click)="addMembers()">
         ADD MEMBERS
       </button>
+      <button mat-raised-button color="primary" (click)="editProject()">
+        EDIT PROJECT
+      </button>
       <button mat-raised-button color="warn" (click)="deleteProject()">
         DELETE PROJECT
       </button>
@@ -44,7 +46,7 @@
   </div>
 
   <!-- Members Section -->
-  <div *ngIf="membersVisible && projectMembers.length > 0">
+  <div *ngIf="membersVisible && projectMembersSet">
     <h3>TeamMembers of {{ selectedProject?.projectName }}</h3>
     <table>
       <thead>
@@ -58,8 +60,10 @@
         </tr>
       </thead>
       <tbody>
-        <ng-container *ngFor="let team of teamInfo">
-          <tr *ngFor="let teamMember of team.teamMembers">
+        <ng-container *ngFor="let team of teamInfo; let outerIndex = index">
+          <tr
+            *ngFor="let teamMember of team.teamMembers; let innerIndex = index"
+          >
             <td>{{ teamMember.user.firstName }}</td>
             <td>{{ teamMember.user.lastName }}</td>
             <td>{{ teamMember.user.userName }}</td>
@@ -69,7 +73,9 @@
               <button
                 mat-icon-button
                 color="warn"
-                (click)="removeMemberFromProject(teamMember.user._id)"
+                (click)="
+                  removeMemberFromProject(teamMember.user._id, innerIndex)
+                "
               >
                 <mat-icon>remove_circle</mat-icon>
               </button>

@@ -292,34 +292,33 @@ export const getProjectsByTeamId = async (req, res, next) => {
 
 export const getTeamsByProjectId = async (req, res, next) => {
   try {
-    const projectId = String(req.query.projectId); // get projectId from frontend as string
+    const { projectId } = req.query;
     const loggedInUserId = req.user.id;
 
-    if (!projectId) {
-      return sendError(res, 400, "Project ID is required!");
+    // Validate the provided Project ID
+    if (!isValidObjectId(projectId)) {
+      return sendError(res, 400, "Invalid Project ID!");
     }
 
-    if (!loggedInUserId) {
-      return sendError(res, 401, "User not authenticated!");
+    // Ensure the logged-in user's ID is valid
+    if (!isValidObjectId(loggedInUserId)) {
+      return sendError(res, 400, "Invalid User ID!");
     }
 
+    // Fetch teams associated with the provided project ID that also have the logged-in user as a team member
     const teams = await Team.find({
-      projects: projectId,
-      teamMembers: loggedInUserId, // Ensures the logged-in user is a member of the team.
+      "projects.project": new mongoose.Types.ObjectId(projectId),
+      "teamMembers.user": new mongoose.Types.ObjectId(loggedInUserId),
     })
-      .populate({
-        path: "teamMembers",
-        populate: {
-          path: "roles",
-          model: "Role",
-        },
-      })
-      .populate("projects");
+      .populate("teamMembers.user")
+      .populate("projects.project");
 
+    // Check if there are no teams associated with the given project ID
     if (!teams.length) {
       return sendSuccess(res, 200, "No teams found for the given project.", []);
     }
 
+    // Return the fetched teams
     sendSuccess(res, 200, "Teams fetched successfully!", teams);
   } catch (error) {
     console.error("Error fetching teams by project:", error);

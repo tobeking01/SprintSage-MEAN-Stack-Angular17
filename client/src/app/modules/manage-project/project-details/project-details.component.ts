@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
@@ -15,6 +15,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import {
   MultipleProjectsResponseData,
   ProjectPopulated,
+  SingleProjectResponseData,
 } from 'src/app/services/model/project.model';
 import {
   MultipleTeamsResponseData,
@@ -35,7 +36,7 @@ export class ProjectDetailsComponent implements OnInit {
   selectedProject?: ProjectPopulated;
   users: User[] = [];
   teamInfo: TeamPopulated[] = [];
-  projectMembers: UserPopulated[] = [];
+  projectMembersSet = new Set<UserPopulated>();
   roleNames: { [id: string]: string } = {};
   addMemberForm!: FormGroup;
   isLoading = false;
@@ -53,90 +54,31 @@ export class ProjectDetailsComponent implements OnInit {
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
     private route: ActivatedRoute,
+    private cdr: ChangeDetectorRef,
     private router: Router
   ) {}
 
   ngOnInit(): void {
-    this.route.paramMap
-      .pipe(
-        tap((params) => {
-          const projectId = params.get('id');
-          if (projectId) {
-            this.fetchProjectDetails(projectId);
-            console.log(projectId);
-          } else {
-            console.error('Project ID not provided in route parameters.');
-          }
-        }),
-        takeUntil(this.ngUnsubscribe)
-      )
-      .subscribe();
-
-    this.loadAllTeamDetails();
     this.initializeForm();
+
+    const projectId = this.route.snapshot.paramMap.get('id');
+    if (projectId) {
+      this.loadProjectDetails(projectId);
+      this.loadAllTeamDetails(projectId);
+    } else {
+      console.error('Project ID not provided in route parameters.');
+    }
   }
 
-  private initializeForm(): void {
-    this.addMemberForm = this.fb.group({
-      teamMembers: this.fb.array([], Validators.minLength(1)),
-    });
-  }
-
-  private fetchProjectDetails(projectId: string): void {
-    this.projectService.getProjectById(projectId).subscribe(
-      (response: MultipleProjectsResponseData) => {
-        this.selectedProject = response.data[0];
-        console.log('Project Data:', this.selectedProject);
-      },
-      (error: HttpErrorResponse) => {
-        this.errorMessage = `Error Code: ${error.status}, Message: ${error.message}`;
-        console.error('Error fetching project details:', error.error.message);
-      }
-    );
-  }
-
-  private loadAllTeamDetails(): void {
-    this.route.paramMap
-      .pipe(
-        tap((params) => {
-          const projectId = params.get('id');
-          if (projectId) {
-            this.teamService
-              .getTeamsByProjectId(projectId)
-              .pipe(takeUntil(this.ngUnsubscribe))
-              .subscribe(
-                (response: MultipleTeamsResponseData) => {
-                  this.teamInfo = response.data;
-                  this.teamInfo.forEach((team) => {
-                    team.teamMembers.forEach((memberObj) => {
-                      const member = memberObj.user;
-                      this.roleNames[member._id] = member.roles[0].name;
-                      if (
-                        !this.projectMembers.find((m) => m._id === member._id)
-                      ) {
-                        this.projectMembers.push(member);
-                      }
-                    });
-                  });
-                },
-                (error: HttpErrorResponse) => {
-                  this.errorMessage = `Error Code: ${error.status}, Message: ${error.message}`;
-                  console.error('Error fetching teams:', error.error.message);
-                  this.teamInfo = [];
-                }
-              );
-          } else {
-            console.error('Project ID not provided in route parameters.');
-          }
-        }),
-        takeUntil(this.ngUnsubscribe)
-      )
-      .subscribe();
+  ngOnDestroy(): void {
+    this.ngUnsubscribe.next();
+    this.ngUnsubscribe.complete();
   }
 
   get teamMembersControls(): FormControl[] {
-    return (this.addMemberForm.get('teamMembers') as FormArray)
-      .controls as FormControl[];
+    console.log('Form State:', this.addMemberForm);
+    const controls = this.addMemberForm?.get('teamMembers') as FormArray;
+    return (controls?.controls as FormControl[]) || [];
   }
 
   toggleMembersVisibility(): void {
@@ -157,19 +99,25 @@ export class ProjectDetailsComponent implements OnInit {
     dialogRef.afterClosed().subscribe({
       next: (isMemberAdded) => {
         if (isMemberAdded) {
-          this.loadAllTeamDetails();
+          if (this.selectedProject && this.selectedProject._id) {
+            this.loadAllTeamDetails(this.selectedProject._id);
+          } else {
+            console.error(
+              'selectedProject is not defined or missing _id property'
+            );
+          }
         }
       },
     });
   }
 
-  removeMemberFromProject(memberId: string): void {
+  removeMemberFromProject(memberId: string, index: number): void {
     const confirmed = window.confirm(
       'Are you sure you want to remove this member from the project?'
     );
 
     if (!confirmed) {
-      return;
+      (this.addMemberForm.get('teamMembers') as FormArray).removeAt(index);
     }
 
     if (this.selectedProject && this.selectedProject._id) {
@@ -178,7 +126,13 @@ export class ProjectDetailsComponent implements OnInit {
         .subscribe(
           () => {
             console.log('Member removed successfully');
-            this.loadAllTeamDetails(); // Refresh the list of members.
+            if (this.selectedProject && this.selectedProject._id) {
+              this.loadAllTeamDetails(this.selectedProject._id);
+            } else {
+              console.error(
+                'selectedProject is not defined or missing _id property'
+              );
+            }
           },
           (error: HttpErrorResponse) => {
             console.error('Error removing member:', error.error.message);
@@ -211,7 +165,13 @@ export class ProjectDetailsComponent implements OnInit {
             duration: 3000,
           });
           // Refresh the list of members after adding new members
-          this.loadAllTeamDetails();
+          if (this.selectedProject && this.selectedProject._id) {
+            this.loadAllTeamDetails(this.selectedProject._id);
+          } else {
+            console.error(
+              'selectedProject is not defined or missing _id property'
+            );
+          }
         },
         (error: HttpErrorResponse) => {
           const errorMsg =
@@ -222,6 +182,21 @@ export class ProjectDetailsComponent implements OnInit {
           console.error('Error adding members:', errorMsg);
         }
       );
+  }
+  editProject(): void {
+    // EditProjectComponent is not imported
+    // You might want to import and utilize it.
+    /*
+    const dialogRef = this.dialog.open(EditProjectComponent, {
+      data: this.selectedProject,
+    });
+
+    dialogRef.afterClosed().subscribe((updatedProject) => {
+      if (updatedProject) {
+        this.selectedProject = updatedProject;
+      }
+    });
+    */
   }
 
   deleteProject(): void {
@@ -269,8 +244,58 @@ export class ProjectDetailsComponent implements OnInit {
     return (this.addMemberForm.get('teamMembers') as FormArray).controls;
   }
 
-  ngOnDestroy(): void {
-    this.ngUnsubscribe.next();
-    this.ngUnsubscribe.complete();
+  handleError(error: HttpErrorResponse): void {
+    const errorMsg = error.error?.message || 'An unexpected error occurred';
+    this.snackBar.open(errorMsg, 'Close', { duration: 5000 });
+    console.error('Error:', errorMsg);
+    this.errorMessage = errorMsg;
+  }
+
+  private initializeForm(): void {
+    this.addMemberForm = this.fb.group({
+      teamMembers: this.fb.array([], Validators.minLength(1)),
+    });
+  }
+
+  // Good but modify to fit model
+  private loadProjectDetails(projectId: string): void {
+    this.projectService.getProjectById(projectId).subscribe(
+      (response: SingleProjectResponseData) => {
+        if (response.data) {
+          this.selectedProject = response.data;
+          this.cdr.detectChanges();
+          console.log('Selected Project:', this.selectedProject);
+          console.log('Project Data:', this.selectedProject);
+        } else {
+          console.warn('No project found for the given ID');
+          // Handle this scenario, maybe redirect or show a message.
+          this.errorMessage = 'No project found for the given ID';
+        }
+      },
+      (error: HttpErrorResponse) => this.handleError(error)
+    );
+  }
+
+  private loadAllTeamDetails(projectId: string): void {
+    this.teamService
+      .getTeamsByProjectId(projectId)
+      .pipe(takeUntil(this.ngUnsubscribe))
+      .subscribe(
+        (response: MultipleTeamsResponseData) => {
+          this.teamInfo = response.data;
+          this.teamInfo.forEach((team) => {
+            team.teamMembers.forEach((memberObj) => {
+              const member = memberObj.user;
+              this.roleNames[member._id] = member.roles[0].name;
+              if (
+                ![...this.projectMembersSet].some((m) => m._id === member._id)
+              ) {
+                this.projectMembersSet.add(member);
+              }
+            });
+          });
+        },
+        (error: HttpErrorResponse) => this.handleError(error)
+      );
   }
 }

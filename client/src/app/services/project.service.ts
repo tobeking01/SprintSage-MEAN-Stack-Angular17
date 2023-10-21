@@ -33,9 +33,9 @@ export class ProjectService {
       .pipe(catchError(this.handleError));
   }
 
-  getProjectById(id: string): Observable<MultipleProjectsResponseData> {
+  getProjectById(id: string): Observable<SingleProjectResponseData> {
     return this.http
-      .get<MultipleProjectsResponseData>(`${this.apiUrl}getProjectById/${id}`)
+      .get<SingleProjectResponseData>(`${this.apiUrl}getProjectById/${id}`)
       .pipe(catchError(this.handleError));
   }
 

@@ -95,14 +95,16 @@ export class TeamService {
   ): Observable<MultipleTeamsResponseData> {
     return this.http
       .get<MultipleTeamsResponseData>(
-        `${this.apiUrl}getTeamsByProjectDetails?projectId=${projectId}`
+        `${this.apiUrl}getTeamsByProjectId?projectId=${projectId}`
       )
       .pipe(catchError(this.handleError));
   }
 
   getAllTeamsWithProjectsForUser(): Observable<MultipleTeamsResponseData> {
     return this.http
-      .get<MultipleTeamsResponseData>(`${this.apiUrl}teamsWithProjectsForUser`)
+      .get<MultipleTeamsResponseData>(
+        `${this.apiUrl}getAllTeamsWithProjectsForUser`
+      )
       .pipe(catchError(this.handleError));
   }
 }

@@ -8,12 +8,10 @@
   </button>
 </div>
 
-<!-- Form field to select user to add -->
-<!-- Form field to select user to add -->
 <mat-form-field>
   <mat-label>Select User</mat-label>
   <mat-select
-    [(ngModel)]="currentSelectedUserId"
+    [formControl]="currentSelectedUserControl"
     (selectionChange)="selectUser()"
   >
     <mat-option *ngFor="let user of users" [value]="user._id">

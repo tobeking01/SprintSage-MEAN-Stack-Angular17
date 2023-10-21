@@ -1,9 +1,10 @@
 import { ChangeDetectorRef, Component, Inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { Team } from 'src/app/services/model/team.model';
 import { User } from 'src/app/services/model/user.model';
 import { TeamService } from 'src/app/services/team.service';
 import { UserService } from 'src/app/services/user.service';
+import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-add-member',
@@ -12,18 +13,23 @@ import { UserService } from 'src/app/services/user.service';
 })
 export class AddMemberComponent {
   users: User[] = [];
-  teams: Team[] = [];
   selectedUsers: User[] = [];
-  currentSelectedUserId?: string; // <- added this
+  currentSelectedUserId?: string;
   teamId?: string;
+  form: FormGroup;
 
   constructor(
+    private fb: FormBuilder,
+    private snackBar: MatSnackBar,
     private userService: UserService,
     private teamService: TeamService,
     public dialogRef: MatDialogRef<AddMemberComponent>,
     @Inject(MAT_DIALOG_DATA) public data: any,
-    private cdr: ChangeDetectorRef // <-- Inject this
+    private cdr: ChangeDetectorRef
   ) {
+    this.form = this.fb.group({
+      currentSelectedUserId: [''],
+    });
     this.teamId = data.teamId;
     console.log('Team ID:', this.teamId);
 
@@ -40,20 +46,34 @@ export class AddMemberComponent {
     console.log('Is Button Disabled:', disabled);
     return disabled;
   }
+  get currentSelectedUserControl(): FormControl {
+    return this.form.get('currentSelectedUserId') as FormControl;
+  }
 
   addMemberToTeam(): void {
     if (!this.teamId || this.selectedUsers.length === 0) return;
 
     // Loop through the selected users and add them
     for (let user of this.selectedUsers) {
-      this.teamService
-        .addUserToTeam(this.teamId, user._id)
-        .subscribe((response) => {
-          console.log('Member added successfully:', response);
-        });
+      this.teamService.addUserToTeam(this.teamId, user._id).subscribe(
+        (response) => {
+          this.snackBar.open('Member added successfully!', 'Close', {
+            duration: 3000,
+          });
+          this.dialogRef.close(true);
+        },
+        (error) => {
+          // Handle any errors here
+          this.snackBar.open(
+            'Failed to add member. Please try again.',
+            'Close',
+            {
+              duration: 3000,
+            }
+          );
+        }
+      );
     }
-
-    this.dialogRef.close(true);
   }
 
   removeUserFromSelection(user: User): void {

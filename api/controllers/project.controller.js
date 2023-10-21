@@ -16,21 +16,49 @@ const isValidDate = (startDateString, endDateString) => {
   );
 };
 
-const getProjectByIdHelper = async (id) => {
-  const project = await Project.findById(id).populate("tickets");
+export const getProjectByIdHelper = async (projectId) => {
+  try {
+    // Fetch the project and populate the 'createdBy' field with User data
+    const project = await Project.findById(projectId)
+      .populate({
+        path: "createdBy",
+        model: "User", // This will fetch the user object corresponding to the createdBy ObjectId
+        select: "firstName lastName", // Select only the necessary fields from the User document
+      })
+      .populate({
+        path: "tickets.ticket",
+        model: "Ticket", // This populates each ticket in the tickets array
+      })
+      .exec();
 
-  // Find teams associated with the given project
-  const teams = await Team.find({ "projects.project": id }).populate({
-    path: "teamMembers.user",
-    model: "User",
-    populate: {
-      path: "roles",
-      model: "Role",
-    },
-  });
+    if (!project) {
+      console.warn("Project not found for ID:", projectId);
+      return null;
+    }
 
-  project.teams = teams;
-  return project;
+    // Find teams associated with the given project
+    const teams = await Team.find({ "projects.project": projectId })
+      .populate({
+        path: "teamMembers.user",
+        model: "User",
+        select: "firstName lastName", // Select only necessary fields
+        populate: {
+          path: "roles",
+          model: "Role",
+        },
+      })
+      .select("teamName teamMembers"); // Select only the necessary fields from the Team document
+
+    // Add the teams to the project object. Since 'teams' isn't a field in the Project schema,
+    // this won't persist to the database unless you save the project. It's just added to the
+    // returned object for the sake of this function.
+    project.set("teams", teams, { strict: false });
+
+    return project;
+  } catch (error) {
+    console.error("Error fetching project in helper:", error);
+    throw error; // Propagate the error so it can be handled by the caller
+  }
 };
 
 // Good with model change
@@ -76,6 +104,13 @@ export const createProject = async (req, res, next) => {
       if (validTickets.length !== tickets.length) {
         return sendError(res, 400, "One or more tickets are invalid.");
       }
+    }
+    if (!isValidDate(startDate, endDate)) {
+      return sendError(
+        res,
+        400,
+        "Invalid start or end date format, or start date is after end date."
+      );
     }
 
     // Constructing the tickets data for the project schema
@@ -130,6 +165,7 @@ export const createProject = async (req, res, next) => {
  * @param {Object} res - Express response object.
  * @param {function} next - Express next middleware function.
  */
+
 export const getProjectById = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -148,6 +184,7 @@ export const getProjectById = async (req, res, next) => {
     next(error); // Pass the error to a potential error-handling middleware
   }
 };
+
 // keep
 export const getProjectsByUserId = async (req, res, next) => {
   try {
@@ -242,7 +279,11 @@ export const updateProjectById = async (req, res, next) => {
       existingProject.description = projectUpdates.description;
     }
 
-    if (!isValidDate(projectUpdates.startDate, projectUpdates.endDate)) {
+    if (
+      projectUpdates.startDate &&
+      projectUpdates.endDate &&
+      !isValidDate(projectUpdates.startDate, projectUpdates.endDate)
+    ) {
       return sendError(
         res,
         400,
@@ -350,7 +391,7 @@ export const addTeamsToProject = async (req, res, next) => {
 
     // Add valid team IDs to the project, avoiding duplicates.
     validTeamIds.forEach((validTeamId) => {
-      if (!existingProject.teams.includes(validTeamId)) {
+      if (!existingProject.teams.some((team) => team.equals(validTeamId))) {
         existingProject.teams.push(validTeamId);
       }
     });
