@@ -8,12 +8,11 @@ import {
 } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject } from 'rxjs';
-import { tap, takeUntil } from 'rxjs/operators';
+import { takeUntil } from 'rxjs/operators';
 import { HttpErrorResponse } from '@angular/common/http';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import {
-  MultipleProjectsResponseData,
   ProjectPopulated,
   SingleProjectResponseData,
 } from 'src/app/services/model/project.model';
@@ -21,7 +20,7 @@ import {
   MultipleTeamsResponseData,
   TeamPopulated,
 } from 'src/app/services/model/team.model';
-import { User, UserPopulated } from 'src/app/services/model/user.model';
+import { UserPopulated } from 'src/app/services/model/user.model';
 import { ProjectService } from 'src/app/services/project.service';
 import { TeamService } from 'src/app/services/team.service';
 import { MatDialog } from '@angular/material/dialog';
@@ -37,7 +36,7 @@ export class ProjectDetailsComponent implements OnInit {
   users: UserPopulated[] = [];
   teamInfo: TeamPopulated[] = [];
   projectMembersSet = new Set<UserPopulated>();
-  roleNames: { [id: string]: string } = {};
+  roleNames: { [key: string]: string } = {};
   addMemberForm!: FormGroup;
   isLoading = false;
   membersVisible = false;
@@ -284,10 +283,14 @@ export class ProjectDetailsComponent implements OnInit {
       .subscribe(
         (response: MultipleTeamsResponseData) => {
           this.teamInfo = response.data;
+
           this.teamInfo.forEach((team) => {
             team.teamMembers.forEach((memberObj) => {
               const member = memberObj.user;
-              this.roleNames[member._id] = member.roles[0].name;
+              // Get the first role's name from the user roles or set 'N/A' if none exists
+              this.roleNames[member._id] =
+                member.roles && member.roles[0] ? member.roles[0].name : 'N/A';
+
               if (
                 ![...this.projectMembersSet].some((m) => m._id === member._id)
               ) {
