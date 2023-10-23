@@ -54,7 +54,6 @@
           <th>First Name</th>
           <th>Last Name</th>
           <th>Username</th>
-          <th>Role</th>
           <th>Date Added to Team</th>
           <th>Remove</th>
         </tr>
@@ -67,10 +66,6 @@
             <td>{{ teamMember.user.firstName }}</td>
             <td>{{ teamMember.user.lastName }}</td>
             <td>{{ teamMember.user.userName }}</td>
-            <td>
-              {{ teamMember.user.roles[0].name || "N/A" }}
-            </td>
-
             <td>{{ teamMember.addedDate | date : "shortDate" }}</td>
             <td>
               <button

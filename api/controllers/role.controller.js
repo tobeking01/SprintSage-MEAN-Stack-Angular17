@@ -55,7 +55,7 @@ export const initializeRoles = async () => {
  * @param {Object} res - Express response object.
  * @param {function} next - Express next middleware function.
  */
-export const updateRole = async (req, res, next) => {
+export const updateRoleById = async (req, res, next) => {
   try {
     const { name } = req.body;
 
@@ -132,6 +132,35 @@ export const deleteRole = async (req, res, next) => {
     sendSuccess(res, 200, "Role deleted!");
   } catch (error) {
     console.error("Error deleting role:", error);
+    sendError(res, 500, "Internal Server Error!");
+  }
+};
+
+/**
+ * Controller to retrieve the role name given its ID.
+ * @async
+ * @function
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @param {function} next - Express next middleware function.
+ */
+export const getRoleNameById = async (req, res, next) => {
+  try {
+    // Get role ID from request params
+    const roleId = req.params.id;
+
+    // Fetch the role from the database using its ID
+    const role = await Role.findById(roleId);
+
+    // If role is not found, return an error response
+    if (!role) {
+      return sendError(res, 404, "Role not found!");
+    }
+
+    // Send the role name as the response
+    sendSuccess(res, 200, "Role fetched successfully!", { name: role.name });
+  } catch (error) {
+    console.error("Error fetching role name:", error); // Log the error for debugging.
     sendError(res, 500, "Internal Server Error!");
   }
 };

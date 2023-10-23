@@ -19,11 +19,6 @@ export class TeamService {
 
   constructor(private http: HttpClient) {}
 
-  private handleError(error: any) {
-    console.error('An error occurred:', error);
-    return throwError(error);
-  }
-
   createTeam(teamData: {
     teamName: string;
     teamMembers: string[];
@@ -106,5 +101,9 @@ export class TeamService {
         `${this.apiUrl}getAllTeamsWithProjectsForUser`
       )
       .pipe(catchError(this.handleError));
+  }
+  private handleError(error: any) {
+    console.error('An error occurred:', error);
+    return throwError(error);
   }
 }

@@ -34,14 +34,6 @@ export class AuthService {
     return this.currentUserValue?._id || null;
   }
 
-  private loadUserFromStorage(): void {
-    const user = sessionStorage.getItem(USER_KEY);
-    if (user) {
-      this.currentUserSubject.next(JSON.parse(user));
-      console.debug('User loaded from storage:', user);
-    }
-  }
-
   loginService(loginObj: LoginPayload): Observable<ResponseData> {
     console.debug('Attempting to login with:', loginObj);
     return this.http
@@ -112,37 +104,6 @@ export class AuthService {
     return this.handleRegistration(registerObj, 'professor');
   }
 
-  private handleRegistration(
-    registerObj: BaseUserPayload,
-    type: 'student' | 'professor'
-  ): Observable<ResponseData> {
-    console.debug(`Handling registration for type: ${type}`, registerObj);
-    return this.http
-      .post<ResponseData>(`${apiUrls.authServiceApi}register`, registerObj)
-      .pipe(
-        tap((response) => {
-          if (!response.success) {
-            console.error('Registration failed with response:', response);
-            throw new Error('Registration Failed');
-          }
-          console.debug('Registration successful for:', registerObj);
-        }),
-        catchError((error) => {
-          console.error('Error during registration:', error);
-          return throwError(error);
-        })
-      );
-  }
-
-  private getHeaders(): HttpHeaders {
-    const user = this.currentUserValue;
-    if (user && user.token) {
-      return new HttpHeaders({ Authorization: 'Bearer ' + user.token });
-    } else {
-      return new HttpHeaders();
-    }
-  }
-
   setCurrentUser(user: User): void {
     this.currentUserSubject.next(user);
     this.isLoggedIn$.next(!!user);
@@ -172,5 +133,42 @@ export class AuthService {
 
   resetPasswordService(resetObj: any): Observable<any> {
     return this.http.post<any>(`${apiUrls.authServiceApi}reset`, resetObj);
+  }
+  private loadUserFromStorage(): void {
+    const user = sessionStorage.getItem(USER_KEY);
+    if (user) {
+      this.currentUserSubject.next(JSON.parse(user));
+      console.debug('User loaded from storage:', user);
+    }
+  }
+  private handleRegistration(
+    registerObj: BaseUserPayload,
+    type: 'student' | 'professor'
+  ): Observable<ResponseData> {
+    console.debug(`Handling registration for type: ${type}`, registerObj);
+    return this.http
+      .post<ResponseData>(`${apiUrls.authServiceApi}register`, registerObj)
+      .pipe(
+        tap((response) => {
+          if (!response.success) {
+            console.error('Registration failed with response:', response);
+            throw new Error('Registration Failed');
+          }
+          console.debug('Registration successful for:', registerObj);
+        }),
+        catchError((error) => {
+          console.error('Error during registration:', error);
+          return throwError(error);
+        })
+      );
+  }
+
+  private getHeaders(): HttpHeaders {
+    const user = this.currentUserValue;
+    if (user && user.token) {
+      return new HttpHeaders({ Authorization: 'Bearer ' + user.token });
+    } else {
+      return new HttpHeaders();
+    }
   }
 }

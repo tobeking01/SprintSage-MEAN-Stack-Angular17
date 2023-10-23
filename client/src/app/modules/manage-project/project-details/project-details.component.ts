@@ -1,4 +1,10 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  EventEmitter,
+  OnInit,
+  Output,
+} from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
@@ -8,7 +14,7 @@ import {
 } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { map, takeUntil } from 'rxjs/operators';
 import { HttpErrorResponse } from '@angular/common/http';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
@@ -36,7 +42,6 @@ export class ProjectDetailsComponent implements OnInit {
   users: UserPopulated[] = [];
   teamInfo: TeamPopulated[] = [];
   projectMembersSet = new Set<UserPopulated>();
-  roleNames: { [key: string]: string } = {};
   addMemberForm!: FormGroup;
   isLoading = false;
   membersVisible = false;
@@ -74,8 +79,10 @@ export class ProjectDetailsComponent implements OnInit {
     this.ngUnsubscribe.complete();
   }
 
+  populatedTeamMembers: UserPopulated[] = [];
+  @Output() teamMembersUpdated = new EventEmitter<UserPopulated[]>();
+
   get teamMembersControls(): FormControl[] {
-    console.log('Form State:', this.addMemberForm);
     const controls = this.addMemberForm?.get('teamMembers') as FormArray;
     return (controls?.controls as FormControl[]) || [];
   }
@@ -183,19 +190,20 @@ export class ProjectDetailsComponent implements OnInit {
       );
   }
   editProject(): void {
-    // EditProjectComponent is not imported
-    // You might want to import and utilize it.
-    /*
-    const dialogRef = this.dialog.open(EditProjectComponent, {
-      data: this.selectedProject,
-    });
+    if (!this.selectedProject) {
+      console.error('No project selected to edit.');
+      return;
+    }
 
-    dialogRef.afterClosed().subscribe((updatedProject) => {
-      if (updatedProject) {
-        this.selectedProject = updatedProject;
-      }
-    });
-    */
+    // const dialogRef = this.dialog.open(EditProjectComponent, {
+    //   data: this.selectedProject,
+    // });
+
+    // dialogRef.afterClosed().subscribe((updatedProject) => {
+    //   if (updatedProject) {
+    //     this.selectedProject = updatedProject;
+    //   }
+    // });
   }
 
   deleteProject(): void {
@@ -256,16 +264,14 @@ export class ProjectDetailsComponent implements OnInit {
     });
   }
 
-  // Good but modify to fit model
+  //
   private loadProjectDetails(projectId: string): void {
     this.projectService.getProjectById(projectId).subscribe(
       (response: SingleProjectResponseData) => {
         if (response.data) {
-          console.log(this.selectedProject);
           this.selectedProject = response.data;
           this.cdr.detectChanges();
           console.log('Selected Project:', this.selectedProject);
-          console.log('Project Data:', this.selectedProject);
         } else {
           console.warn('No project found for the given ID');
           // Handle this scenario, maybe redirect or show a message.
@@ -279,25 +285,28 @@ export class ProjectDetailsComponent implements OnInit {
   private loadAllTeamDetails(projectId: string): void {
     this.teamService
       .getTeamsByProjectId(projectId)
-      .pipe(takeUntil(this.ngUnsubscribe))
-      .subscribe(
-        (response: MultipleTeamsResponseData) => {
+      .pipe(
+        map((response: MultipleTeamsResponseData) => {
           this.teamInfo = response.data;
+          const members: UserPopulated[] = [];
 
+          // Extracting all members
           this.teamInfo.forEach((team) => {
             team.teamMembers.forEach((memberObj) => {
-              const member = memberObj.user;
-              // Get the first role's name from the user roles or set 'N/A' if none exists
-              this.roleNames[member._id] =
-                member.roles && member.roles[0] ? member.roles[0].name : 'N/A';
-
-              if (
-                ![...this.projectMembersSet].some((m) => m._id === member._id)
-              ) {
-                this.projectMembersSet.add(member);
-              }
+              members.push(memberObj.user);
             });
           });
+
+          return members;
+        }),
+        takeUntil(this.ngUnsubscribe)
+      )
+      .subscribe(
+        (members: UserPopulated[]) => {
+          console.log('members', members);
+          this.populatedTeamMembers = members;
+          console.log('Populated members', this.populatedTeamMembers);
+          this.teamMembersUpdated.emit(this.populatedTeamMembers);
         },
         (error: HttpErrorResponse) => this.handleError(error)
       );

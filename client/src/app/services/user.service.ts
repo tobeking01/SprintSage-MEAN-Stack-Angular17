@@ -1,11 +1,10 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, map, of, tap, throwError } from 'rxjs';
+import { Observable, throwError } from 'rxjs';
 import { ResponseData, User } from './model/user.model';
 import { catchError } from 'rxjs/operators';
 
 import { apiUrls } from '../api.urls';
-import { AuthService } from './auth.service';
 
 @Injectable({
   providedIn: 'root',
@@ -13,22 +12,17 @@ import { AuthService } from './auth.service';
 export class UserService {
   private apiUrl = apiUrls.userServiceApi;
 
-  constructor(private http: HttpClient, private authService: AuthService) {}
+  constructor(private http: HttpClient) {}
 
-  private handleError(error: any): Observable<never> {
-    console.error('An error occurred:', error);
-    return throwError(error.message || 'Unknown server error in user service');
+  createUser(user: User): Observable<User> {
+    return this.http
+      .post<User>(`${this.apiUrl}createUser`, user)
+      .pipe(catchError(this.handleError));
   }
 
   getUserProfile(): Observable<ResponseData> {
     return this.http
       .get<ResponseData>(`${this.apiUrl}getUserProfile`)
-      .pipe(catchError(this.handleError));
-  }
-
-  createUser(user: User): Observable<User> {
-    return this.http
-      .post<User>(`${this.apiUrl}createUser`, user)
       .pipe(catchError(this.handleError));
   }
 
@@ -60,5 +54,9 @@ export class UserService {
     return this.http
       .get<User[]>(`${this.apiUrl}getUsersForTeam`)
       .pipe(catchError(this.handleError));
+  }
+  private handleError(error: any): Observable<never> {
+    console.error('An error occurred:', error);
+    return throwError(error.message || 'Unknown server error in user service');
   }
 }
