@@ -38,6 +38,8 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { UserService } from 'src/app/services/user.service';
+import { ConfirmationDialogComponent } from 'src/app/shared/components/confirmation-dialog/confirmation-dialog.component';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 interface TeamWithProjects extends TeamPopulated {
   projects: {
@@ -82,7 +84,9 @@ export class ManageProjectComponent implements OnInit, OnDestroy {
   constructor(
     private userService: UserService,
     private teamService: TeamService,
+    private projectService: ProjectService,
     private dialog: MatDialog,
+    private snackBar: MatSnackBar,
     private router: Router
   ) {}
   @ViewChild('projectNameInput') projectNameInputElement?: ElementRef;
@@ -141,6 +145,30 @@ export class ManageProjectComponent implements OnInit, OnDestroy {
   closeProjectDetails(): void {
     this.showProjectDetails = false;
     this.selectedProject = null;
+  }
+  deleteProject(projectId: string, teamId: string, event: MouseEvent): void {
+    event.stopPropagation();
+    const dialogRef = this.dialog.open(ConfirmationDialogComponent);
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        this.performProjectDeletion(projectId, teamId);
+      }
+    });
+  }
+
+  private performProjectDeletion(projectId: string, teamId: string): void {
+    this.projectService.deleteProjectById(projectId).subscribe({
+      next: () => {
+        this.snackBar.open('Project deleted successfully!', 'Close', {
+          duration: 3000,
+        });
+        this.loadTeamProjectDetails(); // Reload project details to reflect changes
+      },
+      error: (error: HttpErrorResponse) => {
+        this.handleError(error, 'Error deleting project');
+      },
+    });
   }
 
   applyFilter(event: Event): void {
@@ -201,6 +229,10 @@ export class ManageProjectComponent implements OnInit, OnDestroy {
     console.error(errorMessage, err);
     this.errorMessage = errorMessage;
     this.isLoading = false;
+    // Displaying a simple message
+    this.snackBar.open('An error occurred. Please try again.', 'Close', {
+      duration: 3000,
+    });
   }
   private onDestroy$ = new Subject<void>();
 

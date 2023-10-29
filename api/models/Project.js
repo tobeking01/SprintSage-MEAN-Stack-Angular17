@@ -58,47 +58,56 @@ ProjectSchema.path("endDate").validate(function (value) {
 }, "The end date must be after or the same as the start date.");
 
 // Middleware to handle cascading deletions when a project is removed
-// ProjectSchema.pre("remove", async function (next) {
-//   try {
-//     // If you had logic to delete associated tickets when a project is deleted, it would be here
-//     // Example: Removing all tickets associated with this project
-//     // const tickets = await mongoose.model("Ticket").find({ project: this._id });
-//     // for (let ticket of tickets) {
-//     //   await ticket.remove();
-//     // }
+ProjectSchema.pre(
+  "deleteOne",
+  { document: true, query: false },
+  async function (next) {
+    try {
+      const projectId = this._id;
 
-//     // Remove the association of this project from all teams it was linked to
-//     await Team.updateMany(
-//       { projects: this._id },
-//       { $pull: { projects: this._id } }
-//     );
+      // Delete associated tickets. This will not trigger Ticket's pre('remove') middleware
+      await Ticket.deleteMany({ project: projectId });
 
-//     next();
-//   } catch (error) {
-//     next(error); // Pass any errors to the error-handling middleware
-//   }
-// });
+      // Manually handle the cleanup that would have been done in Ticket's pre('remove') middleware, if any
 
-// // Middleware to handle changes to a project's associated teams
-// ProjectSchema.pre("save", async function (next) {
-//   if (this.isModified("teams")) {
-//     const projectTickets = await mongoose.model("Ticket").find({
-//       project: this._id,
-//       state: { $in: ["New", "In Progress", "In QC", "Ready for QC"] },
-//     });
+      // Update Teams - remove this project from teams that are associated with it
+      await Team.updateMany(
+        { projects: { $elemMatch: { project: projectId } } },
+        { $pull: { projects: { project: projectId } } }
+      );
 
-//     projectTickets.forEach(async (ticket) => {
-//       // If the ticket's user is not part of any of the new project teams
-//       const user = await mongoose
-//         .model("User")
-//         .findById(ticket.user);
-//       if (!user.teams.some((team) => this.teams.includes(team))) {
-//         // Logic to notify the user, team, or the project manager about this ticket would go here
-//       }
-//     });
-//   }
-//   next();
-// });
+      next();
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+ProjectSchema.pre("save", async function (next) {
+  if (this.isModified("tickets")) {
+    // Assuming "tickets" modification is relevant
+    try {
+      const projectTickets = await mongoose.model("Ticket").find({
+        project: this._id,
+        state: { $in: ["New", "In Progress", "In QC", "Ready for QC"] },
+      });
+
+      // Using Promise.all to handle all asynchronous operations concurrently
+      await Promise.all(
+        projectTickets.map(async (ticket) => {
+          const user = await mongoose.model("User").findById(ticket.user);
+          // Your existing logic here...
+        })
+      );
+
+      next();
+    } catch (error) {
+      next(error);
+    }
+  } else {
+    next();
+  }
+});
 
 // Export the defined schema as the "Project" model for use in other parts of the application
 // The third argument "Project" ensures that the collection name in MongoDB is "Project"

@@ -310,32 +310,27 @@ export const updateProjectById = async (req, res, next) => {
 };
 
 // Controller to delete a specific project by its ID.
-export const deleteProjectById = async (req, res, next) => {
+export const deleteProjectById = async (req, res) => {
   try {
     const { id } = req.params;
-    const projectToDelete = await Project.findById(id);
+    const projectId = new mongoose.Types.ObjectId(id); // Ensure the ID is a valid ObjectId
 
-    if (!projectToDelete) {
-      return sendError(res, 404, "Project not found!");
+    // Delete the project
+    const deletedProject = await Project.findByIdAndDelete(projectId);
+    if (!deletedProject) {
+      return res.status(404).send({ message: "Project not found!" });
     }
 
-    // Ensure only the project's creator or an admin can delete it
-    if (projectToDelete.createdBy.toString() !== req.user.id.toString()) {
-      return sendError(
-        res,
-        403,
-        "Access denied! Only the project creator can delete this project."
-      );
-    }
+    // Now remove the project reference from the associated Team(s)
+    await Team.updateMany(
+      { "projects.project": projectId },
+      { $pull: { projects: { project: projectId } } }
+    );
 
-    await projectToDelete.remove();
-
-    return sendSuccess(res, 200, "Project deleted successfully!", [
-      projectToDelete,
-    ]);
+    return res.status(200).send({ message: "Project deleted successfully!" });
   } catch (error) {
     console.error("Error deleting project:", error);
-    sendError(res, 500, "Internal Server Error!");
+    return res.status(500).send({ message: "Internal Server Error!" });
   }
 };
 

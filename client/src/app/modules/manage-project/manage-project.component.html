@@ -93,6 +93,13 @@
                 <p>
                   End Date: {{ project.project.endDate | date : "MMM d, y" }}
                 </p>
+                <!-- Delete Button -->
+                <button
+                  mat-icon-button
+                  (click)="deleteProject(project.project._id, team._id, $event)"
+                >
+                  <mat-icon>delete</mat-icon>
+                </button>
               </div>
             </ng-container>
           </div>
