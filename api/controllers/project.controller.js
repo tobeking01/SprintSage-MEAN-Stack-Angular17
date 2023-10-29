@@ -426,43 +426,37 @@ export const removeMemberFromProject = async (req, res, next) => {
   try {
     const { id: projectId, memberId: userId } = req.params;
 
-    // Fetch the project by its ID.
-    const project = await Project.findById(projectId);
-    if (!project) {
-      return sendError(res, 404, "Project not found!");
-    }
+    // Find all teams working on this project.
+    const teams = await Team.find({ "projects.project": projectId });
 
-    // Ensure that only the project's creator or an admin can remove members from the project.
-    if (project.createdBy.toString() !== req.user.id.toString()) {
-      return sendError(
-        res,
-        403,
-        "Access denied! Only the project creator can remove members from this project."
-      );
+    if (teams.length === 0) {
+      return sendError(res, 404, "No teams are assigned to this project.");
     }
 
     let isMemberRemoved = false;
-
-    // Loop through the teams of the project
-    for (let teamId of project.teams) {
-      let team = await Team.findById(teamId);
-      if (team && team.teamMembers.includes(userId)) {
-        // Use the removeUser method from the Team schema to remove the user from the team
+    for (let team of teams) {
+      if (
+        team.teamMembers.some(
+          (member) => member.user.toString() === userId.toString()
+        )
+      ) {
         await team.removeUser(userId);
         isMemberRemoved = true;
-        break; // Assuming a user can only be in one team, we break after removing
+        // Break if you assume a user can only be in one team per project
+        break;
       }
     }
 
-    // If user is not found in any of the teams
     if (!isMemberRemoved) {
-      return sendError(res, 400, "User is not a member of this project.");
+      return sendError(
+        res,
+        400,
+        "User is not a member of any team in this project."
+      );
     }
 
-    // Respond with a success message.
     return sendSuccess(res, 200, "User removed from project successfully!");
   } catch (error) {
-    // Log and respond with any errors.
     console.error("Error removing user from project:", error);
     sendError(res, 500, "Internal Server Error!");
   }

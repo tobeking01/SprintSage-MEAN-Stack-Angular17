@@ -4,7 +4,6 @@ import { UserService } from 'src/app/services/user.service';
 import { AuthService } from '../../services/auth.service';
 import { MatDialog } from '@angular/material/dialog';
 import { UpdateProfileComponent } from './update-profile/update-profile.component';
-import { take } from 'rxjs';
 
 @Component({
   selector: 'app-profile',
@@ -24,12 +23,6 @@ export class ProfileComponent implements OnInit {
 
   ngOnInit(): void {
     this.fetchUserProfile();
-  }
-
-  private convertDatesForUser(userData: User): User {
-    if (userData.createdAt) userData.createdAt = new Date(userData.createdAt);
-    if (userData.updatedAt) userData.updatedAt = new Date(userData.updatedAt);
-    return userData;
   }
 
   fetchUserProfile(): void {
@@ -75,5 +68,10 @@ export class ProfileComponent implements OnInit {
       (error) =>
         console.error('Error updating user profile with new data:', error)
     );
+  }
+  private convertDatesForUser(userData: User): User {
+    if (userData.createdAt) userData.createdAt = new Date(userData.createdAt);
+    if (userData.updatedAt) userData.updatedAt = new Date(userData.updatedAt);
+    return userData;
   }
 }

@@ -202,14 +202,8 @@ export const addUserToTeam = async (req, res, next) => {
     const user = await User.findById(userId);
     if (!user) return sendError(res, 404, "User not found!");
 
-    // Check if user is already part of the team.
-    if (team.teamMembers.some((member) => String(member.user) === userId)) {
-      return sendError(res, 400, "User already in the team.");
-    }
-
-    // Add user to the team.
-    team.teamMembers.push({ user: userId });
-    await team.save();
+    // Add user to the team using the schema's method.
+    await team.addUser(userId);
 
     sendSuccess(res, 200, "User added to team successfully!", team);
   } catch (error) {

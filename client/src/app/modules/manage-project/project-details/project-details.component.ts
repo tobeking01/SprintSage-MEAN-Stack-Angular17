@@ -92,7 +92,7 @@ export class ProjectDetailsComponent implements OnInit {
   }
 
   addMembers(): void {
-    const teamId = this.teamInfo[0]?.teamMembers[0]?.user?._id;
+    const teamId = this.teamInfo[0]?._id;
     if (!teamId) {
       console.error('No team associated with the selected project.');
       return;
@@ -188,22 +188,6 @@ export class ProjectDetailsComponent implements OnInit {
           console.error('Error adding members:', errorMsg);
         }
       );
-  }
-  editProject(): void {
-    if (!this.selectedProject) {
-      console.error('No project selected to edit.');
-      return;
-    }
-
-    // const dialogRef = this.dialog.open(EditProjectComponent, {
-    //   data: this.selectedProject,
-    // });
-
-    // dialogRef.afterClosed().subscribe((updatedProject) => {
-    //   if (updatedProject) {
-    //     this.selectedProject = updatedProject;
-    //   }
-    // });
   }
 
   deleteProject(): void {

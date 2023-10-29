@@ -32,10 +32,12 @@
       <button mat-raised-button color="accent" (click)="addMembers()">
         ADD MEMBERS
       </button>
-      <button mat-raised-button color="primary" (click)="editProject()">
-        EDIT PROJECT
-      </button>
-      <button mat-raised-button color="warn" (click)="deleteProject()">
+      <button
+        class="delete"
+        mat-raised-button
+        color="warn"
+        (click)="deleteProject()"
+      >
         DELETE PROJECT
       </button>
       <mat-progress-spinner

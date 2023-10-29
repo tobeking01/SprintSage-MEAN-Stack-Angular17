@@ -1,7 +1,12 @@
 // Angular Imports
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { MatTableDataSource } from '@angular/material/table';
 import { Router } from '@angular/router';
 import {
   trigger,
@@ -16,10 +21,7 @@ import { ProjectService } from 'src/app/services/project.service';
 import { TeamService } from 'src/app/services/team.service';
 
 // Model Imports
-import {
-  MultipleProjectsResponseData,
-  ProjectPopulated,
-} from 'src/app/services/model/project.model';
+import { ProjectPopulated } from 'src/app/services/model/project.model';
 import {
   Team,
   MultipleTeamsResponseData,
@@ -73,16 +75,17 @@ export class ManageProjectComponent implements OnInit, OnDestroy {
   selectedProject: ProjectPopulated | null = null;
   errorMessage: string = '';
   teamProjects: TeamWithProjects[] = [];
-
-  private onDestroy$ = new Subject<void>();
+  filteredTeams: TeamWithProjects[] = [];
+  currentProjectFilter: string = '';
+  currentTeamFilter: string = '';
 
   constructor(
-    private projectService: ProjectService,
-    private teamService: TeamService,
     private userService: UserService,
+    private teamService: TeamService,
     private dialog: MatDialog,
     private router: Router
   ) {}
+  @ViewChild('projectNameInput') projectNameInputElement?: ElementRef;
 
   ngOnInit(): void {
     this.userService.getAllUsersForTeam().subscribe((fetchedUsers) => {
@@ -96,9 +99,10 @@ export class ManageProjectComponent implements OnInit, OnDestroy {
     this.onDestroy$.complete();
   }
 
-  getMemberTooltip(user: User | UserPopulated): string {
-    // Improved type safety.
-    return `User ID: ${user?._id}`;
+  getMemberTooltip(user: UserPopulated): string {
+    return user
+      ? `User ID: ${user._id}, Name: ${user.firstName} ${user.lastName}`
+      : 'User ID: Loading...';
   }
 
   isUserPopulated(user: any): user is UserPopulated {
@@ -112,16 +116,10 @@ export class ManageProjectComponent implements OnInit, OnDestroy {
     });
   }
 
-  getMemberDetails(memberContainer: {
-    user: UserPopulated;
-    addedDate: Date;
-  }): string {
-    const memberId = memberContainer.user._id;
-
-    if (!memberId) {
-      return 'Loading...';
-    }
-    return this.teamMembersDetails[memberId] ?? 'Loading...';
+  getMemberDetails(member: { user: UserPopulated; addedDate: Date }): string {
+    return member && member.user
+      ? `${member.user.firstName} ${member.user.lastName}`
+      : 'Loading...';
   }
 
   openAddEditProjectDialog(): void {
@@ -146,24 +144,51 @@ export class ManageProjectComponent implements OnInit, OnDestroy {
   }
 
   applyFilter(event: Event): void {
-    const filterValue = (event.target as HTMLInputElement).value;
-    if (filterValue) {
-      this.projects = this.projects.filter((project) =>
-        project.projectName
-          .toLowerCase()
-          .includes(filterValue.trim().toLowerCase())
-      );
-    } else {
-      this.loadTeamProjectDetails();
-    }
-  }
-
-  applyDateFilter(): void {
-    // TODO: Implement the logic to filter projects between startDate and endDate
+    this.currentProjectFilter = (event.target as HTMLInputElement).value
+      .toLowerCase()
+      .trim();
+    this.applyCombinedFilters();
   }
 
   applyTeamFilter(event: any): void {
-    // TODO: Implement the logic to filter projects by selected team
+    this.currentTeamFilter = event.value;
+
+    if (!this.currentTeamFilter) {
+      this.currentProjectFilter = '';
+      if (this.projectNameInputElement) {
+        this.projectNameInputElement.nativeElement.value = '';
+      }
+    }
+
+    this.applyCombinedFilters();
+  }
+
+  applyCombinedFilters(): void {
+    // Start filter with all teams
+    let filteredTeams = [...this.teamInfo];
+
+    // Filter by team if a team filter is set
+    if (this.currentTeamFilter) {
+      filteredTeams = filteredTeams.filter(
+        (team) => team._id === this.currentTeamFilter
+      );
+    }
+
+    // filter by project name within those teams
+    if (this.currentProjectFilter) {
+      filteredTeams = filteredTeams
+        .map((team) => ({
+          ...team,
+          projects: team.projects.filter((p) =>
+            p.project.projectName
+              .toLowerCase()
+              .includes(this.currentProjectFilter)
+          ),
+        }))
+        .filter((team) => team.projects.length > 0); // Keep teams with matching projects
+    }
+
+    this.filteredTeams = filteredTeams;
   }
 
   handleError(err: HttpErrorResponse, defaultMsg: string) {
@@ -177,6 +202,8 @@ export class ManageProjectComponent implements OnInit, OnDestroy {
     this.errorMessage = errorMessage;
     this.isLoading = false;
   }
+  private onDestroy$ = new Subject<void>();
+
   private loadTeamProjectDetails(): void {
     console.log('Fetching teams with their projects...');
 
@@ -186,6 +213,7 @@ export class ManageProjectComponent implements OnInit, OnDestroy {
       .subscribe(
         (response: MultipleTeamsResponseData) => {
           this.teamInfo = response.data;
+          this.filteredTeams = [...this.teamInfo];
           console.log('Teams with projects fetched:', this.teamInfo);
         },
         (error: HttpErrorResponse) => {

@@ -1,23 +1,12 @@
 <div class="main-container" *ngIf="!isLoading; else loadingTemplate">
   <!-- Header -->
-  <mat-toolbar class="team-header">
-    <mat-list>
-      <mat-list-item>
-        <span matListItemTitle>Team Details</span>
-        <span matListItemLine>
-          View and manage team-specific details and team members.
-        </span>
-      </mat-list-item>
-    </mat-list>
-  </mat-toolbar>
+  <div class="top-section">
+    <h1>Team Details</h1>
+    <h2>View and manage team-specific details and team members.</h2>
+  </div>
   <br />
   <div class="create-team">
-    <button
-      class="action-button"
-      mat-raised-button
-      color="accent"
-      (click)="openAddEditTeamDialog()"
-    >
+    <button mat-raised-button color="accent" (click)="createTeamDialog()">
       CREATE TEAM
     </button>
   </div>
@@ -25,8 +14,9 @@
     <!-- Left Section: Team Details -->
     <div class="left-side">
       <section class="team-details my-projects">
-        <h4>Team Details</h4>
-
+        <h2>My Teams</h2>
+        <mat-divider></mat-divider>
+        <br />
         <div *ngFor="let team of teams">
           <p (click)="selectTeam(team)" style="cursor: pointer">
             <strong>Team Name:</strong> {{ team.teamName }}
@@ -41,9 +31,10 @@
 
     <!-- Right Section: Team Members -->
     <div class="right-side">
-      <section class="team-members my-tickets">
-        <h4>Team Members</h4>
-
+      <section class="team-members">
+        <h2>Team Members: {{ selectedTeam?.teamName }}</h2>
+        <mat-divider></mat-divider>
+        <br />
         <!-- Display the members of the selected team -->
         <ul *ngIf="selectedTeam && selectedTeam.teamMembers.length">
           <li *ngFor="let teamMember of selectedTeam.teamMembers">

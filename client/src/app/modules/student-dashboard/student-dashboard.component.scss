@@ -9,7 +9,8 @@ body {
   text-align: center;
   border-bottom: 1px solid #e1e1e1;
   padding: 20px;
-  background-color: #fff; // Adding a background color for contrast
+  background-color: #fff;
+  color: #0056b3;
 }
 
 .bottom-section {
@@ -38,13 +39,16 @@ body {
     }
   }
 
-  .action-button {
-    transition: background-color 0.3s ease;
+  button {
+    border: none;
+    color: #0056b3;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
     &:hover {
-      background-color: darken(
-        $color: #d385c2,
-        $amount: 10%
-      ); // Darken the color on hover
+      color: #f1f4f6;
+      background-color: #27405c;
     }
   }
 }

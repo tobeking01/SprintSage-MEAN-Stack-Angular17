@@ -5,6 +5,12 @@ import { TeamService } from 'src/app/services/team.service';
 import { UserService } from 'src/app/services/user.service';
 import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { catchError, forkJoin, of } from 'rxjs';
+
+interface AddUserResponseError {
+  success: boolean;
+  user: User;
+}
 
 @Component({
   selector: 'app-add-member',
@@ -17,6 +23,7 @@ export class AddMemberComponent {
   currentSelectedUserId?: string;
   teamId?: string;
   form: FormGroup;
+  isLoading: boolean = false;
 
   constructor(
     private fb: FormBuilder,
@@ -51,61 +58,91 @@ export class AddMemberComponent {
   }
 
   addMemberToTeam(): void {
-    if (!this.teamId || this.selectedUsers.length === 0) return;
+    if (!this.teamId || this.selectedUsers.length === 0) {
+      return;
+    }
 
-    // Loop through the selected users and add them
-    for (let user of this.selectedUsers) {
-      this.teamService.addUserToTeam(this.teamId, user._id).subscribe(
-        (response) => {
-          this.snackBar.open('Member added successfully!', 'Close', {
-            duration: 3000,
-          });
-          this.dialogRef.close(true);
-        },
-        (error) => {
-          // Handle any errors here
-          this.snackBar.open(
-            'Failed to add member. Please try again.',
-            'Close',
-            {
-              duration: 3000,
-            }
+    this.isLoading = true;
+
+    const addRequests = this.selectedUsers.map((user) =>
+      this.teamService.addUserToTeam(this.teamId!, user._id).pipe(
+        catchError((error) => {
+          console.error(
+            `Error adding ${user.firstName} ${user.lastName}:`,
+            error
           );
-        }
+          this.snackBar.open(
+            `Failed to add ${user.firstName} ${user.lastName}. Please try again.`,
+            'Close',
+            { duration: 3000 }
+          );
+          return of({ success: false, user });
+        })
+      )
+    );
+
+    forkJoin(addRequests).subscribe((results) => {
+      this.isLoading = false;
+
+      const failedAdds = results.filter(this.isAddUserResponseError);
+      if (failedAdds.length > 0) {
+        const failedNames = failedAdds
+          .map((u) => `${u.user.firstName} ${u.user.lastName}`)
+          .join(', ');
+        this.snackBar.open(
+          `Could not add the following members: ${failedNames}`,
+          'Close',
+          { duration: 5000 }
+        );
+      }
+
+      if (failedAdds.length !== this.selectedUsers.length) {
+        this.snackBar.open(
+          'Members added successfully, with some exceptions.',
+          'Close',
+          { duration: 3000 }
+        );
+        this.dialogRef.close(true);
+      } else {
+        this.snackBar.open(
+          'Failed to add any members. Please try again.',
+          'Close',
+          { duration: 3000 }
+        );
+      }
+    });
+  }
+
+  isAddUserResponseError(response: any): response is AddUserResponseError {
+    return response && !response.success && response.user !== undefined;
+  }
+
+  addUserToSelection(): void {
+    const selectedUserId = this.currentSelectedUserControl.value;
+    const userToAdd = this.users.find((user) => user._id === selectedUserId);
+
+    if (userToAdd && !this.selectedUsers.includes(userToAdd)) {
+      this.selectedUsers.push(userToAdd);
+      this.currentSelectedUserControl.reset(); // Reset after adding
+      this.cdr.markForCheck(); // Update the view
+      this.snackBar.open(
+        `${userToAdd.firstName} ${userToAdd.lastName} added to selection`,
+        'Close',
+        { duration: 2000 }
       );
     }
   }
-
+  // Remove user
   removeUserFromSelection(user: User): void {
     const index = this.selectedUsers.indexOf(user);
     if (index > -1) {
       this.selectedUsers.splice(index, 1);
-    }
-    this.cdr.markForCheck(); // add this line
-  }
-  // This method is triggered when a user is selected from the dropdown
-  selectUser(): void {
-    const userToAdd = this.users.find(
-      (user) => user._id === this.currentSelectedUserId
-    );
-    if (userToAdd && !this.selectedUsers.includes(userToAdd)) {
-      this.selectedUsers.push(userToAdd);
-      this.currentSelectedUserId = undefined; // Reset the dropdown
       this.cdr.markForCheck();
-      console.log('Selected Users Count:', this.selectedUsers.length);
-    }
-  }
-  // Use this method when you want to add more users to the selectedUsers array
-  addMoreUsers(): void {
-    const userToAdd = this.users.find(
-      (user) => user._id === this.currentSelectedUserId
-    );
-    if (userToAdd && !this.selectedUsers.includes(userToAdd)) {
-      // Ensure the user isn't already selected
-      this.selectedUsers.push(userToAdd);
-      this.currentSelectedUserId = undefined; // Reset the select dropdown
-      this.cdr.markForCheck();
-      console.log('Selected Users Count:', this.selectedUsers.length);
+      this.snackBar.open(
+        `${user.firstName} ${user.lastName} removed from selection`,
+        'Close',
+        { duration: 2000 }
+      );
     }
   }
 }

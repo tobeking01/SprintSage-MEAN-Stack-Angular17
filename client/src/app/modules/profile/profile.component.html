@@ -2,17 +2,20 @@
   <!-- Header Section -->
   <div class="header">
     <h1>{{ roleName }} Profile</h1>
-    <p>View and manage your profile details.</p>
-    <button mat-raised-button color="accent" (click)="openUpdateDialog()">
-      Update Profile
-    </button>
+    <h2>View and manage your profile details.</h2>
   </div>
 
   <!-- Body Section -->
   <div class="body">
     <!-- Major Profile Details -->
     <div class="details">
-      <h2>Profile Details</h2>
+      <div class="profile-header">
+        <h2>Profile Details</h2>
+        <button mat-raised-button color="accent" (click)="openUpdateDialog()">
+          Update Profile
+        </button>
+      </div>
+      <mat-divider></mat-divider>
 
       <div class="profile-detail">
         <strong>First Name:</strong>

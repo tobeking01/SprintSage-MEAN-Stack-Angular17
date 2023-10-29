@@ -26,8 +26,6 @@ export class TeamDetailsComponent implements OnInit {
   teamName = '';
   isLoading = false;
 
-  private onDestroy$ = new Subject<void>(); // For handling unSubscription when the component is destroyed
-
   constructor(private teamService: TeamService, private dialog: MatDialog) {}
 
   ngOnInit(): void {
@@ -35,6 +33,18 @@ export class TeamDetailsComponent implements OnInit {
     this.loadAllTeamDetails();
   }
 
+  selectTeam(team: TeamPopulated): void {
+    this.selectedTeam = team;
+  }
+
+  createTeamDialog(): void {
+    const dialogRef = this.dialog.open(CreateTeamComponent);
+    dialogRef.afterClosed().subscribe({
+      next: (val) => {
+        if (val) this.loadAllTeamDetails();
+      },
+    });
+  }
   private loadAllTeamDetails(): void {
     console.log('Fetching teams...');
     this.teamService
@@ -44,8 +54,14 @@ export class TeamDetailsComponent implements OnInit {
         (response: MultipleTeamsResponseData) => {
           this.teams = response.data;
           console.log('Teams fetched:', this.teams);
+
+          // Set the first team as the selected team by default
+          if (this.teams.length > 0) {
+            this.selectedTeam = this.teams[0];
+          }
           this.isLoading = false;
         },
+
         (error: HttpErrorResponse) => {
           this.handleError(error, 'Error fetching teams');
           this.teams = [];
@@ -54,9 +70,7 @@ export class TeamDetailsComponent implements OnInit {
       );
   }
 
-  selectTeam(team: TeamPopulated): void {
-    this.selectedTeam = team;
-  }
+  private onDestroy$ = new Subject<void>(); // For handling unSubscription when the component is destroyed
 
   private handleError(err: HttpErrorResponse, defaultMsg: string): void {
     let errorMessage = defaultMsg;
@@ -68,13 +82,5 @@ export class TeamDetailsComponent implements OnInit {
     }
     console.error(errorMessage, err);
     this.errorMessage = errorMessage;
-  }
-  openAddEditTeamDialog(): void {
-    const dialogRef = this.dialog.open(CreateTeamComponent);
-    dialogRef.afterClosed().subscribe({
-      next: (val) => {
-        if (val) this.loadAllTeamDetails();
-      },
-    });
   }
 }

@@ -1,15 +1,10 @@
 <!-- Main container -->
 <div class="main-container">
   <!-- Header -->
-  <mat-toolbar class="project-header">
-    <mat-list>
-      <mat-list-item>
-        <h3>Manage Projects</h3>
-        <p>List of all your created and added to projects</p>
-      </mat-list-item>
-    </mat-list>
-  </mat-toolbar>
-
+  <div class="project-header">
+    <h1>Manage Projects</h1>
+    <h2>List of all your created and added to projects</h2>
+  </div>
   <!-- Body -->
   <div class="main-body">
     <div class="filter">
@@ -23,19 +18,23 @@
             matInput
             (keyup)="applyFilter($event)"
             placeholder="Search by name"
-            #inputName
+            #projectNameInput
           />
         </mat-form-field>
 
         <!-- Team Filter -->
         <mat-form-field class="filter-item">
           <mat-select
-            placeholder="Team"
+            placeholder="Filter by Team"
             (selectionChange)="applyTeamFilter($event)"
           >
-            <mat-option *ngFor="let team of teamInfo" [value]="team._id">{{
-              team.teamName
-            }}</mat-option>
+            <!-- Option to clear filter -->
+            <mat-option value="">All Teams</mat-option>
+
+            <!-- Existing team options -->
+            <mat-option *ngFor="let team of teamInfo" [value]="team._id">
+              {{ team.teamName }}
+            </mat-option>
           </mat-select>
         </mat-form-field>
       </div>
@@ -65,9 +64,9 @@
 
         <!-- Teams and their associated projects -->
         <ng-container
-          *ngIf="teamInfo && teamInfo.length; else noProjectTemplate"
+          *ngIf="filteredTeams && filteredTeams.length; else noProjectTemplate"
         >
-          <div *ngFor="let team of teamInfo" class="team-item">
+          <div *ngFor="let team of filteredTeams" class="team-item">
             <h3>{{ team.teamName }}</h3>
 
             <!-- Projects associated with the current team -->
@@ -83,6 +82,7 @@
                 (click)="openProjectDetails(project.project)"
               >
                 <h4>{{ project.project.projectName }}</h4>
+                <p>Number of Team Members: {{ team.teamMembers.length }}</p>
                 <p>
                   Number of Tickets: {{ project.project.tickets?.length || 0 }}
                 </p>
@@ -91,22 +91,10 @@
                   {{ project.project.startDate | date : "MMM d, y" }}
                 </p>
                 <p>
-                  End Date:
-                  {{ project.project.endDate | date : "MMM d, y" }}
+                  End Date: {{ project.project.endDate | date : "MMM d, y" }}
                 </p>
               </div>
             </ng-container>
-
-            <!-- Members of the current team -->
-            <ul>
-              <ng-container *ngFor="let member of team.teamMembers">
-                <li>
-                  <span [matTooltip]="getMemberTooltip(member.user)">
-                    {{ member.user.firstName }} {{ member.user.lastName }}
-                  </span>
-                </li>
-              </ng-container>
-            </ul>
           </div>
         </ng-container>
 
