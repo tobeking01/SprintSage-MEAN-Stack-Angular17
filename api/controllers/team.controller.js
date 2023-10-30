@@ -64,21 +64,23 @@ export const createTeam = async (req, res, next) => {
       );
     }
 
-    // Create a new Team instance
+    // Create a new Team instance with createdBy
     const newTeam = new Team({
       teamName,
+      createdBy: creatorUserId,
     });
 
-    // Add the user who created the team as a team member
-    await newTeam.addUser(creatorUserId);
+    // Add the creator as the first team member
+    newTeam.teamMembers.push({ user: creatorUserId });
 
-    // Use the addUser method to add each team member
-    for (let userId of teamMembers) {
-      await newTeam.addUser(userId);
-    }
+    // Add each additional team member
+    teamMembers.forEach((userId) => {
+      if (userId.toString() !== creatorUserId.toString()) {
+        newTeam.teamMembers.push({ user: userId });
+      }
+    });
 
     await newTeam.save();
-
     sendSuccess(res, 201, "Team Created!", newTeam);
   } catch (error) {
     console.error("Error creating team:", error);
@@ -160,21 +162,33 @@ export const deleteTeamById = async (req, res, next) => {
   try {
     const loggedInUserId = req.user.id;
 
-    // If the user isn't found (which should be rare if they're authenticated), return a 404 error.
-    if (!loggedInUserId) return sendError(res, 404, "User not found!");
+    if (!loggedInUserId) {
+      return sendError(res, 401, "Unauthorized: User authentication failed.");
+    }
 
     const { id } = req.params;
-    const deletedTeam = await Team.findByIdAndDelete(id);
-    if (!deletedTeam) return sendError(res, 404, "Team not found!");
+
+    // Find the team and check if the logged-in user is the owner
+    const team = await Team.findById(id);
+    if (!team) {
+      return sendError(res, 404, "Team not found!");
+    }
+
+    if (team.createdBy.toString() !== loggedInUserId.toString()) {
+      return sendError(
+        res,
+        403,
+        "Forbidden: You do not have permission to delete this team."
+      );
+    }
+
+    // Trigger the pre-remove middleware by calling .remove() on the found document
+    await team.remove();
 
     // Remove the deleted team's reference from all user's teams arrays
-    await User.updateMany(
-      { teams: deletedTeam._id },
-      { $pull: { teams: deletedTeam._id } }
-    );
+    await User.updateMany({ teams: team._id }, { $pull: { teams: team._id } });
 
-    // When a team is deleted, ensure the response contains the deleted team in an array.
-    sendSuccess(res, 200, "Team deleted successfully!", deletedTeam);
+    sendSuccess(res, 200, "Team deleted successfully!", team);
   } catch (error) {
     console.error("Error deleting team:", error);
     sendError(res, 500, "Internal Server Error!");

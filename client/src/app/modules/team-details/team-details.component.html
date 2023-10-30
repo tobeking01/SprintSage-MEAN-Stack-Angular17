@@ -19,7 +19,10 @@
         <br />
         <div *ngFor="let team of teams">
           <p (click)="selectTeam(team)" style="cursor: pointer">
-            <strong>Team Name:</strong> {{ team.teamName }}
+            <strong>Team Name:</strong> {{ team.teamName
+            }}<!-- Edit and Delete Icons -->
+            <mat-icon (click)="editTeam(team)">edit</mat-icon>
+            <mat-icon (click)="deleteTeam(team._id)">delete</mat-icon>
           </p>
         </div>
         <!-- Error message if any -->

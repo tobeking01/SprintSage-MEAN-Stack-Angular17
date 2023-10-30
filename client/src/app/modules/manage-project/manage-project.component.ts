@@ -230,9 +230,9 @@ export class ManageProjectComponent implements OnInit, OnDestroy {
     this.errorMessage = errorMessage;
     this.isLoading = false;
     // Displaying a simple message
-    this.snackBar.open('An error occurred. Please try again.', 'Close', {
-      duration: 3000,
-    });
+    // this.snackBar.open('An error occurred. Please try again.', 'Close', {
+    //   duration: 3000,
+    // });
   }
   private onDestroy$ = new Subject<void>();
 

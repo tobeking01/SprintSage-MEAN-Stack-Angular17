@@ -40,7 +40,12 @@ const TeamSchema = new Schema(
           default: Date.now,
         },
       },
-    ],
+    ], // Reference to the user who created the team
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true, // Set to required if every team must have a creator
+    },
   },
   {
     // Auto-generate creation and update timestamps

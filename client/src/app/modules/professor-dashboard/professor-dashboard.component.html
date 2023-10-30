@@ -68,17 +68,17 @@
               }}</a>
             </h4>
           </div>
+          <div *ngIf="!teams.length">
+            <p>You don't have any teams yet.</p>
+          </div>
         </div>
-
-        <ng-template #noMembersTemplate>
-          <p>No Members in this Team</p>
-        </ng-template>
       </div>
 
       <div class="right-side">
         <div class="my-tickets">
           <h2>My Tickets</h2>
           <!-- Tickets List here -->
+          <p>You don't have any tickets yet.</p>
         </div>
       </div>
     </div>
