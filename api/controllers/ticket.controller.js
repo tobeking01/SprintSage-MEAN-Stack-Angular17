@@ -1,9 +1,32 @@
+import mongoose from "mongoose";
 import Ticket from "../models/Ticket.js";
 import Project from "../models/Project.js";
 import User from "../models/User.js";
 import { sendError, sendSuccess } from "../utils/createResponse.js";
-
 const TICKET_STATUSES = ["OPEN", "IN_PROGRESS", "CLOSED", "REJECTED"];
+
+// Almost good needs testing
+const getTicketByIdHelper = async (ticketId) => {
+  const ticket = await mongoose
+    .model("Ticket")
+    .findById(ticketId)
+    .populate("submittedByUser")
+    .populate("assignedToUser")
+    .populate({
+      path: "team",
+      populate: {
+        path: "teamMembers.user",
+        model: "User",
+        populate: {
+          path: "roles",
+          model: "Role",
+        },
+      },
+    })
+    .populate("project");
+
+  return ticket;
+};
 
 export const createTicket = async (req, res, next) => {
   try {
@@ -82,16 +105,16 @@ export const getAllTickets = async (req, res, next) => {
 export const getTicketById = async (req, res, next) => {
   try {
     const ticketId = req.params.id;
-    const ticket = await Ticket.findById(ticketId)
-      .populate("submittedByUser")
-      .populate("assignedToUser")
-      .populate("project");
+
+    // Use the getTicketByIdHelper function to fetch the ticket.
+    // This function will provide a richer object with more populated fields.
+    const ticket = await getTicketByIdHelper(ticketId);
 
     if (!ticket) {
       return sendError(res, 404, "Ticket not found.");
     }
 
-    sendSuccess(res, 200, "Ticket successfully retrieved.", [ticket]);
+    sendSuccess(res, 200, "Ticket successfully retrieved.", ticket);
   } catch (error) {
     console.error("Error encountered while fetching ticket by ID:", error);
     next(

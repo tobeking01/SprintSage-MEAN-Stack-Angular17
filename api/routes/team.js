@@ -7,7 +7,8 @@ import {
   addUserToTeam,
   getTeamsByUserId,
   getProjectsByTeamId,
-  getTeamsByProjectDetails,
+  getTeamsByProjectId,
+  getAllTeamsWithProjectsForUser,
 } from "../controllers/team.controller.js";
 import { verifyToken } from "../middleware/verify-validate.js";
 
@@ -16,7 +17,7 @@ const router = express.Router();
 // Route to create a new team. Requires self/Admin privileges.
 router.post("/createTeam", verifyToken, createTeam);
 
-router.get("/getTeamsByProjectDetails", verifyToken, getTeamsByProjectDetails);
+router.get("/getTeamsByProjectId", verifyToken, getTeamsByProjectId);
 
 // Get all teams
 router.get("/getTeamsByUserId", verifyToken, getTeamsByUserId);
@@ -53,5 +54,11 @@ router.get(
 
 // Get teams associated with a specific user
 router.get("/getTeamsByUserId/:id", verifyToken, getTeamsByUserId);
+
+router.get(
+  "/getAllTeamsWithProjectsForUser",
+  verifyToken,
+  getAllTeamsWithProjectsForUser
+);
 
 export default router;

@@ -27,10 +27,12 @@ export interface User {
 // Populated version of User with full Role objects
 export interface UserPopulated extends Omit<User, 'roles'> {
   roles: Role[];
+  roleNames?: string[];
 }
+
 export interface ResponseData {
   success: boolean;
   status: number;
   message: string;
-  data: User[];
+  data: User;
 }

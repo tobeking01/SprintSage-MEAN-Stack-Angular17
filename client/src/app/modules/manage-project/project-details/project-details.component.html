@@ -4,7 +4,6 @@
     <div class="project-info">
       <div>
         <strong>Project Name</strong>
-        <!-- <pre>{{ selectedProject | json }}</pre> -->
 
         <p>{{ selectedProject?.projectName }}</p>
       </div>
@@ -33,7 +32,12 @@
       <button mat-raised-button color="accent" (click)="addMembers()">
         ADD MEMBERS
       </button>
-      <button mat-raised-button color="warn" (click)="deleteProject()">
+      <button
+        class="delete"
+        mat-raised-button
+        color="warn"
+        (click)="deleteProject()"
+      >
         DELETE PROJECT
       </button>
       <mat-progress-spinner
@@ -44,7 +48,7 @@
   </div>
 
   <!-- Members Section -->
-  <div *ngIf="membersVisible && projectMembers.length > 0">
+  <div *ngIf="membersVisible && projectMembersSet">
     <h3>TeamMembers of {{ selectedProject?.projectName }}</h3>
     <table>
       <thead>
@@ -52,28 +56,32 @@
           <th>First Name</th>
           <th>Last Name</th>
           <th>Username</th>
-          <th>Role</th>
-          <th>Date Added to Project</th>
+          <th>Date Added to Team</th>
           <th>Remove</th>
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let teamMember of projectMembers; let i = index">
-          <td>{{ teamMember.firstName }}</td>
-          <td>{{ teamMember.lastName }}</td>
-          <td>{{ teamMember.userName }}</td>
-          <td>{{ roleNames[teamMember._id] }}</td>
-          <td>{{ selectedProject?.createdAt | date }}</td>
-          <td>
-            <button
-              mat-icon-button
-              color="warn"
-              (click)="removeMemberFromProject(teamMember._id)"
-            >
-              <mat-icon>remove_circle</mat-icon>
-            </button>
-          </td>
-        </tr>
+        <ng-container *ngFor="let team of teamInfo; let outerIndex = index">
+          <tr
+            *ngFor="let teamMember of team.teamMembers; let innerIndex = index"
+          >
+            <td>{{ teamMember.user.firstName }}</td>
+            <td>{{ teamMember.user.lastName }}</td>
+            <td>{{ teamMember.user.userName }}</td>
+            <td>{{ teamMember.addedDate | date : "shortDate" }}</td>
+            <td>
+              <button
+                mat-icon-button
+                color="warn"
+                (click)="
+                  removeMemberFromProject(teamMember.user._id, innerIndex)
+                "
+              >
+                <mat-icon>remove_circle</mat-icon>
+              </button>
+            </td>
+          </tr>
+        </ng-container>
       </tbody>
     </table>
   </div>

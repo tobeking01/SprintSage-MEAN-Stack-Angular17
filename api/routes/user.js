@@ -3,10 +3,9 @@ import {
   createUser,
   updateStudentProfile,
   updateProfessorProfile,
-  getLoggedInUserDetails,
+  getUserProfile,
   deleteUser,
   getUsersForTeam,
-  getRoleMappings,
 } from "../controllers/user.controller.js";
 import {
   verifyToken,
@@ -27,12 +26,10 @@ router.put("/updateStudentProfile/:id", verifyToken, updateStudentProfile);
 // update professor profile
 router.put("/updateProfessorProfile/:id", verifyToken, updateProfessorProfile);
 
-router.get("/getLoggedInUserDetails", verifyToken, getLoggedInUserDetails);
+router.get("/getUserProfile", verifyToken, getUserProfile);
 
 router.delete("/deleteUser/:id", verifyToken, selfRoleAdmin, deleteUser);
 
 router.get("/getUsersForTeam", verifyToken, getUsersForTeam);
-
-router.get("/role-mappings", verifyToken, getRoleMappings);
 
 export default router;

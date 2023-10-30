@@ -1,29 +1,30 @@
 import mongoose from 'mongoose';
-import { Team, TeamPopulated } from './team.model';
 import { Ticket } from './ticket.model';
 import { User } from './user.model';
 
 // Interface for Project with only ObjectId references
 export interface Project {
-  _id?: string;
+  _id: string;
   projectName: string;
-  description?: string;
-  teams: (string | mongoose.Types.ObjectId)[];
-  tickets?: (string | mongoose.Types.ObjectId)[];
-  createdBy: string | mongoose.Types.ObjectId; // User who created the project
+  tickets?: {
+    ticket: mongoose.Types.ObjectId;
+    addedDate?: Date;
+  }[];
+  createdBy: mongoose.Types.ObjectId;
   startDate?: Date;
   endDate?: Date;
   createdAt?: Date;
   updatedAt?: Date;
-  __v?: number; // MongoDB document version key. Added by Mongoose by default.
+  __v?: number;
 }
 
 export interface ProjectPopulated {
   _id: string;
   projectName: string;
-  description?: string;
-  teams: TeamPopulated[];
-  tickets?: Ticket[];
+  tickets?: {
+    ticket: Ticket;
+    addedDate?: Date;
+  }[];
   createdBy: User;
   startDate?: Date;
   endDate?: Date;
@@ -32,14 +33,17 @@ export interface ProjectPopulated {
   __v?: number;
 }
 
-export interface projectUpdateData {
+export interface ProjectUpdateData {
   projectName: string;
-  description?: string;
-  teams: string[];
-  tickets?: string[];
+  tickets?: {
+    ticket: string;
+    addedDate?: Date;
+  }[];
   startDate?: Date;
   endDate?: Date;
+  teamId?: string;
 }
+
 // For singular project responses with references
 export interface SingleProjectResponseData {
   success: boolean;
@@ -54,8 +58,4 @@ export interface MultipleProjectsResponseData {
   status: number;
   message: string;
   data: ProjectPopulated[];
-}
-
-export interface projectAddTeamsData {
-  teams: string[];
 }

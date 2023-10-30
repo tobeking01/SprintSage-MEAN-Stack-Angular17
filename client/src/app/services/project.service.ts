@@ -6,7 +6,7 @@ import { apiUrls } from '../api.urls';
 import {
   MultipleProjectsResponseData,
   SingleProjectResponseData,
-  projectUpdateData,
+  ProjectUpdateData,
 } from './model/project.model';
 
 @Injectable({
@@ -22,14 +22,9 @@ export class ProjectService {
     return throwError(error);
   }
 
-  createProject(projectData: {
-    projectName: string;
-    description?: string;
-    teams: string[];
-    tickets?: string[];
-    startDate?: Date;
-    endDate?: Date;
-  }): Observable<SingleProjectResponseData> {
+  createProject(
+    projectData: ProjectUpdateData
+  ): Observable<SingleProjectResponseData> {
     return this.http
       .post<SingleProjectResponseData>(
         `${this.apiUrl}createProject`,
@@ -38,9 +33,9 @@ export class ProjectService {
       .pipe(catchError(this.handleError));
   }
 
-  getProjectById(id: string): Observable<MultipleProjectsResponseData> {
+  getProjectById(id: string): Observable<SingleProjectResponseData> {
     return this.http
-      .get<MultipleProjectsResponseData>(`${this.apiUrl}getProjectById/${id}`)
+      .get<SingleProjectResponseData>(`${this.apiUrl}getProjectById/${id}`)
       .pipe(catchError(this.handleError));
   }
 
@@ -52,7 +47,7 @@ export class ProjectService {
 
   updateProjectById(
     id: string,
-    updateProjectData: projectUpdateData
+    updateProjectData: ProjectUpdateData
   ): Observable<SingleProjectResponseData> {
     return this.http
       .put<SingleProjectResponseData>(
@@ -76,7 +71,6 @@ export class ProjectService {
       .put<SingleProjectResponseData>(endpointUrl, { teams: teamIds })
       .pipe(catchError(this.handleError));
   }
-
   removeMemberFromProject(
     projectId: string,
     memberId: string

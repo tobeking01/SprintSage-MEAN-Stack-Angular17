@@ -1,15 +1,10 @@
 <!-- Main container -->
 <div class="main-container">
   <!-- Header -->
-  <mat-toolbar class="project-header">
-    <mat-list>
-      <mat-list-item>
-        <span matListItemTitle>Manage Projects</span>
-        <span matListItemLine>List of all created and joined projects</span>
-      </mat-list-item>
-    </mat-list>
-  </mat-toolbar>
-
+  <div class="project-header">
+    <h1>Manage Projects</h1>
+    <h2>List of all your created and added to projects</h2>
+  </div>
   <!-- Body -->
   <div class="main-body">
     <div class="filter">
@@ -23,19 +18,23 @@
             matInput
             (keyup)="applyFilter($event)"
             placeholder="Search by name"
-            #inputName
+            #projectNameInput
           />
         </mat-form-field>
 
         <!-- Team Filter -->
         <mat-form-field class="filter-item">
           <mat-select
-            placeholder="Team"
+            placeholder="Filter by Team"
             (selectionChange)="applyTeamFilter($event)"
           >
-            <mat-option *ngFor="let team of teams" [value]="team._id">{{
-              team.teamName
-            }}</mat-option>
+            <!-- Option to clear filter -->
+            <mat-option value="">All Teams</mat-option>
+
+            <!-- Existing team options -->
+            <mat-option *ngFor="let team of teamInfo" [value]="team._id">
+              {{ team.teamName }}
+            </mat-option>
           </mat-select>
         </mat-form-field>
       </div>
@@ -58,67 +57,63 @@
         </button>
       </div>
       <br />
+      <!-- Projects display -->
       <div class="projects-display">
         <!-- Loading Spinner -->
         <mat-spinner *ngIf="isLoading"></mat-spinner>
 
-        <!-- Projects Section -->
-        <div class="projects-section">
-          <ng-container
-            *ngIf="projectDataSource.data.length; else noProjectTemplate"
-          >
-            <div
-              *ngFor="let project of projectDataSource.data"
-              class="project-item"
-              @listAnimation
-              (click)="openProjectDetails(project)"
+        <!-- Teams and their associated projects -->
+        <ng-container
+          *ngIf="filteredTeams && filteredTeams.length; else noProjectTemplate"
+        >
+          <div *ngFor="let team of filteredTeams" class="team-item">
+            <h3>{{ team.teamName }}</h3>
+
+            <!-- Projects associated with the current team -->
+            <ng-container
+              *ngIf="
+                team.projects && team.projects.length;
+                else noProjectForTeamTemplate
+              "
             >
-              <h3>{{ project.projectName }}</h3>
-              <p>{{ project.description }}</p>
-
-              <!-- Teams Section -->
-              <div *ngFor="let team of project.teams">
-                <h4>{{ team.teamName }}</h4>
-
-                <ng-container
-                  *ngIf="
-                    team.teamMembers && team.teamMembers.length;
-                    else noMembersTemplate
-                  "
+              <div
+                *ngFor="let project of team.projects"
+                class="individual-project"
+                (click)="openProjectDetails(project.project)"
+              >
+                <h4>{{ project.project.projectName }}</h4>
+                <p>Number of Team Members: {{ team.teamMembers.length }}</p>
+                <p>
+                  Number of Tickets: {{ project.project.tickets?.length || 0 }}
+                </p>
+                <p>
+                  Start Date:
+                  {{ project.project.startDate | date : "MMM d, y" }}
+                </p>
+                <p>
+                  End Date: {{ project.project.endDate | date : "MMM d, y" }}
+                </p>
+                <!-- Delete Button -->
+                <button
+                  mat-icon-button
+                  (click)="deleteProject(project.project._id, team._id, $event)"
                 >
-                  <ul>
-                    <li *ngFor="let member of team.teamMembers">
-                      <span
-                        matTooltip="{{ member.firstName }} {{
-                          member.lastName
-                        }} - {{ member.userName }}"
-                      >
-                        {{ member.firstName }} {{ member.lastName }}
-                      </span>
-                    </li>
-                  </ul>
-                </ng-container>
+                  <mat-icon>delete</mat-icon>
+                </button>
               </div>
+            </ng-container>
+          </div>
+        </ng-container>
 
-              <p>Number of Tickets: {{ project.tickets?.length || 0 }}</p>
-              <p>
-                <mat-icon>date_range</mat-icon>Start Date:
-                {{ project.startDate | date : "MMM d, y" }}
-              </p>
-              <p>
-                <mat-icon>date_range</mat-icon>End Date:
-                {{ project.endDate | date : "MMM d, y" }}
-              </p>
-            </div>
-          </ng-container>
+        <!-- Template to show when no projects are available for the whole system -->
+        <ng-template #noProjectTemplate>
+          <div class="no-projects">No Projects Available!</div>
+        </ng-template>
 
-          <ng-template #noProjectTemplate>
-            <div class="no-projects">No Projects Available!</div>
-          </ng-template>
-          <ng-template #noMembersTemplate>
-            <p>No Members in this Team</p>
-          </ng-template>
-        </div>
+        <!-- Template to show when no projects are available for a specific team -->
+        <ng-template #noProjectForTeamTemplate>
+          <div class="no-projects">No Projects Available for this Team!</div>
+        </ng-template>
       </div>
     </div>
   </div>

@@ -56,8 +56,8 @@ export class UpdateProfileComponent implements OnInit {
         .updateStudentProfile(this.data._id!, this.updateForm.value)
         .subscribe(
           (response: ResponseData) => {
-            if (response.success && response.data.length > 0) {
-              this.dialogRef.close(response.data[0]);
+            if (response.success && response.data) {
+              this.dialogRef.close(response.data as User);
             } else {
               this.snackBar.open(
                 response.message || 'Error updating profile.',

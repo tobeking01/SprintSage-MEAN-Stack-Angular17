@@ -4,14 +4,12 @@ import bcrypt from "bcryptjs"; // Used for password hashing.
 import User from "../models/User.js"; // User model.
 import { sendError, sendSuccess } from "../utils/createResponse.js";
 import Role from "../models/Role.js"; // Importing Role model.
-// ... other imports ...
 
 // Constant to represent the number of rounds that bcrypt will use when salting passwords.
 // The higher the number, the more secure the hash, but the longer it will take to generate.
 const SALT_ROUNDS = 10;
 
 export const createStudentProfessorUser = async (userData) => {
-  // Extract relevant fields from userData
   const {
     firstName,
     lastName,
@@ -29,15 +27,14 @@ export const createStudentProfessorUser = async (userData) => {
   if (!userRole) {
     throw new Error(`Role '${role}' not found in the database.`);
   }
-  const userExists = await User.findOne({
-    $or: [{ email }, { userName }],
-  });
-  if (userExists) throw new Error("Email or Username already exists.");
 
-  const salt = await bcrypt.genSalt(SALT_ROUNDS);
-  const hashedPassword = await bcrypt.hash(password, salt);
+  if (await User.findOne({ $or: [{ email }, { userName }] })) {
+    throw new Error("Email or Username already exists.");
+  }
 
-  const newUser = {
+  const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
+
+  let newUser = {
     firstName,
     lastName,
     userName,
@@ -46,12 +43,15 @@ export const createStudentProfessorUser = async (userData) => {
     roles: [userRole._id],
   };
 
-  if (role === "Student") {
-    newUser.schoolYear = schoolYear;
-    newUser.expectedGraduation = expectedGraduation;
-  } else if (role === "Professor") {
-    newUser.professorTitle = professorTitle;
-    newUser.professorDepartment = professorDepartment;
+  switch (role) {
+    case "Student":
+      newUser = { ...newUser, schoolYear, expectedGraduation };
+      break;
+    case "Professor":
+      newUser = { ...newUser, professorTitle, professorDepartment };
+      break;
+    default:
+      throw new Error("Invalid role provided.");
   }
 
   const user = new User(newUser);
@@ -84,23 +84,25 @@ export const createUser = async (req, res, next) => {
  * @param {Object} res - Express response object for sending the response.
  * @param {function} next - Express next middleware function.
  */
-export const getLoggedInUserDetails = async (req, res, next) => {
+export const getUserProfile = async (req, res, next) => {
   try {
-    // Retrieve the logged-in user's details from the database using their ID.
-    const user = await User.findById(req.user.id);
+    const user = await User.findById(req.user.id)
+      .populate({
+        path: "roles",
+        select: "name",
+      })
+      .select("-password");
 
-    // If the user isn't found (which should be rare if they're authenticated), return a 404 error.
     if (!user) return sendError(res, 404, "User not found!");
 
-    // Prepare user for response (excluding password).
-    const responseUser = user.toObject();
-    delete responseUser.password;
+    const responseUser = {
+      ...user.toObject(),
+      roles: user.roles.map((role) => role.name),
+    };
 
-    // Send the response.
-    sendSuccess(res, 200, "User Retrieved Successfully", [responseUser]);
+    sendSuccess(res, 200, "User Retrieved Successfully", responseUser);
   } catch (error) {
-    console.error("Error fetching user:", error);
-    return next(sendError(res, 500, "Internal Server Error!"));
+    next(error);
   }
 };
 
@@ -258,17 +260,12 @@ export const updateProfessorProfile = async (req, res, next) => {
   }
 };
 
-export const getRoleMappings = async (req, res, next) => {
-  try {
-    const roles = await Role.find();
-    const mappings = {};
-    roles.forEach((role) => {
-      mappings[role._id] = role.name;
-    });
-    console.log("Role mappings:", mappings);
-    sendSuccess(res, 200, "Role Mappings Retrieved Successfully!", mappings);
-  } catch (error) {
-    console.error("Error fetching role mappings:", error);
-    sendError(res, 500, "Internal Server Error while fetching role mappings!");
+// Error handling middleware
+export const errorHandler = (error, req, res, next) => {
+  console.error(error.message);
+  if (error.kind === "ObjectId" && error.name === "CastError") {
+    sendError(res, 400, "Invalid ID provided");
+  } else {
+    sendError(res, 500, error.message || "Internal Server Error!");
   }
 };

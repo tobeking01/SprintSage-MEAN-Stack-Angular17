@@ -14,10 +14,11 @@ import { ResponseData } from 'src/app/services/model/auth.model';
 })
 export class RegisterComponent implements OnInit {
   registerForm!: FormGroup;
+  isLoading = false;
 
   constructor(
     private fb: FormBuilder, // FormBuilder injection
-    private AuthService: AuthService, // AuthService injection
+    private authService: AuthService, // AuthService injection
     private router: Router, // Router injection
     private snackBar: MatSnackBar
   ) {}
@@ -58,6 +59,53 @@ export class RegisterComponent implements OnInit {
     });
   }
 
+  register() {
+    console.log(
+      'Attempting registration with form data:',
+      this.registerForm.value
+    );
+    this.isLoading = true;
+    if (this.registerForm.invalid) {
+      console.error('Form is invalid:', this.registerForm.errors);
+      return;
+    }
+
+    const formValue = this.registerForm.value;
+    let registerService: Observable<ResponseData>;
+
+    if (formValue.role === 'Student') {
+      console.log('Registering as Student');
+      registerService = this.authService.registerStudentService(formValue);
+    } else if (formValue.role === 'Professor') {
+      console.log('Registering as Professor');
+      registerService = this.authService.registerProfessorService(formValue);
+    } else {
+      console.error('Unexpected role value:', formValue.role);
+      return;
+    }
+
+    registerService.subscribe({
+      next: (res) => {
+        this.isLoading = false;
+        this.snackBar.open('User Created! You can now log in.', 'Close', {
+          duration: 3000, // Duration to show the Snackbar
+        });
+        this.registerForm.reset();
+        this.router.navigate(['login']);
+      },
+      error: (err) => {
+        let errorMessage = 'Registration Failed! Please try again.';
+        if (err.status === 0) {
+          errorMessage = 'Server is not available! Please try again later.';
+        } else if (err.status === 400) {
+          errorMessage = 'Invalid data provided!';
+        } else if (err.error && err.error.message) {
+          errorMessage = err.error.message;
+        }
+        this.snackBar.open(errorMessage, 'Close', { duration: 3000 });
+      },
+    });
+  }
   private addStudentControls(): void {
     this.registerForm.get('schoolYear')?.setValidators(Validators.required);
     this.registerForm.get('schoolYear')?.updateValueAndValidity();
@@ -92,53 +140,5 @@ export class RegisterComponent implements OnInit {
 
     this.registerForm.get('professorDepartment')?.clearValidators();
     this.registerForm.get('professorDepartment')?.updateValueAndValidity();
-  }
-
-  register() {
-    console.log(
-      'Attempting registration with form data:',
-      this.registerForm.value
-    );
-
-    if (this.registerForm.invalid) {
-      console.error('Form is invalid:', this.registerForm.errors);
-      return;
-    }
-
-    const formValue = this.registerForm.value;
-    let registerService: Observable<ResponseData>;
-
-    if (formValue.role === 'Student') {
-      console.log('Registering as Student');
-      registerService = this.AuthService.registerStudentService(formValue);
-    } else if (formValue.role === 'Professor') {
-      console.log('Registering as Professor');
-      registerService = this.AuthService.registerProfessorService(formValue);
-    } else {
-      console.error('Unexpected role value:', formValue.role);
-      return;
-    }
-
-    registerService.subscribe({
-      next: (res) => {
-        this.snackBar.open('User Created! You can now log in.', 'Close', {
-          duration: 3000, // Duration to show the Snackbar
-        });
-        this.registerForm.reset();
-        this.router.navigate(['login']);
-      },
-      error: (err) => {
-        // More specific error messages
-        let errorMessage = 'Registration Failed! Please try again.';
-        if (err.status === 0) {
-          errorMessage = 'Server is not available! Please try again later.';
-        } else if (err.error && err.error.message) {
-          errorMessage = err.error.message;
-        }
-        this.snackBar.open(errorMessage, 'Close', {
-          duration: 3000,
-        });
-      },
-    });
   }
 }

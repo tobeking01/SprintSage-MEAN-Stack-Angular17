@@ -25,10 +25,10 @@ export interface Ticket {
   _id?: string;
   issueDescription: string;
   severity: TicketSeverity;
-  submittedByUser: string | mongoose.Types.ObjectId; // Assuming it's an ObjectId in string form.
-  assignedToUser?: string | mongoose.Types.ObjectId; // Optional, and again assuming an ObjectId in string form.
-  team?: string | mongoose.Types.ObjectId; // Team ObjectId in string form.
-  project: string | mongoose.Types.ObjectId; // Project ObjectId in string form.
+  submittedByUser: mongoose.Types.ObjectId; // Assuming it's an ObjectId in string form.
+  assignedToUser?: mongoose.Types.ObjectId; // Optional, and again assuming an ObjectId in string form.
+  team?: mongoose.Types.ObjectId; // Team ObjectId in string form.
+  project: mongoose.Types.ObjectId; // Project ObjectId in string form.
   ticketType: TicketType;
   state?: TicketState;
   createdAt?: Date;

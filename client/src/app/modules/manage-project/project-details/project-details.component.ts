@@ -1,4 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  EventEmitter,
+  OnInit,
+  Output,
+} from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
@@ -8,25 +14,23 @@ import {
 } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject } from 'rxjs';
-import { tap, takeUntil } from 'rxjs/operators';
+import { map, takeUntil } from 'rxjs/operators';
 import { HttpErrorResponse } from '@angular/common/http';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import {
-  MultipleProjectsResponseData,
   ProjectPopulated,
+  SingleProjectResponseData,
 } from 'src/app/services/model/project.model';
 import {
   MultipleTeamsResponseData,
   TeamPopulated,
 } from 'src/app/services/model/team.model';
-import { User, UserPopulated } from 'src/app/services/model/user.model';
+import { UserPopulated } from 'src/app/services/model/user.model';
 import { ProjectService } from 'src/app/services/project.service';
 import { TeamService } from 'src/app/services/team.service';
-import { CreateTeamComponent } from '../../team-details/create-team/create-team.component';
 import { MatDialog } from '@angular/material/dialog';
 import { AddMemberComponent } from 'src/app/shared/components/add-member/add-member.component';
-import { UserService } from 'src/app/services/user.service';
 
 @Component({
   selector: 'app-project-details',
@@ -35,10 +39,9 @@ import { UserService } from 'src/app/services/user.service';
 })
 export class ProjectDetailsComponent implements OnInit {
   selectedProject?: ProjectPopulated;
-  users: User[] = [];
-  teams: TeamPopulated[] = [];
-  projectMembers: UserPopulated[] = [];
-  roleNames: { [id: string]: string } = {};
+  users: UserPopulated[] = [];
+  teamInfo: TeamPopulated[] = [];
+  projectMembersSet = new Set<UserPopulated>();
   addMemberForm!: FormGroup;
   isLoading = false;
   membersVisible = false;
@@ -55,89 +58,33 @@ export class ProjectDetailsComponent implements OnInit {
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
     private route: ActivatedRoute,
+    private cdr: ChangeDetectorRef,
     private router: Router
   ) {}
 
   ngOnInit(): void {
-    this.route.paramMap
-      .pipe(
-        tap((params) => {
-          const projectId = params.get('id');
-          if (projectId) {
-            this.fetchProjectDetails(projectId);
-            console.log(projectId);
-          } else {
-            console.error('Project ID not provided in route parameters.');
-          }
-        }),
-        takeUntil(this.ngUnsubscribe)
-      )
-      .subscribe();
-
-    this.loadAllTeamDetails();
     this.initializeForm();
+
+    const projectId = this.route.snapshot.paramMap.get('id');
+    if (projectId) {
+      this.loadProjectDetails(projectId);
+      this.loadAllTeamDetails(projectId);
+    } else {
+      console.error('Project ID not provided in route parameters.');
+    }
   }
 
-  private initializeForm(): void {
-    this.addMemberForm = this.fb.group({
-      teamMembers: this.fb.array([], Validators.minLength(1)),
-    });
+  ngOnDestroy(): void {
+    this.ngUnsubscribe.next();
+    this.ngUnsubscribe.complete();
   }
 
-  private fetchProjectDetails(projectId: string): void {
-    this.projectService.getProjectById(projectId).subscribe(
-      (response: MultipleProjectsResponseData) => {
-        this.selectedProject = response.data[0];
-        console.log('Project Data:', this.selectedProject);
-      },
-      (error: HttpErrorResponse) => {
-        this.errorMessage = `Error Code: ${error.status}, Message: ${error.message}`;
-        console.error('Error fetching project details:', error.error.message);
-      }
-    );
-  }
-
-  private loadAllTeamDetails(): void {
-    this.route.paramMap
-      .pipe(
-        tap((params) => {
-          const projectId = params.get('id');
-          if (projectId) {
-            this.teamService
-              .getTeamsByProjectDetails(projectId)
-              .pipe(takeUntil(this.ngUnsubscribe))
-              .subscribe(
-                (response: MultipleTeamsResponseData) => {
-                  this.teams = response.data;
-                  this.teams.forEach((team) => {
-                    team.teamMembers.forEach((member) => {
-                      this.roleNames[member._id] = member.roles[0].name;
-                      if (
-                        !this.projectMembers.find((m) => m._id === member._id)
-                      ) {
-                        this.projectMembers.push(member); // populate the projectMembers array
-                      }
-                    });
-                  });
-                },
-                (error: HttpErrorResponse) => {
-                  this.errorMessage = `Error Code: ${error.status}, Message: ${error.message}`;
-                  console.error('Error fetching teams:', error.error.message);
-                  this.teams = [];
-                }
-              );
-          } else {
-            console.error('Project ID not provided in route parameters.');
-          }
-        }),
-        takeUntil(this.ngUnsubscribe)
-      )
-      .subscribe();
-  }
+  populatedTeamMembers: UserPopulated[] = [];
+  @Output() teamMembersUpdated = new EventEmitter<UserPopulated[]>();
 
   get teamMembersControls(): FormControl[] {
-    return (this.addMemberForm.get('teamMembers') as FormArray)
-      .controls as FormControl[];
+    const controls = this.addMemberForm?.get('teamMembers') as FormArray;
+    return (controls?.controls as FormControl[]) || [];
   }
 
   toggleMembersVisibility(): void {
@@ -145,7 +92,7 @@ export class ProjectDetailsComponent implements OnInit {
   }
 
   addMembers(): void {
-    const teamId = this.selectedProject?.teams[0]?._id;
+    const teamId = this.teamInfo[0]?._id;
     if (!teamId) {
       console.error('No team associated with the selected project.');
       return;
@@ -158,19 +105,25 @@ export class ProjectDetailsComponent implements OnInit {
     dialogRef.afterClosed().subscribe({
       next: (isMemberAdded) => {
         if (isMemberAdded) {
-          this.loadAllTeamDetails();
+          if (this.selectedProject && this.selectedProject._id) {
+            this.loadAllTeamDetails(this.selectedProject._id);
+          } else {
+            console.error(
+              'selectedProject is not defined or missing _id property'
+            );
+          }
         }
       },
     });
   }
 
-  removeMemberFromProject(memberId: string): void {
+  removeMemberFromProject(memberId: string, index: number): void {
     const confirmed = window.confirm(
       'Are you sure you want to remove this member from the project?'
     );
 
     if (!confirmed) {
-      return;
+      (this.addMemberForm.get('teamMembers') as FormArray).removeAt(index);
     }
 
     if (this.selectedProject && this.selectedProject._id) {
@@ -179,7 +132,13 @@ export class ProjectDetailsComponent implements OnInit {
         .subscribe(
           () => {
             console.log('Member removed successfully');
-            this.loadAllTeamDetails(); // Refresh the list of members.
+            if (this.selectedProject && this.selectedProject._id) {
+              this.loadAllTeamDetails(this.selectedProject._id);
+            } else {
+              console.error(
+                'selectedProject is not defined or missing _id property'
+              );
+            }
           },
           (error: HttpErrorResponse) => {
             console.error('Error removing member:', error.error.message);
@@ -212,7 +171,13 @@ export class ProjectDetailsComponent implements OnInit {
             duration: 3000,
           });
           // Refresh the list of members after adding new members
-          this.loadAllTeamDetails();
+          if (this.selectedProject && this.selectedProject._id) {
+            this.loadAllTeamDetails(this.selectedProject._id);
+          } else {
+            console.error(
+              'selectedProject is not defined or missing _id property'
+            );
+          }
         },
         (error: HttpErrorResponse) => {
           const errorMsg =
@@ -270,8 +235,64 @@ export class ProjectDetailsComponent implements OnInit {
     return (this.addMemberForm.get('teamMembers') as FormArray).controls;
   }
 
-  ngOnDestroy(): void {
-    this.ngUnsubscribe.next();
-    this.ngUnsubscribe.complete();
+  handleError(error: HttpErrorResponse): void {
+    const errorMsg = error.error?.message || 'An unexpected error occurred';
+    this.snackBar.open(errorMsg, 'Close', { duration: 5000 });
+    console.error('Error:', errorMsg);
+    this.errorMessage = errorMsg;
+  }
+
+  private initializeForm(): void {
+    this.addMemberForm = this.fb.group({
+      teamMembers: this.fb.array([], Validators.minLength(1)),
+    });
+  }
+
+  //
+  private loadProjectDetails(projectId: string): void {
+    this.projectService.getProjectById(projectId).subscribe(
+      (response: SingleProjectResponseData) => {
+        if (response.data) {
+          this.selectedProject = response.data;
+          this.cdr.detectChanges();
+          console.log('Selected Project:', this.selectedProject);
+        } else {
+          console.warn('No project found for the given ID');
+          // Handle this scenario, maybe redirect or show a message.
+          this.errorMessage = 'No project found for the given ID';
+        }
+      },
+      (error: HttpErrorResponse) => this.handleError(error)
+    );
+  }
+
+  private loadAllTeamDetails(projectId: string): void {
+    this.teamService
+      .getTeamsByProjectId(projectId)
+      .pipe(
+        map((response: MultipleTeamsResponseData) => {
+          this.teamInfo = response.data;
+          const members: UserPopulated[] = [];
+
+          // Extracting all members
+          this.teamInfo.forEach((team) => {
+            team.teamMembers.forEach((memberObj) => {
+              members.push(memberObj.user);
+            });
+          });
+
+          return members;
+        }),
+        takeUntil(this.ngUnsubscribe)
+      )
+      .subscribe(
+        (members: UserPopulated[]) => {
+          console.log('members', members);
+          this.populatedTeamMembers = members;
+          console.log('Populated members', this.populatedTeamMembers);
+          this.teamMembersUpdated.emit(this.populatedTeamMembers);
+        },
+        (error: HttpErrorResponse) => this.handleError(error)
+      );
   }
 }

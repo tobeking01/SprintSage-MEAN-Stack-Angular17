@@ -9,14 +9,13 @@ import {
   MultipleTeamsResponseData,
   TeamPopulated,
 } from 'src/app/services/model/team.model';
-import { ResponseData, User } from 'src/app/services/model/user.model';
+import { User } from 'src/app/services/model/user.model';
 import { ProjectService } from 'src/app/services/project.service';
 import { TeamService } from 'src/app/services/team.service';
 import { CreateProjectComponent } from '../manage-project/create-project/create-project.component';
 import { MatDialog } from '@angular/material/dialog';
 import { CreateTeamComponent } from '../team-details/create-team/create-team.component';
 import { Subject, takeUntil } from 'rxjs';
-import { UserService } from 'src/app/services/user.service';
 
 @Component({
   selector: 'app-professor-dashboard',
@@ -29,40 +28,24 @@ export class ProfessorDashboardComponent implements OnInit {
   teams: TeamPopulated[] = [];
   projects: ProjectPopulated[] = [];
   selectedProject: ProjectPopulated | null = null;
-  isLoading = false;
+  isLoading: boolean = false;
   errorMessage: string = '';
-  loggedInUserId: string = '';
 
   private onDestroy$ = new Subject<void>(); // For handling unSubscription when the component is destroyed
 
   constructor(
     private projectService: ProjectService,
     private teamService: TeamService,
-    private userService: UserService,
     private dialog: MatDialog,
     private router: Router
   ) {}
 
   ngOnInit(): void {
-    this.loadLoggedInUser();
+    this.isLoading = true;
     this.loadAllTeamDetails();
     this.loadAllProjectDetails();
   }
-  loadLoggedInUser() {
-    console.log('Fetching users...');
-    this.userService
-      .getLoggedInUserDetails()
-      .pipe(takeUntil(this.onDestroy$))
-      .subscribe(
-        (response: ResponseData) => {
-          this.users = response.data;
-          console.log('Users fetched:', this.users);
-        },
-        (error: any) => {
-          console.error('Error:', error);
-        }
-      );
-  }
+
   handleError(err: HttpErrorResponse, defaultMsg: string) {
     let errorMessage = defaultMsg;
     if (err instanceof HttpErrorResponse) {
@@ -86,6 +69,7 @@ export class ProfessorDashboardComponent implements OnInit {
           this.teams = response.data;
 
           console.log('Teams fetched:', this.teams);
+          this.isLoading = false;
         },
         (error: HttpErrorResponse) => {
           this.handleError(error, 'Error fetching teams');

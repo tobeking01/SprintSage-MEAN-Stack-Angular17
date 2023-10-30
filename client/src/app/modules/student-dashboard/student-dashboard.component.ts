@@ -1,7 +1,10 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { ProjectPopulated } from 'src/app/services/model/project.model';
+import {
+  MultipleProjectsResponseData,
+  ProjectPopulated,
+} from 'src/app/services/model/project.model';
 import {
   MultipleTeamsResponseData,
   TeamPopulated,
@@ -9,7 +12,6 @@ import {
 import { User } from 'src/app/services/model/user.model';
 import { ProjectService } from 'src/app/services/project.service';
 import { TeamService } from 'src/app/services/team.service';
-import { MultipleProjectsResponseData } from 'src/app/services/model/project.model';
 import { CreateProjectComponent } from '../manage-project/create-project/create-project.component';
 import { MatDialog } from '@angular/material/dialog';
 import { CreateTeamComponent } from '../team-details/create-team/create-team.component';
@@ -112,5 +114,10 @@ export class StudentDashboardComponent implements OnInit {
         if (val) this.loadAllTeamDetails();
       },
     });
+  }
+  ngOnDestroy(): void {
+    // Cleaning up subscriptions.
+    this.onDestroy$.next();
+    this.onDestroy$.complete();
   }
 }

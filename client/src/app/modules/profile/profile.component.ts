@@ -12,7 +12,7 @@ import { UpdateProfileComponent } from './update-profile/update-profile.componen
 })
 export class ProfileComponent implements OnInit {
   user: User | null = null;
-  UserRole: 'Student' | 'Professor' | '' = '';
+  roleName: string = 'Unknown Role';
 
   constructor(
     private userService: UserService,
@@ -25,35 +25,23 @@ export class ProfileComponent implements OnInit {
     this.fetchUserProfile();
   }
 
-  private convertDatesForUser(userData: User): User {
-    if (userData.createdAt) userData.createdAt = new Date(userData.createdAt);
-    if (userData.updatedAt) userData.updatedAt = new Date(userData.updatedAt);
-    return userData;
-  }
-
   fetchUserProfile(): void {
     if (this.authService.isLoggedIn()) {
-      this.userService.getLoggedInUserDetails().subscribe(
-        (response: ResponseData) => {
-          if (response.success && response.data && response.data.length) {
-            const userData = response.data[0];
-            this.user = this.convertDatesForUser(userData);
-            console.log('User after conversion:', this.user);
+      this.userService.getUserProfile().subscribe((response: ResponseData) => {
+        console.log('User Roles:', response.data.roles);
+        console.log(response);
+        if (response.success && response.data) {
+          this.user = this.convertDatesForUser(response.data as User);
+          console.log('User after conversion:', this.user);
 
-            // Determine the role based on the user data.
-            if (this.user.schoolYear) {
-              this.UserRole = 'Student';
-            } else if (this.user.professorTitle) {
-              this.UserRole = 'Professor';
-            } else {
-              this.UserRole = '';
-            }
-
-            this.cd.detectChanges();
+          // Fetch role name from user data
+          if (this.user?.roles && this.user.roles.length > 0) {
+            this.roleName = this.user.roles[0] || 'Unknown Role';
+            console.log('Role name:', this.roleName);
           }
-        },
-        (error) => console.error('Error fetching user profile:', error)
-      );
+        }
+      });
+      (error: any) => console.error('Error fetching user profile:', error);
     }
   }
 
@@ -80,5 +68,10 @@ export class ProfileComponent implements OnInit {
       (error) =>
         console.error('Error updating user profile with new data:', error)
     );
+  }
+  private convertDatesForUser(userData: User): User {
+    if (userData.createdAt) userData.createdAt = new Date(userData.createdAt);
+    if (userData.updatedAt) userData.updatedAt = new Date(userData.updatedAt);
+    return userData;
   }
 }

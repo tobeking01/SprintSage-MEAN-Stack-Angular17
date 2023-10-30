@@ -1,34 +1,109 @@
-/* Global Styles */
 .main-container {
   margin: 0 auto;
   padding: 0 16px;
-}
+  max-width: 100%;
 
-.main-body {
-  max-width: 80%;
-  margin: 20px auto;
-}
+  .main-body {
+    max-width: 80%;
+    margin: 20px auto;
+    background-color: #fff; // Added for consistency with the student dashboard
+    border-radius: 8px; // Optional, for a rounded corner effect
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); // Optional, for a subtle shadow effect
 
-.example-spacer {
-  flex: 1 1 auto;
+    .filter {
+      background-color: #e9ecef; // Light gray background for filter section
+      padding: 20px;
+      border-radius: 8px; // Consistency in border-radius
+      margin-bottom: 20px; // Space between filter and project display
+
+      .filter-container {
+        display: flex;
+        gap: 20px;
+
+        .filter-item {
+          flex-grow: 1;
+          // Padding removed to align style with student dashboard
+        }
+      }
+
+      .button-container {
+        display: flex;
+        margin-top: 20px;
+        .action-button:not(:last-child) {
+          margin-right: 20px;
+        }
+      }
+    }
+    button {
+      border: none;
+      color: #0056b3;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      &:hover {
+        color: #f1f4f6;
+        background-color: #27405c;
+      }
+    }
+
+    .projects-display {
+      // Additional styling for projects display section
+      padding: 20px;
+      border-radius: 8px; // Consistency in border-radius
+      background-color: #fff;
+      margin-top: 20px;
+      .team-item {
+        h3 {
+          // Styles for team names
+          font-size: 1.25rem;
+          margin-bottom: 0.5rem;
+        }
+
+        .individual-project {
+          cursor: pointer;
+          padding: 1rem;
+          border: 1px solid #ccc;
+          margin-bottom: 1rem;
+          transition: background-color 0.3s ease;
+
+          &:hover {
+            background-color: #94becf;
+          }
+
+          p {
+            margin: 0;
+            padding: 0.5rem 0;
+          }
+        }
+
+        ul {
+          padding-left: 20px;
+        }
+      }
+
+      .no-projects {
+        text-align: center;
+        padding: 1rem;
+        color: #999;
+      }
+    }
+  }
 }
 
 /* Header Styles */
 .project-header {
   color: rgb(47, 116, 180);
+  background-color: #fff;
+  padding: 20px;
+  border-bottom: 1px solid #e1e1e1;
+  text-align: center;
 }
 
 /* Form Styles */
 mat-form-field {
   width: 100%;
-  max-width: 60%;
-}
-.button-container {
-  display: flex;
-  justify-content: flex-start;
-  .action-button:not(:last-child) {
-    margin-right: 20px;
-  }
+  max-width: 300px;
 }
 
 .error-message {
@@ -40,23 +115,6 @@ mat-form-field {
   border-radius: 4px;
 }
 
-.project-item {
-  cursor: pointer;
-  padding: 1rem;
-  border: 1px solid #ccc;
-  margin-bottom: 1rem;
-  transition: background-color 0.3s ease;
-
-  &:hover {
-    background-color: #94becf;
-  }
-
-  p {
-    margin: 0;
-    padding: 0.5rem 0;
-  }
-}
-
 .mat-column-projectName {
   width: 60px;
   border-right: 1px solid currentColor;
@@ -64,25 +122,8 @@ mat-form-field {
   text-align: center;
 }
 
-.no-projects {
-  text-align: center;
-  padding: 1rem;
-  color: #999;
-}
-.filter-container {
-  display: flex;
-  justify-content: flex-start;
-  gap: 20px;
-}
-
-.filter-item {
-  flex-grow: 1;
-  padding: 20px;
-}
-
 .project-card a {
-  color: #007bff; // or any other color
-  text-decoration: none;
+  color: #007bff;
 
   &:hover {
     text-decoration: underline;
@@ -90,4 +131,4 @@ mat-form-field {
 }
 
 /* Animation Styles */
-// (if there were any additional styles for animation, they would go here)
+// (add animation styles if needed)

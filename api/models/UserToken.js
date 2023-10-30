@@ -7,7 +7,7 @@ import mongoose, { Schema } from "mongoose";
  * Token Schema Definition
  *
  * Represents the blueprint for a token associated with a user in the system.
- * Tokens can serve various purposes, such as email verification, password resets,
+ * Tokens serve the purposes, such as email verification, password resets,
  * and more. This schema defines how token-related data should be structured in the database.
  */
 const TokenSchema = mongoose.Schema({
@@ -23,7 +23,7 @@ const TokenSchema = mongoose.Schema({
     required: true,
     index: true, // Optimizes the querying by the token value
   },
-  // Indicates the type or purpose of the token (e.g., "email-verification" or "password-reset")
+  // The type of token (e.g., "email-verification" or "password-reset")
   type: {
     type: String,
     required: true,

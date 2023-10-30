@@ -1,15 +1,13 @@
 // Angular Imports
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
-import { MatTableDataSource } from '@angular/material/table';
 import {
-  NavigationCancel,
-  NavigationEnd,
-  NavigationError,
-  NavigationSkipped,
-  NavigationStart,
-  Router,
-} from '@angular/router';
+  Component,
+  ElementRef,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
+import { Router } from '@angular/router';
 import {
   trigger,
   transition,
@@ -18,23 +16,18 @@ import {
   query,
   stagger,
 } from '@angular/animations';
-import { Event as RouterEvent } from '@angular/router';
-
 // Service Imports
 import { ProjectService } from 'src/app/services/project.service';
 import { TeamService } from 'src/app/services/team.service';
 
 // Model Imports
-import {
-  MultipleProjectsResponseData,
-  ProjectPopulated,
-} from 'src/app/services/model/project.model';
+import { ProjectPopulated } from 'src/app/services/model/project.model';
 import {
   Team,
   MultipleTeamsResponseData,
   TeamPopulated,
 } from 'src/app/services/model/team.model';
-import { User } from 'src/app/services/model/user.model';
+import { User, UserPopulated } from 'src/app/services/model/user.model';
 
 // Component Imports
 import { CreateProjectComponent } from './create-project/create-project.component';
@@ -44,6 +37,16 @@ import { HttpErrorResponse } from '@angular/common/http';
 // Add Subject for unsubscribing from observables
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { UserService } from 'src/app/services/user.service';
+import { ConfirmationDialogComponent } from 'src/app/shared/components/confirmation-dialog/confirmation-dialog.component';
+import { MatSnackBar } from '@angular/material/snack-bar';
+
+interface TeamWithProjects extends TeamPopulated {
+  projects: {
+    project: ProjectPopulated;
+    addedDate: Date;
+  }[];
+}
 @Component({
   selector: 'app-manage-project',
   templateUrl: './manage-project.component.html',
@@ -66,32 +69,33 @@ import { takeUntil } from 'rxjs/operators';
 export class ManageProjectComponent implements OnInit, OnDestroy {
   isLoading: boolean = false;
   teamMembersDetails: { [key: string]: string } = {};
-  projectDataSource: MatTableDataSource<ProjectPopulated> =
-    new MatTableDataSource<ProjectPopulated>();
 
-  teamDetails: { [key: string]: Team } = {};
   users: User[] = [];
-  teams: TeamPopulated[] = [];
+  teamInfo: TeamPopulated[] = [];
   projects: ProjectPopulated[] = [];
   showProjectDetails: boolean = false;
   selectedProject: ProjectPopulated | null = null;
   errorMessage: string = '';
-  loggedInUserId: string = '';
-
-  private onDestroy$ = new Subject<void>(); // For handling unSubscription when the component is destroyed
+  teamProjects: TeamWithProjects[] = [];
+  filteredTeams: TeamWithProjects[] = [];
+  currentProjectFilter: string = '';
+  currentTeamFilter: string = '';
 
   constructor(
-    private projectService: ProjectService,
+    private userService: UserService,
     private teamService: TeamService,
+    private projectService: ProjectService,
     private dialog: MatDialog,
+    private snackBar: MatSnackBar,
     private router: Router
   ) {}
-  // Private Subject to trigger unSubscription
-  private ngUnsubscribe = new Subject<void>();
+  @ViewChild('projectNameInput') projectNameInputElement?: ElementRef;
+
   ngOnInit(): void {
-    this.loadAllTeamDetails();
-    this.loadAllProjectDetails();
-    this.listenToRouterEvents();
+    this.userService.getAllUsersForTeam().subscribe((fetchedUsers) => {
+      this.users = fetchedUsers;
+    });
+    this.loadTeamProjectDetails();
   }
   ngOnDestroy(): void {
     // Emit an event to trigger unSubscription
@@ -99,77 +103,14 @@ export class ManageProjectComponent implements OnInit, OnDestroy {
     this.onDestroy$.complete();
   }
 
-  // Test events
-  listenToRouterEvents(): void {
-    this.router.events
-      .pipe(takeUntil(this.onDestroy$))
-      .subscribe((event: RouterEvent) => {
-        if (event instanceof NavigationStart) {
-          console.log('NavigationStart:', event);
-        } else if (event instanceof NavigationEnd) {
-          console.log('NavigationEnd:', event);
-        } else if (event instanceof NavigationCancel) {
-          console.log('NavigationCancel:', event);
-        } else if (event instanceof NavigationError) {
-          console.log('NavigationError:', event);
-        } else if (event instanceof NavigationSkipped) {
-          console.log('NavigationSkipped:', event);
-        }
-      });
+  getMemberTooltip(user: UserPopulated): string {
+    return user
+      ? `User ID: ${user._id}, Name: ${user.firstName} ${user.lastName}`
+      : 'User ID: Loading...';
   }
 
-  handleError(err: HttpErrorResponse, defaultMsg: string) {
-    let errorMessage = defaultMsg;
-    if (err instanceof HttpErrorResponse) {
-      // Server or connection error happened
-      errorMessage = `Error Code: ${err.status}, Message: ${err.message}`;
-    } else {
-      errorMessage = (err as any).message || defaultMsg;
-    }
-    console.error(errorMessage, err);
-    this.errorMessage = errorMessage;
-    this.isLoading = false;
-  }
-
-  private loadAllTeamDetails(): void {
-    console.log('Fetching teams... studentDashboard');
-    this.teamService
-      .getTeamsByUserId()
-      .pipe(takeUntil(this.onDestroy$))
-      .subscribe(
-        (response: MultipleTeamsResponseData) => {
-          this.teams = response.data;
-          console.log('Teams fetched:', this.teams);
-          this.isLoading = false; // <-- Add this line
-        },
-        (error: HttpErrorResponse) => {
-          this.handleError(error, 'Error fetching teams');
-          this.teams = [];
-        }
-      );
-  }
-
-  private loadAllProjectDetails(): void {
-    console.log('Fetching project... studentDashboard');
-    this.projectService
-      .getProjectsByUserId()
-      .pipe(takeUntil(this.onDestroy$))
-      .subscribe(
-        (response: MultipleProjectsResponseData) => {
-          this.projects = response.data;
-          console.log('projects fetched:', this.projects);
-
-          // Populate the MyDataSource with the projects
-          this.projectDataSource.data = this.projects;
-
-          this.isLoading = false;
-        },
-        (error: HttpErrorResponse) => {
-          this.handleError(error, 'Error fetching projects');
-          this.projects = [];
-          this.projectDataSource.data = []; // <-- Add this line
-        }
-      );
+  isUserPopulated(user: any): user is UserPopulated {
+    return user && typeof user === 'object' && 'firstName' in user;
   }
 
   openTeamDialog(): void {
@@ -179,18 +120,17 @@ export class ManageProjectComponent implements OnInit, OnDestroy {
     });
   }
 
-  getMemberDetail(memberId: string | undefined): string {
-    if (!memberId) {
-      return 'Loading...';
-    }
-    return this.teamMembersDetails[memberId] ?? 'Loading...';
+  getMemberDetails(member: { user: UserPopulated; addedDate: Date }): string {
+    return member && member.user
+      ? `${member.user.firstName} ${member.user.lastName}`
+      : 'Loading...';
   }
 
   openAddEditProjectDialog(): void {
     const dialogRef = this.dialog.open(CreateProjectComponent);
     dialogRef.afterClosed().subscribe({
       next: (val) => {
-        if (val) this.loadAllProjectDetails();
+        if (val) this.loadTeamProjectDetails();
       },
     });
   }
@@ -206,21 +146,115 @@ export class ManageProjectComponent implements OnInit, OnDestroy {
     this.showProjectDetails = false;
     this.selectedProject = null;
   }
+  deleteProject(projectId: string, teamId: string, event: MouseEvent): void {
+    event.stopPropagation();
+    const dialogRef = this.dialog.open(ConfirmationDialogComponent);
 
-  applyFilter(event: Event): void {
-    const filterValue = (event.target as HTMLInputElement).value;
-    this.projectDataSource.filter = filterValue.trim().toLowerCase();
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        this.performProjectDeletion(projectId, teamId);
+      }
+    });
   }
 
-  applyDateFilter(): void {
-    // Logic to filter projects between startDate and endDate
+  private performProjectDeletion(projectId: string, teamId: string): void {
+    this.projectService.deleteProjectById(projectId).subscribe({
+      next: () => {
+        this.snackBar.open('Project deleted successfully!', 'Close', {
+          duration: 3000,
+        });
+        this.loadTeamProjectDetails(); // Reload project details to reflect changes
+      },
+      error: (error: HttpErrorResponse) => {
+        this.handleError(error, 'Error deleting project');
+      },
+    });
+  }
+
+  applyFilter(event: Event): void {
+    this.currentProjectFilter = (event.target as HTMLInputElement).value
+      .toLowerCase()
+      .trim();
+    this.applyCombinedFilters();
   }
 
   applyTeamFilter(event: any): void {
-    // Logic to filter projects by selected team
+    this.currentTeamFilter = event.value;
+
+    if (!this.currentTeamFilter) {
+      this.currentProjectFilter = '';
+      if (this.projectNameInputElement) {
+        this.projectNameInputElement.nativeElement.value = '';
+      }
+    }
+
+    this.applyCombinedFilters();
   }
 
-  getMemberTooltip(member: User): string {
-    return `${member.firstName} ${member.lastName} - ${member.userName}`;
+  applyCombinedFilters(): void {
+    // Start filter with all teams
+    let filteredTeams = [...this.teamInfo];
+
+    // Filter by team if a team filter is set
+    if (this.currentTeamFilter) {
+      filteredTeams = filteredTeams.filter(
+        (team) => team._id === this.currentTeamFilter
+      );
+    }
+
+    // filter by project name within those teams
+    if (this.currentProjectFilter) {
+      filteredTeams = filteredTeams
+        .map((team) => ({
+          ...team,
+          projects: team.projects.filter((p) =>
+            p.project.projectName
+              .toLowerCase()
+              .includes(this.currentProjectFilter)
+          ),
+        }))
+        .filter((team) => team.projects.length > 0); // Keep teams with matching projects
+    }
+
+    this.filteredTeams = filteredTeams;
+  }
+
+  handleError(err: HttpErrorResponse, defaultMsg: string) {
+    let errorMessage = defaultMsg;
+    if (err.status) {
+      errorMessage = `Error Code: ${err.status}, Message: ${err.message}`;
+    } else {
+      errorMessage = err.message || defaultMsg;
+    }
+    console.error(errorMessage, err);
+    this.errorMessage = errorMessage;
+    this.isLoading = false;
+    // Displaying a simple message
+    // this.snackBar.open('An error occurred. Please try again.', 'Close', {
+    //   duration: 3000,
+    // });
+  }
+  private onDestroy$ = new Subject<void>();
+
+  private loadTeamProjectDetails(): void {
+    console.log('Fetching teams with their projects...');
+
+    this.teamService
+      .getAllTeamsWithProjectsForUser()
+      .pipe(takeUntil(this.onDestroy$))
+      .subscribe(
+        (response: MultipleTeamsResponseData) => {
+          this.teamInfo = response.data;
+          this.filteredTeams = [...this.teamInfo];
+          console.log('Teams with projects fetched:', this.teamInfo);
+        },
+        (error: HttpErrorResponse) => {
+          this.handleError(error, 'Error fetching teams with projects');
+          this.teamInfo = [];
+        },
+        () => {
+          this.isLoading = false;
+        }
+      );
   }
 }

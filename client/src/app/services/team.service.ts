@@ -19,11 +19,6 @@ export class TeamService {
 
   constructor(private http: HttpClient) {}
 
-  private handleError(error: any) {
-    console.error('An error occurred:', error);
-    return throwError(error);
-  }
-
   createTeam(teamData: {
     teamName: string;
     teamMembers: string[];
@@ -81,16 +76,6 @@ export class TeamService {
       .pipe(catchError(this.handleError));
   }
 
-  getTeamsByProjectDetails(
-    projectId: string
-  ): Observable<MultipleTeamsResponseData> {
-    return this.http
-      .get<MultipleTeamsResponseData>(
-        `${this.apiUrl}getTeamsByProjectDetails?projectId=${projectId}`
-      )
-      .pipe(catchError(this.handleError));
-  }
-
   getProjectsByTeamId(
     teamId: string
   ): Observable<MultipleProjectsResponseData> {
@@ -99,5 +84,26 @@ export class TeamService {
         `${this.apiUrl}getProjectsByTeamId/${teamId}`
       )
       .pipe(catchError(this.handleError));
+  }
+  getTeamsByProjectId(
+    projectId: string
+  ): Observable<MultipleTeamsResponseData> {
+    return this.http
+      .get<MultipleTeamsResponseData>(
+        `${this.apiUrl}getTeamsByProjectId?projectId=${projectId}`
+      )
+      .pipe(catchError(this.handleError));
+  }
+
+  getAllTeamsWithProjectsForUser(): Observable<MultipleTeamsResponseData> {
+    return this.http
+      .get<MultipleTeamsResponseData>(
+        `${this.apiUrl}getAllTeamsWithProjectsForUser`
+      )
+      .pipe(catchError(this.handleError));
+  }
+  private handleError(error: any) {
+    console.error('An error occurred:', error);
+    return throwError(error);
   }
 }
