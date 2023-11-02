@@ -6,7 +6,7 @@ import { HomeComponent } from './modules/home/home.component';
 import { LoginComponent } from './modules/login/login.component';
 import { RegisterComponent } from './modules/register/register.component';
 import { TicketDetailsComponent } from './modules/ticket-details/ticket-details.component';
-import { CreateTeamComponent } from './modules/team-details/create-team/create-team.component';
+import { CreateTeamComponent } from './modules/manage-team/create-team/create-team.component';
 import { ProfileComponent } from './modules/profile/profile.component';
 import { ForgetPasswordComponent } from './modules/forget-password/forget-password.component';
 import { ProfessorDashboardComponent } from './modules/professor-dashboard/professor-dashboard.component';
@@ -14,7 +14,7 @@ import { RoleAndUserIdGuard } from './services/role.guard';
 import { AdminDashboardComponent } from './modules/admin-dashboard/admin-dashboard.component';
 import { ResetComponent } from './modules/reset/reset.component';
 import { NotFoundComponent } from './modules/not-found/not-found.component';
-import { ManageTeamComponent } from './modules/team-details/manage-team.component';
+import { ManageTeamComponent } from './modules/manage-team/manage-team.component';
 import { StudentDashboardComponent } from './modules/student-dashboard/student-dashboard.component';
 
 const routes: Routes = [

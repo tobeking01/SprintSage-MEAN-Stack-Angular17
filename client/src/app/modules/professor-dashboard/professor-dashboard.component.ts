@@ -14,7 +14,7 @@ import { ProjectService } from 'src/app/services/project.service';
 import { TeamService } from 'src/app/services/team.service';
 import { CreateProjectComponent } from '../manage-project/create-project/create-project.component';
 import { MatDialog } from '@angular/material/dialog';
-import { CreateTeamComponent } from '../team-details/create-team/create-team.component';
+import { CreateTeamComponent } from '../manage-team/create-team/create-team.component';
 import { Subject, takeUntil } from 'rxjs';
 
 @Component({

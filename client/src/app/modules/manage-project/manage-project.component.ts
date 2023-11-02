@@ -31,7 +31,7 @@ import { User, UserPopulated } from 'src/app/services/model/user.model';
 
 // Component Imports
 import { CreateProjectComponent } from './create-project/create-project.component';
-import { CreateTeamComponent } from '../team-details/create-team/create-team.component';
+import { CreateTeamComponent } from '../manage-team/create-team/create-team.component';
 // HttpErrorResponse for handling HTTP errors
 import { HttpErrorResponse } from '@angular/common/http';
 // Add Subject for unsubscribing from observables

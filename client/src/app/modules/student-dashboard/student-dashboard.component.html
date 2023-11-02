@@ -62,11 +62,9 @@
           <br />
           <div *ngFor="let team of teams">
             <!-- Updated line below -->
-            <h4>
-              <a [routerLink]="['/team-details', team._id]">{{
-                team.teamName
-              }}</a>
-            </h4>
+            <a [routerLink]="['/team-details', team._id]">{{
+              team.teamName
+            }}</a>
           </div>
           <div *ngIf="!teams.length">
             <p>You don't have any teams yet.</p>
