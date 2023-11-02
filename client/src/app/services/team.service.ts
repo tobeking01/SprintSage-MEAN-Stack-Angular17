@@ -58,7 +58,7 @@ export class TeamService {
   ): Observable<SingleTeamResponseData> {
     return this.http
       .post<SingleTeamResponseData>(
-        `${this.apiUrl}addUserToTeam/${teamId}/addUser/${userId}`,
+        `${this.apiUrl}addUserToTeam/${teamId}/${userId}`,
         {}
       )
       .pipe(catchError(this.handleError));
@@ -70,7 +70,7 @@ export class TeamService {
   ): Observable<SingleTeamResponseData> {
     return this.http
       .post<SingleTeamResponseData>(
-        `${this.apiUrl}removeUserFromTeam/${teamId}/${userId}`,
+        `${this.apiUrl}removeUserFromTeam/${teamId}/removeUser/${userId}`,
         {}
       )
       .pipe(catchError(this.handleError));

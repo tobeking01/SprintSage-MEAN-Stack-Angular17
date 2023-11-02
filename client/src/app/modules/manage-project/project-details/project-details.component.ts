@@ -30,7 +30,7 @@ import { UserPopulated } from 'src/app/services/model/user.model';
 import { ProjectService } from 'src/app/services/project.service';
 import { TeamService } from 'src/app/services/team.service';
 import { MatDialog } from '@angular/material/dialog';
-import { AddMemberComponent } from 'src/app/shared/components/add-member/add-member.component';
+import { AddMemberDialogComponent } from 'src/app/shared/components/add-member-dialog/add-member-dialog.component';
 
 @Component({
   selector: 'app-project-details',
@@ -98,7 +98,7 @@ export class ProjectDetailsComponent implements OnInit {
       return;
     }
 
-    const dialogRef = this.dialog.open(AddMemberComponent, {
+    const dialogRef = this.dialog.open(AddMemberDialogComponent, {
       data: { teamId },
     });
 

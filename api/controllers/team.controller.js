@@ -91,18 +91,21 @@ export const createTeam = async (req, res, next) => {
 // getall teams by user Id... keep
 export const getTeamsByUserId = async (req, res, next) => {
   try {
-    const loggedInUserId = req.user.id.toString(); // endpoint to return teams for the currently authenticated user
+    const loggedInUserId = req.user.id.toString();
 
-    // If the user isn't found (which should be rare if they're authenticated), return a 404 error.
     if (!loggedInUserId) return sendError(res, 404, "User not found!");
 
-    // Adjust the query to look within teamMembers for the user ID
     const teams = await Team.find({
       $or: [
         { createdBy: loggedInUserId },
         { "teamMembers.user": new mongoose.Types.ObjectId(loggedInUserId) },
       ],
-    }).populate("teamMembers.user"); // Adjusted to populate user details
+    })
+      .populate({
+        path: "createdBy",
+        select: "firstName lastName", // Selects only the firstName and lastName fields, excludes the _id field
+      })
+      .populate("teamMembers.user"); // Adjusted to populate user details
 
     if (!teams.length) {
       return sendSuccess(
@@ -199,26 +202,41 @@ export const deleteTeamById = async (req, res, next) => {
 export const addUserToTeam = async (req, res, next) => {
   try {
     const { teamId, userId } = req.params;
+    console.log(`Team ID: ${teamId}, User ID: ${userId}`);
+
     const loggedInUserId = req.user.id;
 
-    // Ensure the logged-in user is authenticated.
-    if (!loggedInUserId) return sendError(res, 404, "User not found!");
+    if (!loggedInUserId) {
+      return sendError(res, 404, "User not found!");
+    }
 
-    // Validate ObjectIds for team and user.
+    const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
+
     if (!isValidObjectId(teamId) || !isValidObjectId(userId)) {
       return sendError(res, 400, "Invalid ID format.");
     }
 
-    // Use the helper to fetch the team by ID.
-    const team = await getTeamByIdHelper(teamId);
-    if (!team) return sendError(res, 404, "Team not found!");
+    const team = await mongoose.model("Team").findById(teamId);
+    if (!team) {
+      return sendError(res, 404, "Team not found!");
+    }
 
-    const user = await User.findById(userId);
-    if (!user) return sendError(res, 404, "User not found!");
+    // Check if logged-in user is authorized to add members to the team
+    // This part depends on your application's logic
+    if (team.createdBy.toString() !== loggedInUserId.toString()) {
+      return sendError(res, 403, "Not authorized to add members to this team.");
+    }
 
-    // Add user to the team using the schema's method.
+    const user = await mongoose.model("User").findById(userId);
+    if (!user) {
+      return sendError(res, 404, "User not found!");
+    }
+
+    if (team.teamMembers.some((member) => member.user.toString() === userId)) {
+      return sendError(res, 400, "User already in team.");
+    }
+
     await team.addUser(userId);
-
     sendSuccess(res, 200, "User added to team successfully!", team);
   } catch (error) {
     console.error("Error adding user to team:", error);
@@ -232,36 +250,49 @@ export const removeUserFromTeam = async (req, res, next) => {
     const { teamId, userId } = req.params;
     const loggedInUserId = req.user.id;
 
-    // Ensure the logged-in user is authenticated.
-    if (!loggedInUserId) return sendError(res, 404, "User not found!");
+    if (!loggedInUserId) {
+      return sendError(res, 404, "User not found!");
+    }
 
-    // Validate ObjectIds for team and user.
     if (!isValidObjectId(teamId) || !isValidObjectId(userId)) {
       return sendError(res, 400, "Invalid ID format.");
     }
 
-    // Use the helper to fetch the team by ID.
-    const team = await getTeamByIdHelper(teamId);
-    if (!team) return sendError(res, 404, "Team not found!");
-
-    const user = await User.findById(userId);
-    if (!user) return sendError(res, 404, "User not found!");
-
-    // Check if user is part of the team.
-    const index = team.teamMembers
-      .map((member) => String(member.user))
-      .indexOf(userId);
-    if (index > -1) {
-      team.teamMembers.splice(index, 1);
-      await team.save();
-    } else {
-      return sendError(res, 400, "User not found in the team.");
+    const team = await mongoose.model("Team").findById(teamId);
+    if (!team) {
+      return sendError(res, 404, "Team not found!");
     }
 
+    if (!team.createdBy.equals(loggedInUserId)) {
+      return sendError(res, 403, "Unauthorized to remove user from team.");
+    }
+
+    const user = await mongoose.model("User").findById(userId);
+    if (!user) {
+      return sendError(res, 404, "User not found with ID: " + userId);
+    }
+
+    const userInTeam = team.teamMembers.some(
+      (member) => member.user.toString() === userId
+    );
+
+    if (!userInTeam) {
+      return sendError(
+        res,
+        400,
+        "User with ID: " + userId + " not found in team."
+      );
+    }
+
+    team.teamMembers = team.teamMembers.filter(
+      (member) => member.user.toString() !== userId
+    );
+
+    await team.save();
     sendSuccess(res, 200, "User removed from team successfully!", team);
   } catch (error) {
-    console.error("Error removing user from team:", error);
-    sendError(res, 500, error.message);
+    console.error("Error removing user from team: ", error);
+    sendError(res, 500, "Internal Server Error: " + error.message);
   }
 };
 

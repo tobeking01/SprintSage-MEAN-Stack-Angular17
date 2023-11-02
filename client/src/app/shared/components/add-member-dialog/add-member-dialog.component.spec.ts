@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { AddMemberComponent } from './add-member.component';
+import { AddMemberComponent } from './add-member-dialog.component';
 
 describe('AddMemberComponent', () => {
   let component: AddMemberComponent;
@@ -8,7 +8,7 @@ describe('AddMemberComponent', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      declarations: [AddMemberComponent]
+      declarations: [AddMemberComponent],
     });
     fixture = TestBed.createComponent(AddMemberComponent);
     component = fixture.componentInstance;

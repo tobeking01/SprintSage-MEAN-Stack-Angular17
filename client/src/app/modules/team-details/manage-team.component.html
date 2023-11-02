@@ -1,0 +1,59 @@
+<div class="main-container" *ngIf="!isLoading; else loadingTemplate">
+  <!-- Header -->
+  <div class="top-section">
+    <h1>Team Manage</h1>
+    <h2>View, Create and Manage Teams.</h2>
+  </div>
+  <br />
+  <div class="middle-section">
+    <div class="create-team">
+      <button mat-raised-button color="accent" (click)="createTeamDialog()">
+        CREATE TEAM
+      </button>
+    </div>
+  </div>
+  <mat-divider></mat-divider>
+
+  <div class="bottom-section">
+    <!-- Team Details -->
+    <h2>My Teams Table</h2>
+    <div class="mat-elevation-z8">
+      <table
+        mat-table
+        [dataSource]="dataSource"
+        class="mat-elevation-z8 demo-table"
+      >
+        <!-- team Column -->
+        <ng-container matColumnDef="createdBy">
+          <th mat-header-cell *matHeaderCellDef>Created By</th>
+          <td mat-cell *matCellDef="let team">
+            {{ team.createdBy.firstName }} {{ team.createdBy.lastName }}
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="teamName">
+          <th mat-header-cell *matHeaderCellDef>Team Name</th>
+          <td mat-cell *matCellDef="let team">{{ team.teamName }}</td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr
+          mat-row
+          *matRowDef="let row; columns: displayedColumns"
+          (click)="onRowClicked(row)"
+        ></tr>
+      </table>
+
+      <mat-paginator
+        [pageSizeOptions]="[5, 10, 20]"
+        showFirstLastButtons
+        aria-label="Select page of periodic elements"
+      >
+      </mat-paginator>
+    </div>
+  </div>
+</div>
+
+<!-- Loading template -->
+<ng-template #loadingTemplate>
+  <p>Loading...</p>
+</ng-template>

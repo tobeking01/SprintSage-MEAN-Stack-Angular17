@@ -23,7 +23,7 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatIconModule } from '@angular/material/icon';
-import { TeamDetailsComponent } from './team-details/team-details.component';
+import { ManageTeamComponent } from './team-details/manage-team.component';
 import { MatListModule } from '@angular/material/list';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -31,6 +31,12 @@ import { MatButtonModule } from '@angular/material/button';
 import { UpdateProfileComponent } from './profile/update-profile/update-profile.component';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatCardModule } from '@angular/material/card';
+import { MatTableModule } from '@angular/material/table';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatSortModule } from '@angular/material/sort';
 
 @NgModule({
   declarations: [
@@ -46,7 +52,7 @@ import { MatNativeDateModule } from '@angular/material/core';
     ProfessorDashboardComponent,
     AdminDashboardComponent,
     NotFoundComponent,
-    TeamDetailsComponent,
+    ManageTeamComponent,
     UpdateProfileComponent,
   ],
   imports: [
@@ -68,6 +74,12 @@ import { MatNativeDateModule } from '@angular/material/core';
     MatButtonModule,
     MatDatepickerModule,
     MatNativeDateModule,
+    MatChipsModule,
+    MatCardModule,
+    MatTableModule,
+    MatCheckboxModule,
+    MatPaginatorModule,
+    MatSortModule,
   ],
   exports: [
     StudentDashboardComponent,
@@ -82,7 +94,7 @@ import { MatNativeDateModule } from '@angular/material/core';
     ProfessorDashboardComponent,
     NotFoundComponent,
     AdminDashboardComponent,
-    TeamDetailsComponent,
+    ManageTeamComponent,
   ],
 })
 export class ModulesModule {}

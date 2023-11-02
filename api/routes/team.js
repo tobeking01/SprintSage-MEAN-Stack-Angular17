@@ -29,11 +29,7 @@ router.put("/updateTeamById/:id", verifyToken, updateTeamById);
 router.delete("/deleteTeamById/:id", verifyToken, deleteTeamById);
 
 // Add a user to a team
-router.post(
-  "/addUserToTeam/:teamId/addUser/:userId",
-  verifyToken,
-  addUserToTeam
-);
+router.post("/addUserToTeam/:teamId/:userId", verifyToken, addUserToTeam);
 
 // Remove a user from a team
 router.post(

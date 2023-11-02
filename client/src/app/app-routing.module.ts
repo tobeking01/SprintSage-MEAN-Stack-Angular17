@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { DefaultComponent } from './layouts/default/default.component';
-import { FullWidthComponent } from './layouts/fullWidth/fullWidth.component';
+import { FullWidthComponent } from './layouts/fullWidth/fullwidth.component';
 import { HomeComponent } from './modules/home/home.component';
 import { LoginComponent } from './modules/login/login.component';
 import { RegisterComponent } from './modules/register/register.component';
@@ -14,7 +14,7 @@ import { RoleAndUserIdGuard } from './services/role.guard';
 import { AdminDashboardComponent } from './modules/admin-dashboard/admin-dashboard.component';
 import { ResetComponent } from './modules/reset/reset.component';
 import { NotFoundComponent } from './modules/not-found/not-found.component';
-import { TeamDetailsComponent } from './modules/team-details/team-details.component';
+import { ManageTeamComponent } from './modules/team-details/manage-team.component';
 import { StudentDashboardComponent } from './modules/student-dashboard/student-dashboard.component';
 
 const routes: Routes = [
@@ -59,8 +59,8 @@ const routes: Routes = [
         data: { expectedRole: ['Student', 'Professor', 'Admin'] },
       },
       {
-        path: 'team-details/:id',
-        component: TeamDetailsComponent,
+        path: 'manage-team',
+        component: ManageTeamComponent,
         canActivate: [RoleAndUserIdGuard],
         data: { expectedRole: ['Student', 'Professor', 'Admin'] },
       },
