@@ -59,7 +59,7 @@ const routes: Routes = [
         data: { expectedRole: ['Student', 'Professor', 'Admin'] },
       },
       {
-        path: 'manage-teams',
+        path: 'manage-team',
         component: ManageTeamComponent,
         canActivate: [RoleAndUserIdGuard],
         data: { expectedRole: ['Student', 'Professor', 'Admin'] },
