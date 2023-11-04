@@ -30,10 +30,11 @@ export class ManageTeamComponent implements OnInit, OnDestroy {
   errorMessage: string = '';
   teamName = '';
   isLoading = false;
+
   private onDestroy$ = new Subject<void>(); // For handling unSubscription when the component is destroyed
 
   // displayedColumns = ['select', ...this.columns.map((c) => c.columnDef)];
-  displayedColumns: string[] = ['createdBy', 'teamName'];
+  displayedColumns: string[] = ['createdBy', 'teamName', 'members'];
   dataSource = new MatTableDataSource<TeamPopulated>(this.teams);
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;

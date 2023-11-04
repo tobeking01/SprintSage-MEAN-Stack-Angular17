@@ -1,134 +1,106 @@
 .main-container {
-  display: flex;
-  flex-direction: column;
+  margin: 0 auto;
+  padding: 0 16px;
+  max-width: 100%;
 
-  .mat-elevation-z8 {
-    box-shadow: 0 6px 10px rgba(0, 0, 0, 0.1);
+  .top-section {
+    text-align: center;
+    background-color: #fff;
+    padding: 20px;
+    margin-bottom: 20px; // Separate from middle section
+    border-bottom: 1px solid #e1e1e1;
+
+    h1,
+    h2 {
+      color: rgb(47, 116, 180); // Following the primary color scheme
+    }
   }
 
-  .top-section,
-  .middle-section,
+  .middle-section {
+    max-width: 80%;
+    margin: 20px auto;
+    display: flex;
+    justify-content: left;
+
+    .create-team button {
+      border: none;
+      color: #0056b3;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      &:hover {
+        color: #f1f4f6;
+        background-color: #27405c;
+      }
+    }
+  }
+
+  mat-divider {
+    margin: 20px 0;
+  }
+
   .bottom-section {
-    margin: 20px;
-  }
+    max-width: 80%;
+    margin: auto;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 20px;
 
-  .create-team,
-  .add-member {
-    margin-bottom: 10px;
-    button {
-      margin-right: 10px;
+    h2 {
+      text-align: center;
+      color: rgb(47, 116, 180);
+      padding-bottom: 10px;
+      border-bottom: 1px solid #e1e1e1;
+    }
+
+    .mat-elevation-z8 {
+      // Style for the table container
+      // box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+      .mat-mdc-row .mat-mdc-cell {
+        border-bottom: 1px solid transparent;
+        border-top: 1px solid transparent;
+        cursor: pointer;
+      }
+
+      .mat-mdc-row:hover .mat-mdc-cell {
+        border-color: currentColor;
+      }
+    }
+
+    .mat-paginator {
+      background-color: #fff;
+      padding: 10px;
+      border-radius: 4px;
     }
   }
 }
 
+// Define a loading style if desired
+.loading-template {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh; // full height if it's a full page loader
+  p {
+    font-size: 1.5rem;
+    color: rgb(47, 116, 180);
+  }
+}
+
+// Additional global styles if needed
 .mat-header-cell,
 .mat-cell {
   padding: 8px;
 }
 
-// $font-family-default: Arial, sans-serif;
-// $background-color-light: #fff;
-// $border-color: #e1e1e1;
-// $primary-color: rgb(47, 116, 180);
-// $secondary-color: #0056b3;
-// $error-color: red;
-
-// body {
-//   font-family: $font-family-default;
-//   margin: 0;
-//   padding: 0;
-//   background-color: #f4f4f4;
-// }
-
-// .top-section,
-// .team-header {
-//   text-align: center;
-//   border-bottom: 1px solid $border-color;
-//   padding: 20px;
-//   background-color: $background-color-light;
-// }
-
-// .top-section {
-//   color: $primary-color;
-// }
-
-// .middle-section {
-//   display: flex;
-//   justify-content: space-between; // Ensures equal distribution of space
-//   align-items: center;
-//   margin: 20px;
-// }
-
-// .create-team,
-// .add-member {
-//   flex: 1; // Flex 1:1 ratio
-//   display: flex;
-//   justify-content: center; // Center the buttons within these divs
-
-//   button {
-//     border: none;
-//     color: $secondary-color;
-//     padding: 10px 20px;
-//     border-radius: 5px;
-//     cursor: pointer;
-//     transition: background-color 0.3s, transform 0.3s ease, box-shadow 0.3s ease;
-
-//     &:hover {
-//       color: #f1f4f6;
-//       background-color: #27405c;
-//       transform: translateY(-2px);
-//       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-//     }
-//   }
-// }
-
-// .bottom-section {
-//   display: flex;
-//   justify-content: space-between;
-//   padding-top: 20px;
-//   margin: 20px;
-
-//   .left-side,
-//   .right-side {
-//     width: 48%;
-//     background-color: $background-color-light;
-//     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-//   }
-
-//   .team-details,
-//   .team-members {
-//     border: 1px solid $border-color;
-//     padding: 10px;
-//     margin: 10px;
-
-//     h2 {
-//       border-bottom: 1px solid $border-color;
-//       padding-bottom: 10px;
-//       color: $primary-color;
-//     }
-
-//     h4 {
-//       border-bottom: 1px solid $border-color;
-//       padding-bottom: 10px;
-//     }
-
-//     p,
-//     li {
-//       cursor: pointer;
-//     }
-//   }
-// }
-
-// .error-message {
-//   color: $error-color;
-//   margin-top: 20px;
-// }
-// // Additional UI enhancements
-// button.mat-raised-button {
-//   transition: transform 0.3s ease, box-shadow 0.3s ease;
-
-//   &:hover {
-//     transform: translateY(-2px); // Slight raise effect
-//     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); // Shadow effect for depth
-//   }
-// }
+.error-message {
+  color: red;
+  background-color: #ffe6e6;
+  padding: 10px;
+  margin-top: 10px;
+  border: 1px solid #ffcccc;
+  border-radius: 4px;
+}
