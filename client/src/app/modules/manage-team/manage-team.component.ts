@@ -26,8 +26,8 @@ import { Router } from '@angular/router';
 export class ManageTeamComponent implements OnInit, OnDestroy {
   teams: TeamPopulated[] = [];
   users: User[] = [];
-  selectedTeam?: TeamPopulated;
-  errorMessage = '';
+  selectedTeam?: TeamPopulated | null = null;
+  errorMessage: string = '';
   teamName = '';
   isLoading = false;
   private onDestroy$ = new Subject<void>(); // For handling unSubscription when the component is destroyed

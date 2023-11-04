@@ -1,0 +1,38 @@
+.team-details-card {
+  max-width: 800px; // or any max-width you prefer
+  margin: auto; // centers the card
+  padding: 20px; // adds some padding inside the card
+}
+
+.full-width-field {
+  width: 100%; // ensures form fields take the full width
+}
+
+.members-section,
+.projects-section {
+  margin-top: 20px; // adds space between sections
+}
+
+.member-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px; // adds gap between member fields
+
+  .mat-form-field {
+    flex: 1; // allows fields to grow
+    min-width: 200px; // minimum width for small screens
+  }
+}
+
+button {
+  border: none;
+  color: #0056b3;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  &:hover {
+    color: #f1f4f6;
+    background-color: #27405c;
+  }
+}

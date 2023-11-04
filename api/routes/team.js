@@ -2,6 +2,7 @@ import express from "express";
 import {
   createTeam,
   updateTeamById,
+  getTeamDetailsById,
   deleteTeamById,
   removeUserFromTeam,
   addUserToTeam,
@@ -24,6 +25,8 @@ router.get("/getTeamsByUserId", verifyToken, getTeamsByUserId);
 
 // Update a team by its ID
 router.put("/updateTeamById/:id", verifyToken, updateTeamById);
+
+router.get("/getTeamDetailsById/:teamId", getTeamDetailsById);
 
 // Delete a team by its ID. Requires self/Admin privileges.
 router.delete("/deleteTeamById/:id", verifyToken, deleteTeamById);

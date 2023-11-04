@@ -37,6 +37,9 @@ import { MatTableModule } from '@angular/material/table';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatSortModule } from '@angular/material/sort';
+import { TeamDetailsComponent } from './manage-team/team-details/team-details.component';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatDividerModule } from '@angular/material/divider';
 
 @NgModule({
   declarations: [
@@ -54,6 +57,7 @@ import { MatSortModule } from '@angular/material/sort';
     NotFoundComponent,
     ManageTeamComponent,
     UpdateProfileComponent,
+    TeamDetailsComponent,
   ],
   imports: [
     CommonModule,
@@ -80,6 +84,8 @@ import { MatSortModule } from '@angular/material/sort';
     MatCheckboxModule,
     MatPaginatorModule,
     MatSortModule,
+    MatProgressSpinnerModule,
+    MatDividerModule,
   ],
   exports: [
     StudentDashboardComponent,

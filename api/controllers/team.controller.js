@@ -123,41 +123,99 @@ export const getTeamsByUserId = async (req, res, next) => {
   }
 };
 
-export const updateTeamById = async (req, res, next) => {
+export const getTeamDetailsById = async (req, res, next) => {
+  try {
+    const { teamId } = req.params;
+
+    // Validate the Team ID
+    if (!mongoose.Types.ObjectId.isValid(teamId)) {
+      return sendError(res, 400, "Invalid Team ID");
+    }
+
+    // Fetch the team details and populate necessary fields
+    const teamDetails = await Team.findById(teamId)
+      .populate({
+        path: "teamMembers.user",
+        select: "firstName lastName", // Adjust the fields according to your needs
+      })
+      .populate({
+        path: "createdBy",
+        select: "firstName lastName", // Adjust the fields according to your needs
+      })
+      .populate({
+        path: "projects.project",
+        select: "projectName", // Adjust the fields according to your needs
+      });
+
+    // If no team is found with the given ID
+    if (!teamDetails) {
+      return sendError(res, 404, "Team not found!");
+    }
+
+    // Return the team details with a success message
+    return sendSuccess(
+      res,
+      200,
+      "Team details fetched successfully",
+      teamDetails
+    );
+  } catch (error) {
+    console.error("Error fetching team details:", error);
+    return sendError(res, 500, `Internal Server Error: ${error.message}`);
+  }
+};
+
+export const updateTeamById = async (req, res) => {
   try {
     const loggedInUserId = req.user.id;
     const { id } = req.params;
-    const updates = req.body;
-    const allowedUpdates = ["teamName", "teamMembers"];
-
-    // Validate the User ID
-    if (!loggedInUserId || !isValidObjectId(loggedInUserId))
-      return sendError(res, 404, "Invalid or missing User ID!");
-
+    const { teamName, teamMembers } = req.body;
     // Validate the Team ID
-    if (!isValidObjectId(id)) return sendError(res, 400, "Invalid Team ID!");
+    if (!mongoose.isValidObjectId(id))
+      return res.status(400).send("Invalid Team ID!");
 
-    // Ensure only allowed fields are updated
-    const isValidOperation = Object.keys(updates).every((update) =>
-      allowedUpdates.includes(update)
-    );
-    if (!isValidOperation) return sendError(res, 400, "Invalid updates!");
+    // Find the team
+    const team = await Team.findById(id);
+    if (!team) return res.status(404).send("Team not found!");
 
-    // Find and update the team
-    const updatedTeam = await Team.findByIdAndUpdate(id, req.body, {
-      new: true,
+    // Check if the logged-in user is authorized to make changes
+    if (team.createdBy.toString() !== loggedInUserId) {
+      return res.status(403).send("Unauthorized to modify this team.");
+    }
+
+    // Update team name if provided
+    if (teamName) team.teamName = teamName;
+
+    // Remove all existing members
+    team.teamMembers = [];
+
+    // Add the new set of members
+    if (teamMembers && Array.isArray(teamMembers)) {
+      for (const member of teamMembers) {
+        // Check if 'member' is an object and has an '_id' property
+        const memberId = member._id || member;
+        // Ensure memberId is a valid ObjectId
+        if (mongoose.Types.ObjectId.isValid(memberId)) {
+          team.teamMembers.push({
+            user: new mongoose.Types.ObjectId(memberId),
+          });
+        } else {
+          return res.status(400).send(`Invalid User ID: ${memberId}`);
+        }
+      }
+    }
+
+    // Save the changes
+    await team.save();
+
+    // Respond with success
+    return res.status(200).json({
+      message: "Team updated successfully!",
+      team,
     });
-
-    // If no team is found with the given ID
-    if (!updatedTeam) return sendError(res, 404, "Team not found!");
-
-    // Use the helper function to return fully populated team
-    const populatedTeam = await getTeamByIdHelper(updatedTeam._id);
-
-    sendSuccess(res, 200, "Team updated successfully!", populatedTeam);
   } catch (error) {
     console.error("Error updating team:", error);
-    sendError(res, 500, `Internal Server Error: ${error.message}`);
+    return res.status(500).send(`Internal Server Error: ${error.message}`);
   }
 };
 

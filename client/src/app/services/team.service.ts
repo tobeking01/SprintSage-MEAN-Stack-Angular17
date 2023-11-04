@@ -36,12 +36,20 @@ export class TeamService {
 
   updateTeamById(
     id: string,
-    teamData: TeamPopulated
+    teamData: { teamName: string; teamMembers: string[] }
   ): Observable<SingleTeamResponseData> {
     return this.http
       .put<SingleTeamResponseData>(
         `${this.apiUrl}updateTeamById/${id}`,
         teamData
+      )
+      .pipe(catchError(this.handleError));
+  }
+  // Method to get team details by ID
+  getTeamDetailsById(teamId: string): Observable<SingleTeamResponseData> {
+    return this.http
+      .get<SingleTeamResponseData>(
+        `${this.apiUrl}/getTeamDetailsById/${teamId}`
       )
       .pipe(catchError(this.handleError));
   }

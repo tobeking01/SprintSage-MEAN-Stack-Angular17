@@ -16,6 +16,7 @@ import { ResetComponent } from './modules/reset/reset.component';
 import { NotFoundComponent } from './modules/not-found/not-found.component';
 import { ManageTeamComponent } from './modules/manage-team/manage-team.component';
 import { StudentDashboardComponent } from './modules/student-dashboard/student-dashboard.component';
+import { TeamDetailsComponent } from './modules/manage-team/team-details/team-details.component';
 
 const routes: Routes = [
   {
@@ -61,6 +62,12 @@ const routes: Routes = [
       {
         path: 'manage-team',
         component: ManageTeamComponent,
+        canActivate: [RoleAndUserIdGuard],
+        data: { expectedRole: ['Student', 'Professor', 'Admin'] },
+      },
+      {
+        path: 'team-details/:teamId',
+        component: TeamDetailsComponent,
         canActivate: [RoleAndUserIdGuard],
         data: { expectedRole: ['Student', 'Professor', 'Admin'] },
       },
