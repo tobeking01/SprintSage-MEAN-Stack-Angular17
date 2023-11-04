@@ -54,27 +54,6 @@
       padding-bottom: 10px;
       border-bottom: 1px solid #e1e1e1;
     }
-
-    .mat-elevation-z8 {
-      // Style for the table container
-      // box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-
-      .mat-mdc-row .mat-mdc-cell {
-        border-bottom: 1px solid transparent;
-        border-top: 1px solid transparent;
-        cursor: pointer;
-      }
-
-      .mat-mdc-row:hover .mat-mdc-cell {
-        border-color: currentColor;
-      }
-    }
-
-    .mat-paginator {
-      background-color: #fff;
-      padding: 10px;
-      border-radius: 4px;
-    }
   }
 }
 

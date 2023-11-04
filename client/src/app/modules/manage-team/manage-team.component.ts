@@ -34,7 +34,7 @@ export class ManageTeamComponent implements OnInit, OnDestroy {
   private onDestroy$ = new Subject<void>(); // For handling unSubscription when the component is destroyed
 
   // displayedColumns = ['select', ...this.columns.map((c) => c.columnDef)];
-  displayedColumns: string[] = ['createdBy', 'teamName', 'members'];
+  displayedColumns: string[] = ['createdBy', 'teamName', 'members', 'delete'];
   dataSource = new MatTableDataSource<TeamPopulated>(this.teams);
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
@@ -114,14 +114,17 @@ export class ManageTeamComponent implements OnInit, OnDestroy {
    */
   removeTeamMember(teamId: string, memberId: string): void {
     const dialogRef = this.dialog.open(ConfirmationDialogComponent);
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result) {
-        this.handleAsyncOperation(
-          this.teamService.removeUserFromTeam(teamId, memberId),
-          () => this.loadAllTeamDetails()
-        );
-      }
-    });
+    dialogRef
+      .afterClosed()
+      .pipe(takeUntil(this.onDestroy$))
+      .subscribe((result) => {
+        if (result) {
+          this.handleAsyncOperation(
+            this.teamService.removeUserFromTeam(teamId, memberId),
+            () => this.loadAllTeamDetails()
+          );
+        }
+      });
   }
   openAddMemberDialog() {
     if (!this.selectedTeam?._id) {
@@ -145,15 +148,32 @@ export class ManageTeamComponent implements OnInit, OnDestroy {
   }
 
   deleteTeam(teamId: string): void {
-    const dialogRef = this.dialog.open(ConfirmationDialogComponent);
-
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result) {
-        this.handleAsyncOperation(this.teamService.deleteTeamById(teamId), () =>
-          this.loadAllTeamDetails()
-        );
-      }
+    const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+      data: {
+        title: 'Confirm Delete',
+        message: 'Are you sure you want to delete this team?',
+      },
     });
+
+    dialogRef
+      .afterClosed()
+      .pipe(takeUntil(this.onDestroy$))
+      .subscribe((confirmed: boolean) => {
+        if (confirmed) {
+          this.handleAsyncOperation(
+            this.teamService.deleteTeamById(teamId),
+            () => {
+              // Remove the team from the local array to update the UI instantly
+              this.teams = this.teams.filter((team) => team._id !== teamId);
+              this.dataSource.data = this.teams;
+              // Optionally show a snackbar notification
+              this.snackBar.open('Team deleted successfully', 'Close', {
+                duration: 2000,
+              });
+            }
+          );
+        }
+      });
   }
 
   private loadAllTeamDetails(selectFirstTeam: boolean = false): void {
