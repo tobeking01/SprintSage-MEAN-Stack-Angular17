@@ -4,6 +4,7 @@ import { UserService } from 'src/app/services/user.service';
 import { AuthService } from '../../services/auth.service';
 import { MatDialog } from '@angular/material/dialog';
 import { UpdateProfileComponent } from './update-profile/update-profile.component';
+import { filter, map, tap } from 'rxjs';
 
 @Component({
   selector: 'app-profile',
@@ -27,37 +28,59 @@ export class ProfileComponent implements OnInit {
 
   fetchUserProfile(): void {
     if (this.authService.isLoggedIn()) {
-      this.userService.getUserProfile().subscribe((response: ResponseData) => {
-        console.log('User Roles:', response.data.roles);
-        console.log(response);
-        if (response.success && response.data) {
-          this.user = this.convertDatesForUser(response.data as User);
-          console.log('User after conversion:', this.user);
-
-          // Fetch role name from user data
-          if (this.user?.roles && this.user.roles.length > 0) {
-            this.roleName = this.user.roles[0] || 'Unknown Role';
-            console.log('Role name:', this.roleName);
-          }
-        }
-      });
-      (error: any) => console.error('Error fetching user profile:', error);
+      this.userService
+        .getUserProfile()
+        .pipe(
+          // Assuming `getUserProfile` will return an Observable<ResponseData>
+          tap((response: ResponseData) => {
+            console.log('User Roles:', response.data.roles);
+            console.log(response);
+          }),
+          filter(
+            (response: ResponseData) => response.success && !!response.data
+          ),
+          map((response: ResponseData) =>
+            this.convertDatesForUser(response.data)
+          )
+        )
+        .subscribe(
+          (user: User) => {
+            this.user = user;
+            console.log('User after conversion:', this.user);
+            // Fetch role name from user data
+            if (this.user.roles && this.user.roles.length > 0) {
+              this.roleName = this.user.roles[0] || 'Unknown Role';
+              console.log('Role name:', this.roleName);
+            }
+            this.cd.markForCheck();
+          },
+          (error: any) => console.error('Error fetching user profile:', error)
+        );
     }
   }
 
   openUpdateDialog(): void {
     if (!this.user) return;
+
     const dialogRef = this.dialog.open(UpdateProfileComponent, {
       width: '500px',
       data: this.user,
     });
 
-    dialogRef.afterClosed().subscribe((updatedData: User | undefined) => {
-      if (updatedData) {
-        this.user = this.convertDatesForUser(updatedData);
-        this.cd.markForCheck(); // This tells Angular to re-check the component for changes
-      }
-    });
+    dialogRef
+      .afterClosed()
+      .subscribe((updatedData: Partial<User> | undefined) => {
+        if (updatedData && this.user) {
+          // Assuming _id is always present on this.user.
+          const fullUpdatedData: User = {
+            ...this.user,
+            ...updatedData,
+            _id: this.user._id,
+          };
+          this.user = this.convertDatesForUser(fullUpdatedData);
+          this.cd.markForCheck(); // This tells Angular to re-check the component for changes
+        }
+      });
   }
 
   updateProfileWithData(updatedData: Partial<User>): void {
