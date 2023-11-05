@@ -7,7 +7,7 @@ import { apiUrls } from '../api.urls';
 import {
   SingleTeamResponseData,
   MultipleTeamsResponseData,
-  TeamPopulated,
+  TeamMembersWithDetails,
 } from './model/team.model';
 import { MultipleProjectsResponseData } from './model/project.model';
 
@@ -93,12 +93,23 @@ export class TeamService {
       )
       .pipe(catchError(this.handleError));
   }
+
   getTeamsByProjectId(
     projectId: string
   ): Observable<MultipleTeamsResponseData> {
     return this.http
       .get<MultipleTeamsResponseData>(
         `${this.apiUrl}getTeamsByProjectId?projectId=${projectId}`
+      )
+      .pipe(catchError(this.handleError));
+  }
+
+  getTeamMembersByProjectId(
+    projectId: string
+  ): Observable<TeamMembersWithDetails> {
+    return this.http
+      .get<TeamMembersWithDetails>(
+        `${this.apiUrl}/getTeamMembersByProjectId?projectId=${projectId}`
       )
       .pipe(catchError(this.handleError));
   }

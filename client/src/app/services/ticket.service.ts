@@ -28,13 +28,12 @@ export class TicketService {
       .pipe(catchError(this.handleError));
   }
 
-  getAllTickets(
-    page: number = 1,
-    limit: number = 10
+  getAllTicketsByProjectId(
+    projectId: string
   ): Observable<MultipleTicketsResponseData> {
     return this.http
       .get<MultipleTicketsResponseData>(
-        `${this.apiUrl}getAllTickets?page=${page}&limit=${limit}`
+        `${this.apiUrl}tickets/project/${projectId}`
       )
       .pipe(catchError(this.handleError));
   }

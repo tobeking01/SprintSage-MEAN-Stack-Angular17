@@ -385,6 +385,7 @@ export const getProjectsByTeamId = async (req, res, next) => {
   }
 };
 
+// Fetch all teams by projectId [used in project-details]
 export const getTeamsByProjectId = async (req, res, next) => {
   try {
     const { projectId } = req.query;
@@ -415,6 +416,43 @@ export const getTeamsByProjectId = async (req, res, next) => {
 
     // Return the fetched teams
     sendSuccess(res, 200, "Teams fetched successfully!", teams);
+  } catch (error) {
+    console.error("Error fetching teams by project:", error);
+    sendError(res, 500, `Internal Server Error: ${error.message}`);
+  }
+};
+
+// Fetch all team members by projectId [used in create-ticket]
+export const getTeamMembersByProjectId = async (req, res, next) => {
+  try {
+    const { projectId } = req.query;
+    const loggedInUserId = req.user.id;
+
+    // Validate the provided Project ID
+    if (!isValidObjectId(projectId)) {
+      return sendError(res, 400, "Invalid Project ID!");
+    }
+
+    // Fetch teams associated with the provided project ID that also have the logged-in user as a team member
+    const teams = await Team.find({
+      "projects.project": new mongoose.Types.ObjectId(projectId),
+      "teamMembers.user": new mongoose.Types.ObjectId(loggedInUserId),
+    })
+      .populate("teamMembers.user")
+      .populate("projects.project");
+
+    // Check if there are no teams associated with the given project ID
+    if (!teams.length) {
+      return sendSuccess(res, 200, "No teams found for the given project.", []);
+    }
+
+    // Return the fetched team members
+    sendSuccess(
+      res,
+      200,
+      "Team members fetched successfully!",
+      teams.map((team) => team.teamMembers)
+    );
   } catch (error) {
     console.error("Error fetching teams by project:", error);
     sendError(res, 500, `Internal Server Error: ${error.message}`);

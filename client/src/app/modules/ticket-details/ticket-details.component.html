@@ -1,13 +1,82 @@
-<div class="ticket-section">
-  <h2>Tickets</h2>
-  <div class="ticket-actions">
-    <mat-form-field class="search-ticket">
-      <mat-icon matPrefix>search</mat-icon>
-      <input matInput placeholder="Search Tickets" />
-    </mat-form-field>
-    <mat-form-field class="sort-ticket">
-      <mat-select placeholder="Sort Tickets By"></mat-select>
-    </mat-form-field>
+<div class="ticket-detail-container">
+  <h2>Ticket</h2>
+
+  <div class="search-sort-bar">
+    <div class="search-bar">
+      <mat-form-field appearance="fill">
+        <mat-label>Search tickets</mat-label>
+        <input matInput placeholder="Search..." />
+        <button mat-icon-button matSuffix>
+          <mat-icon>search</mat-icon>
+        </button>
+      </mat-form-field>
+    </div>
+
+    <div class="sort-bar" style="margin-left: 20px">
+      <mat-form-field appearance="fill">
+        <mat-label>Sort by</mat-label>
+        <mat-select>
+          <mat-option value="severity">Severity</mat-option>
+          <mat-option value="submitted">Date Submitted</mat-option>
+          <!-- Add other sort options here -->
+        </mat-select>
+      </mat-form-field>
+    </div>
   </div>
-  <button mat-raised-button color="accent">ADD TICKET</button>
+  Current Project ID: {{ projectId }}
+
+  <div class="add-ticket-button">
+    <button mat-raised-button color="accent" (click)="addTicket()">
+      ADD TICKET
+    </button>
+  </div>
+
+  <div class="ticket-table" *ngIf="!isLoading; else loading">
+    <table mat-table [dataSource]="tickets" class="mat-elevation-z8">
+      <!-- Issue Description Column -->
+      <ng-container matColumnDef="issueDescription">
+        <th mat-header-cell *matHeaderCellDef>Issue Description</th>
+        <td mat-cell *matCellDef="let ticket">{{ ticket.issueDescription }}</td>
+      </ng-container>
+
+      <!-- Severity Column -->
+      <ng-container matColumnDef="severity">
+        <th mat-header-cell *matHeaderCellDef>Severity</th>
+        <td mat-cell *matCellDef="let ticket">{{ ticket.severity }}</td>
+      </ng-container>
+
+      <!-- Submitted By User Column -->
+      <ng-container matColumnDef="submittedByUser">
+        <th mat-header-cell *matHeaderCellDef>Submitted By</th>
+        <td mat-cell *matCellDef="let ticket">
+          {{ getUserName(ticket.submittedByUser) }}
+        </td>
+      </ng-container>
+
+      <!-- Assigned To User Column -->
+      <ng-container matColumnDef="assignedToUser">
+        <th mat-header-cell *matHeaderCellDef>Assigned To</th>
+        <td mat-cell *matCellDef="let ticket">
+          {{ getUserName(ticket.assignedToUser) }}
+        </td>
+      </ng-container>
+
+      <!-- Ticket Type Column -->
+      <ng-container matColumnDef="ticketType">
+        <th mat-header-cell *matHeaderCellDef>Ticket Type</th>
+        <td mat-cell *matCellDef="let ticket">{{ ticket.ticketType }}</td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+    </table>
+  </div>
+  <ng-template #loading>
+    <div class="loading-spinner">
+      <mat-spinner></mat-spinner>
+      <!-- Make sure you have imported MatProgressSpinnerModule -->
+    </div>
+  </ng-template>
+  Current Project ID:
+  {{ projectId }}
 </div>

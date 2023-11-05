@@ -27,8 +27,6 @@ export interface Ticket {
   severity: TicketSeverity;
   submittedByUser: mongoose.Types.ObjectId; // Assuming it's an ObjectId in string form.
   assignedToUser?: mongoose.Types.ObjectId; // Optional, and again assuming an ObjectId in string form.
-  team?: mongoose.Types.ObjectId; // Team ObjectId in string form.
-  project: mongoose.Types.ObjectId; // Project ObjectId in string form.
   ticketType: TicketType;
   state?: TicketState;
   createdAt?: Date;
@@ -48,5 +46,7 @@ export interface MultipleTicketsResponseData {
   success: boolean;
   status: number;
   message: string;
-  data: Ticket[];
+  data: {
+    tickets: Ticket[]; // Adjust the interface to reflect the actual structure
+  };
 }

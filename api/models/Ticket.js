@@ -31,19 +31,6 @@ const TicketSchema = new Schema(
       ref: "User",
     },
 
-    // Team associated with the ticket, if any.
-    team: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Team",
-    },
-
-    // Project in which the ticketed issue occurs or is related to.
-    project: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Project",
-      required: true,
-    },
-
     // Categorization of the ticket, for organizational purposes.
     ticketType: {
       type: String,
@@ -108,10 +95,7 @@ TicketSchema.pre("remove", async function (next) {
     // Deleting all audit logs related to this ticket
     await TicketState.deleteMany({ ticketId: this._id });
 
-    // Remove this ticket from its associated project's ticket list
-    await mongoose
-      .model("Project")
-      .updateOne({ tickets: this._id }, { $pull: { tickets: this._id } });
+    // Since Project references Ticket, we no longer need to perform cleanup here in the Ticket schema.
 
     next();
   } catch (error) {

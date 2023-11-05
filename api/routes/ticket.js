@@ -3,7 +3,7 @@ import {
   createTicket,
   updateTicketById,
   deleteTicketById,
-  getAllTickets,
+  getAllTicketsByProjectId,
   getTicketById,
 } from "../controllers/ticket.controller.js";
 import { verifyToken } from "../middleware/verify-validate.js";
@@ -21,7 +21,11 @@ router.post("/createTicket/", verifyToken, createTicket);
  * GET /tickets
  * Route to get all tickets. It uses 'getAllTickets' method from Ticket Controller.
  */
-router.get("/getAllTickets/", verifyToken, getAllTickets);
+router.get(
+  "/tickets/project/:projectId",
+  verifyToken,
+  getAllTicketsByProjectId
+);
 
 /**
  * GET /tickets/:id

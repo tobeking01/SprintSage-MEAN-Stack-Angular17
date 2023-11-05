@@ -60,3 +60,13 @@ export interface MultipleTeamsResponseData {
   message: string;
   data: TeamPopulated[];
 }
+
+// This interface will represent the structure of the individual team member details
+// that we expect to receive in the Angular service response.
+export interface TeamMemberDetails {
+  user: UserPopulated; // Populated user details
+  addedDate: Date;
+}
+
+// This type will be used for the Angular service response
+export type TeamMembersWithDetails = TeamMemberDetails[];

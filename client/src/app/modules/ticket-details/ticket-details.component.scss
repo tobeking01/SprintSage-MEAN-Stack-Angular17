@@ -10,3 +10,31 @@ button {
     background-color: #27405c;
   }
 }
+
+.ticket-detail-container {
+  color: #0056b3;
+  /* Your styles here */
+}
+
+.search-sort-bar {
+  display: flex;
+  align-items: center;
+  // Add more styles if needed
+}
+
+.add-ticket-button {
+  margin-top: 20px;
+  // Add more styles if needed
+}
+
+.ticket-table {
+  margin-top: 20px;
+  // Add more styles if needed
+}
+
+.loading-spinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px; // or any other height you find appropriate
+}

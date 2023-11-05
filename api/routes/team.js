@@ -9,6 +9,7 @@ import {
   getTeamsByUserId,
   getProjectsByTeamId,
   getTeamsByProjectId,
+  getTeamMembersByProjectId,
   getAllTeamsWithProjectsForUser,
 } from "../controllers/team.controller.js";
 import { verifyToken } from "../middleware/verify-validate.js";
@@ -19,6 +20,11 @@ const router = express.Router();
 router.post("/createTeam", verifyToken, createTeam);
 
 router.get("/getTeamsByProjectId", verifyToken, getTeamsByProjectId);
+router.get(
+  "/getTeamMembersByProjectId",
+  verifyToken,
+  getTeamMembersByProjectId
+);
 
 // Get all teams
 router.get("/getTeamsByUserId", verifyToken, getTeamsByUserId);
