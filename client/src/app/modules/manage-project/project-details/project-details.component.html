@@ -116,10 +116,6 @@
   <br />
   <!-- Tickets Section -->
   <div class="ticket-section">
-    <!-- Debug: Display projectId -->
-    <div *ngIf="selectedProject">
-      Project ID: {{ selectedProject._id | json }}
-    </div>
     <!-- Pass the projectId to the TicketDetailsComponent -->
     <app-ticket-details
       [projectId]="selectedProject?._id || ''"
