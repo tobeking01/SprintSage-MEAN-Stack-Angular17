@@ -229,7 +229,7 @@ export const deleteTeamById = async (req, res, next) => {
 
     const { id } = req.params;
 
-    // Find the team and check if the logged-in user is the owner
+    // Find the team to check if the logged-in user is the owner
     const team = await Team.findById(id);
     if (!team) {
       return sendError(res, 404, "Team not found!");
@@ -243,13 +243,11 @@ export const deleteTeamById = async (req, res, next) => {
       );
     }
 
-    // Trigger the pre-remove middleware by calling .remove() on the found document
-    await team.remove();
+    // Use deleteOne method to delete the team
+    await Team.deleteOne({ _id: id });
 
-    // Remove the deleted team's reference from all user's teams arrays
-    await User.updateMany({ teams: team._id }, { $pull: { teams: team._id } });
-
-    sendSuccess(res, 200, "Team deleted successfully!", team);
+    // Since the document is not returned by deleteOne, send a custom message
+    sendSuccess(res, 200, "Team deleted successfully!", { _id: id });
   } catch (error) {
     console.error("Error deleting team:", error);
     sendError(res, 500, "Internal Server Error!");

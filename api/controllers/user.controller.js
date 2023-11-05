@@ -176,8 +176,10 @@ export const updateStudentProfile = async (req, res, next) => {
     if (roles.includes("Student")) {
       // Using includes to check if user has "Student" role
       updates = {
+        ...req.body, // Preserve other fields
         schoolYear: req.body.schoolYear,
         expectedGraduation: req.body.expectedGraduation,
+        roles: undefined, // Prevent roles from being updated
       };
     } else {
       return next(
@@ -232,8 +234,10 @@ export const updateProfessorProfile = async (req, res, next) => {
     if (roles.includes("Professor")) {
       // Using includes to check if user has "Professor" role
       updates = {
+        ...req.body, // Preserve other fields
         professorTitle: req.body.professorTitle,
         professorDepartment: req.body.professorDepartment,
+        roles: undefined, // Prevent roles from being updated
       };
     } else {
       return next(

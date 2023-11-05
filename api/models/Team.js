@@ -55,19 +55,6 @@ const TeamSchema = new Schema(
   }
 );
 
-// Middleware to clean up associations when a team is deleted
-TeamSchema.pre("remove", async function (next) {
-  try {
-    // If the team is deleted, dissociate it from any project it's linked to
-    await mongoose
-      .model("Project")
-      .updateMany({ teams: this._id }, { $pull: { teams: this._id } });
-    next();
-  } catch (err) {
-    next(err);
-  }
-});
-
 // Method to add a user to the team
 TeamSchema.methods.addUser = async function (userId) {
   const isAlreadyAMember = this.teamMembers.some(

@@ -33,8 +33,13 @@ export class ManageTeamComponent implements OnInit, OnDestroy {
 
   private onDestroy$ = new Subject<void>(); // For handling unSubscription when the component is destroyed
 
-  // displayedColumns = ['select', ...this.columns.map((c) => c.columnDef)];
-  displayedColumns: string[] = ['createdBy', 'teamName', 'members', 'delete'];
+  displayedColumns: string[] = [
+    'createdBy',
+    'teamName',
+    'members',
+    'projects',
+    'delete',
+  ];
   dataSource = new MatTableDataSource<TeamPopulated>(this.teams);
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
@@ -60,8 +65,9 @@ export class ManageTeamComponent implements OnInit, OnDestroy {
   }
 
   ngAfterViewInit() {
-    setTimeout(() => (this.dataSource.paginator = this.paginator));
+    this.dataSource.paginator = this.paginator;
   }
+
   onRowClicked(row: TeamPopulated) {
     this.router.navigate(['/team-details', row._id]);
   }
@@ -147,7 +153,8 @@ export class ManageTeamComponent implements OnInit, OnDestroy {
       });
   }
 
-  deleteTeam(teamId: string): void {
+  deleteTeam(event: MouseEvent, teamId: string): void {
+    event.stopPropagation();
     const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
       data: {
         title: 'Confirm Delete',
@@ -196,6 +203,7 @@ export class ManageTeamComponent implements OnInit, OnDestroy {
           if (this.dataSource.paginator) {
             this.dataSource.paginator.length = this.teams.length;
           }
+
           console.log('Teams fetched:', this.teams);
 
           if (previouslySelectedTeamId) {

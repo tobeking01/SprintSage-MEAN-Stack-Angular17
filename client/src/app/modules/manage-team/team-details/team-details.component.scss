@@ -1,7 +1,24 @@
+.team-detail {
+  display: flex;
+  flex-direction: column;
+  align-items: left;
+}
+
+.top-section {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 800px; // or any max-width you prefer
+  margin: left; // centers the top section
+  padding: 20px; // adds some padding inside the top section
+}
+
 .team-details-card {
   max-width: 800px; // or any max-width you prefer
   margin: auto; // centers the card
   padding: 20px; // adds some padding inside the card
+  width: 100%; // makes sure it takes the full width of the container
+  border: 10px solid #99b2ce;
 }
 
 .full-width-field {
@@ -11,6 +28,9 @@
 .members-section,
 .projects-section {
   margin-top: 20px; // adds space between sections
+  width: 100%;
+  max-width: 800px; // consistency in width with the card
+  margin: left; // center these sections
 }
 
 .member-row {
@@ -24,6 +44,14 @@
   }
 }
 
+// Container for the button to center it
+.team-actions {
+  display: flex;
+  justify-content: center; // This will center the button horizontally
+  padding: 20px; // Adds some padding inside the actions area if needed
+}
+
+// Styles for the button itself
 button {
   border: none;
   color: #0056b3;
@@ -31,8 +59,21 @@ button {
   border-radius: 5px;
   cursor: pointer;
   transition: background-color 0.3s;
-  &:hover {
+  text-align: center; // Center text inside the button
+
+  &:disabled {
+    background-color: #ccc; // Example of styling for disabled state
+    cursor: not-allowed;
+  }
+
+  &:hover:not(:disabled) {
     color: #f1f4f6;
     background-color: #27405c;
   }
+}
+
+mat-progress-spinner,
+mat-progress-bar {
+  display: block;
+  margin: 20px auto; // Center these elements horizontally
 }

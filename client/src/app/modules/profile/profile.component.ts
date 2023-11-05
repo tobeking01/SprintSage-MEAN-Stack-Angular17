@@ -47,12 +47,17 @@ export class ProfileComponent implements OnInit {
 
   openUpdateDialog(): void {
     if (!this.user) return;
-    this.dialog
-      .open(UpdateProfileComponent, { width: '500px', data: this.user })
-      .afterClosed()
-      .subscribe((updatedData) => {
-        if (updatedData) this.updateProfileWithData(updatedData);
-      });
+    const dialogRef = this.dialog.open(UpdateProfileComponent, {
+      width: '500px',
+      data: this.user,
+    });
+
+    dialogRef.afterClosed().subscribe((updatedData: User | undefined) => {
+      if (updatedData) {
+        this.user = this.convertDatesForUser(updatedData);
+        this.cd.markForCheck(); // This tells Angular to re-check the component for changes
+      }
+    });
   }
 
   updateProfileWithData(updatedData: Partial<User>): void {

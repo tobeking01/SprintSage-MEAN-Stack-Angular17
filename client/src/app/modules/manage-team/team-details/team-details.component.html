@@ -86,10 +86,16 @@
         </button>
       </div>
     </form>
+    <mat-card-footer>
+      <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+    </mat-card-footer>
   </div>
+  <br />
   <!-- Projects Section -->
   <div class="projects-section">
-    <h3>Associated Projects</h3>
-    <!-- Dynamic project entries would be inserted here -->
+    <div>
+      <strong>Number of Associated Projects: </strong>
+      <span>{{ selectedTeam.projects.length }} </span>
+    </div>
   </div>
 </div>

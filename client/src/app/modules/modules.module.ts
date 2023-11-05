@@ -40,6 +40,7 @@ import { MatSortModule } from '@angular/material/sort';
 import { TeamDetailsComponent } from './manage-team/team-details/team-details.component';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDividerModule } from '@angular/material/divider';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 
 @NgModule({
   declarations: [
@@ -86,6 +87,8 @@ import { MatDividerModule } from '@angular/material/divider';
     MatSortModule,
     MatProgressSpinnerModule,
     MatDividerModule,
+    MatPaginatorModule,
+    MatProgressBarModule,
   ],
   exports: [
     StudentDashboardComponent,
