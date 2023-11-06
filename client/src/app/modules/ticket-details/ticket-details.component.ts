@@ -26,6 +26,7 @@ export class TicketDetailsComponent implements OnInit, OnChanges {
     'submittedByUser',
     'assignedToUser',
     'ticketType',
+    'delete',
   ];
 
   constructor(
@@ -33,7 +34,9 @@ export class TicketDetailsComponent implements OnInit, OnChanges {
     private dialog: MatDialog
   ) {}
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    this.tickets = [];
+  }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['projectId']) {
@@ -54,20 +57,29 @@ export class TicketDetailsComponent implements OnInit, OnChanges {
   }
 
   loadTickets(): void {
-    console.log('projectId in load', this.projectId);
-
     if (!this.projectId || this.projectId === '') {
       console.error('projectId is required for loading tickets.');
       return;
     }
 
+    this.isLoading = true; // Set isLoading to true when the loading process starts
+
     this.ticketService.getAllTicketsByProjectId(this.projectId).subscribe({
       next: (response) => {
-        // Access the tickets array from the response.data.tickets property
-        this.tickets = response.data.tickets; // Adjust this line to match the actual response structure
+        console.log('response in load', response);
+        // Check if the response is structured as expected
+        if (response && response.data && Array.isArray(response.data.tickets)) {
+          this.tickets = response.data.tickets;
+        } else {
+          // Handle the case where the structure is not as expected
+          console.error('Unexpected response structure:', response);
+          this.tickets = []; // Set to empty array to avoid errors
+        }
+        this.isLoading = false; // Set isLoading to false after handling the response
       },
       error: (error) => {
         console.error('There was an error fetching the tickets', error);
+        this.isLoading = false; // Set isLoading to false even when there's an error
       },
     });
   }
@@ -85,14 +97,8 @@ export class TicketDetailsComponent implements OnInit, OnChanges {
       }
     });
   }
+
   searchTickets() {}
 
-  // Utility method to get the user name (assuming you have a method or property on Ticket objects)
-  // If the User object is complex and nested, you may need a more complex implementation
-  getUserName(userId: string): string {
-    // Replace with actual logic to get the user name from the user ID
-    return 'Username'; // Placeholder return
-  }
-
-  deleteTicket() {}
+  deleteTicket(event: MouseEvent, teamId: string): void {}
 }

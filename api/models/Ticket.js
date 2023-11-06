@@ -59,36 +59,6 @@ const TicketSchema = new Schema(
   }
 );
 
-// Middleware to validate that the user submitting the ticket is associated with the related project.
-TicketSchema.pre("save", async function (next) {
-  const user = await mongoose.model("User").findById(this.submittedByUser);
-  const project = await mongoose.model("Project").findById(this.project);
-
-  // Check if user is part of any team that's associated with the project
-  const isUserAssociatedWithProject = user.teams.some((teamId) =>
-    project.teams.includes(teamId)
-  );
-
-  if (!isUserAssociatedWithProject) {
-    throw new Error("User not associated with the project through any team");
-  }
-
-  next();
-});
-
-// Middleware to log the creation of a new ticket.
-TicketSchema.pre("save", async function (next) {
-  if (this.isNew) {
-    const audit = new TicketState({
-      action: "CREATION",
-      ticketId: this._id,
-      changedBy: this.submittedByUser,
-    });
-    await audit.save();
-  }
-  next();
-});
-
 // Middleware to handle deletions and cleanup related references when a ticket is removed.
 TicketSchema.pre("remove", async function (next) {
   try {

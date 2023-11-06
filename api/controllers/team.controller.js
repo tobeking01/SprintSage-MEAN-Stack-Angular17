@@ -446,12 +446,18 @@ export const getTeamMembersByProjectId = async (req, res, next) => {
       return sendSuccess(res, 200, "No teams found for the given project.", []);
     }
 
+    // Flatten the array of team member arrays
+    const teamMembersFlattened = teams.reduce(
+      (acc, team) => acc.concat(team.teamMembers),
+      []
+    );
+
     // Return the fetched team members
     sendSuccess(
       res,
       200,
       "Team members fetched successfully!",
-      teams.map((team) => team.teamMembers)
+      teamMembersFlattened
     );
   } catch (error) {
     console.error("Error fetching teams by project:", error);

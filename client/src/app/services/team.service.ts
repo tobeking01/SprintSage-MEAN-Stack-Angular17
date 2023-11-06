@@ -1,13 +1,14 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { catchError, map } from 'rxjs/operators';
 
 import { apiUrls } from '../api.urls';
 import {
   SingleTeamResponseData,
   MultipleTeamsResponseData,
   TeamMembersWithDetails,
+  TeamMemberDetails,
 } from './model/team.model';
 import { MultipleProjectsResponseData } from './model/project.model';
 
@@ -106,12 +107,15 @@ export class TeamService {
 
   getTeamMembersByProjectId(
     projectId: string
-  ): Observable<TeamMembersWithDetails> {
+  ): Observable<TeamMemberDetails[]> {
     return this.http
-      .get<TeamMembersWithDetails>(
+      .get<{ data: TeamMemberDetails[] }>(
         `${this.apiUrl}/getTeamMembersByProjectId?projectId=${projectId}`
       )
-      .pipe(catchError(this.handleError));
+      .pipe(
+        map((response) => response.data), // Map the response to extract the data property
+        catchError(this.handleError)
+      );
   }
 
   getAllTeamsWithProjectsForUser(): Observable<MultipleTeamsResponseData> {

@@ -14,14 +14,14 @@ export class CreateTicketComponent {
   ticketForm: FormGroup;
   teamMembers: TeamMemberDetails[] = [];
   severities = [
-    { value: 'low', viewValue: 'Low' },
-    { value: 'medium', viewValue: 'Medium' },
-    { value: 'high', viewValue: 'High' },
+    { value: 'Low', viewValue: 'Low' },
+    { value: 'Medium', viewValue: 'Medium' },
+    { value: 'High', viewValue: 'High' },
   ];
   ticketTypes = [
-    { value: 'bug', viewValue: 'Bug' },
-    { value: 'feature', viewValue: 'Feature Request' },
-    { value: 'other', viewValue: 'Other' },
+    { value: 'Bug', viewValue: 'Bug' },
+    { value: 'Feature Request', viewValue: 'Feature Request' },
+    { value: 'Other', viewValue: 'Other' },
   ];
 
   constructor(
@@ -49,7 +49,7 @@ export class CreateTicketComponent {
   loadTeamMembers(): void {
     this.teamService.getTeamMembersByProjectId(this.data.projectId).subscribe({
       next: (teamMembers) => {
-        // Assuming this.teamMembers is the property in your component where you store the team members
+        console.log(teamMembers); // Add this line to log the response
         this.teamMembers = teamMembers;
       },
       error: (error) => {

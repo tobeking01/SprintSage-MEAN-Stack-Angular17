@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import Ticket from "../models/Ticket.js";
 import Project from "../models/Project.js";
-import User from "../models/User.js";
+import TicketState from "../models/TicketState.js";
 import { sendError, sendSuccess } from "../utils/createResponse.js";
 const TICKET_STATUSES = ["OPEN", "IN_PROGRESS", "CLOSED", "REJECTED"];
 
@@ -28,57 +28,81 @@ const getTicketByIdHelper = async (ticketId) => {
   return ticket;
 };
 
-export const createTicket = async (req, res, next) => {
+export const createTicket = async (req, res) => {
   try {
-    const { issueDescription, severity, assignedToUser, ticketType } = req.body;
+    console.log("Request Body:", req.body);
+    const {
+      issueDescription,
+      severity,
+      assignedToUser,
+      ticketType,
+      projectId,
+    } = req.body;
 
-    // Validate mandatory fields and enum values
+    // Validation
+    const validSeverities = ["Low", "Medium", "High"];
+    const validTicketTypes = ["Bug", "Feature Request", "Other"];
     if (
       !issueDescription ||
-      !severity ||
-      !ticketType ||
-      !["Low", "Medium", "High"].includes(severity) ||
-      !["Bug", "Feature Request", "Other"].includes(ticketType)
+      !validSeverities.includes(severity) ||
+      !validTicketTypes.includes(ticketType) ||
+      !projectId
     ) {
       return res.status(400).send("Mandatory ticket data missing or invalid.");
     }
 
-    // Verify the project exists and the user is authorized to add tickets to it
-    const project = await Project.findById(projectId);
+    // Check existence of Project
+    const project = await mongoose.model("Project").findById(projectId);
     if (!project) {
-      return res.status(400).send("Invalid project ID.");
+      return res.status(404).send(`Project with ID ${projectId} not found.`);
     }
 
-    // Verify the assigned user exists if provided
-    const assignedUser = assignedToUser
-      ? await User.findById(assignedToUser)
-      : null;
-    if (assignedToUser && !assignedUser) {
-      return res.status(400).send("Invalid assigned user ID.");
+    // Check existence of Assigned User if provided
+    let assignedUser = null;
+    if (assignedToUser) {
+      assignedUser = await mongoose.model("User").findById(assignedToUser);
+      if (!assignedUser) {
+        return res.status(404).send("Assigned user not found.");
+      }
     }
 
-    // The user submitting the ticket is taken from the authenticated user context
-    const submittedByUser = req.user.id;
+    // Assuming req.user is set from a previous auth middleware
+    if (!req.user || !req.user.id) {
+      return res.status(403).send("Authentication required.");
+    }
 
     // Create the ticket
+    const Ticket = mongoose.model("Ticket");
     const newTicket = new Ticket({
       issueDescription,
       severity,
-      submittedByUser,
+      submittedByUser: req.user.id,
       assignedToUser: assignedUser ? assignedUser._id : null,
       ticketType,
-      // state is defaulted to "New" in the schema, no need to set here
+      projectId,
     });
 
+    // Save the ticket
     await newTicket.save();
-    // Now add the ticket to the project's tickets array
+
+    // Log ticket creation in TicketState
+    const ticketState = new TicketState({
+      action: "CREATION",
+      changedBy: req.user.id,
+      newValue: `Ticket with ID ${newTicket._id} created.`,
+    });
+    await ticketState.save();
+
+    // Add the ticket ID to the project's tickets array
     project.tickets.push(newTicket._id);
     await project.save();
 
-    // Respond with success and the new ticket data
+    // Respond with success
     res.status(201).send({
       message: "Ticket successfully created.",
       ticket: newTicket,
+      project: project,
+      ticketState: ticketState, // send the ticketState in the response if needed
     });
   } catch (error) {
     console.error("Error encountered while creating a ticket:", error);
@@ -88,30 +112,53 @@ export const createTicket = async (req, res, next) => {
 
 export const getAllTicketsByProjectId = async (req, res, next) => {
   try {
-    const projectId = req.params.projectId; // Assuming projectId is a route parameter
+    const projectId = req.params.projectId;
 
-    // Validate projectId
     if (!mongoose.Types.ObjectId.isValid(projectId)) {
       return sendError(res, 400, "Invalid Project ID");
     }
 
-    // Find the project by ID and populate the ticket information
-    const projectWithTickets = await Project.findById(projectId).populate({
-      path: "tickets.ticket",
-      model: "Ticket", // Ensure this matches the name you've given your ticket model
-    });
+    const projectWithTickets = await Project.findById(projectId);
+    console.log("Ticket references in project:", projectWithTickets.tickets);
 
-    // Check if the project exists
     if (!projectWithTickets) {
       return sendError(res, 404, "Project not found");
     }
 
-    // Extract tickets from the populated project document
-    const tickets = projectWithTickets.tickets.map((t) => t.ticket);
+    const TicketModel = mongoose.model("Ticket");
+
+    // Modify the promise to populate the submittedByUser and assignedToUser fields
+    const ticketsPromises = projectWithTickets.tickets.map((ticketRef) =>
+      TicketModel.findById(ticketRef._id)
+        .populate("submittedByUser", "firstName lastName") // assuming 'submittedByUser' is the correct path and it holds a reference to a User object
+        .populate("assignedToUser", "firstName lastName") // assuming 'assignedToUser' is the correct path and it holds a reference to a User object
+        .exec()
+    );
+
+    const tickets = await Promise.all(ticketsPromises);
+
+    // Remove any undefined entries due to not found tickets, if necessary
+    const validTickets = tickets.filter((ticket) => ticket !== null);
+    console.log("Valid tickets after fetching and filtering:", validTickets);
 
     const responseData = {
-      tickets,
+      tickets: validTickets.map((ticket) => {
+        // You might need to transform the ticket object if necessary
+        return {
+          ...ticket.toObject(), // Convert the Mongoose document to a plain JavaScript object
+          // Transform submittedByUser and assignedToUser to include only firstName and lastName
+          submittedByUser: {
+            firstName: ticket.submittedByUser.firstName,
+            lastName: ticket.submittedByUser.lastName,
+          },
+          assignedToUser: {
+            firstName: ticket.assignedToUser.firstName,
+            lastName: ticket.assignedToUser.lastName,
+          },
+        };
+      }),
     };
+    console.log("Response", responseData);
 
     sendSuccess(
       res,

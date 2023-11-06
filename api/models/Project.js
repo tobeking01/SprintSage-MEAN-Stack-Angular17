@@ -15,7 +15,6 @@ const ProjectSchema = new Schema(
     tickets: [
       {
         ticket: {
-          // Reference to a user document
           type: mongoose.Schema.Types.ObjectId,
           ref: "Ticket",
         },
