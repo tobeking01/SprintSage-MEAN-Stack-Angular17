@@ -1,24 +1,61 @@
 .create-ticket-container {
+  background-color: #f4f7f6; // Light background for the form
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   max-width: 600px;
   margin: auto;
+
+  h2 {
+    color: #0056b3; // Theme color for headings
+    text-align: center;
+    margin-bottom: 30px;
+  }
 
   .ticket-form {
     display: flex;
     flex-direction: column;
-    gap: 16px;
-  }
+    gap: 15px; // Spacing between form fields
 
-  mat-form-field {
-    width: 100%;
+    mat-form-field {
+      border-radius: 8px;
+      overflow: hidden;
 
-    &.full-width {
-      width: 100%;
+      // Styles for the label
+      mat-label {
+        color: #333; // Darker text for readability
+      }
+
+      // Style for the input and select elements
+      input,
+      mat-select {
+        padding: 8px;
+
+        &:focus {
+          border-color: #0056b3; // Highlight color when focused
+        }
+      }
+    }
+
+    .submit-button {
+      margin-top: 20px;
+
+      button {
+        width: 100%; // Full width button
+        padding: 10px;
+        font-size: 16px;
+        font-weight: bold;
+
+        &:hover {
+          background-color: darken(#0056b3, 5%); // Slightly darker on hover
+        }
+      }
     }
   }
+}
 
-  .submit-button {
-    display: flex;
-    justify-content: flex-end;
-    margin-top: 20px;
-  }
+// Handle the disabled state of the button
+button:disabled {
+  background-color: #ccc;
+  color: #666;
 }

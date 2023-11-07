@@ -465,18 +465,26 @@ export const getTeamMembersByProjectId = async (req, res, next) => {
   }
 };
 
-// Fetch all teams and their associated projects for a specific user.
-export const getAllTeamsWithProjectsForUser = async (req, res, next) => {
+// Fetch all teams and their associated projects.
+export const getAllTeamsWithProjects = async (req, res, next) => {
   try {
     const userId = req.user.id; // Assuming you have user ID from some authentication middleware
 
-    // Fetch all teams for the user
-    const teams = await Team.find({ "teamMembers.user": userId })
-      .populate("projects.project")
-      .exec();
+    // Fetch all teams
+    let teams = await Team.find({}).populate("projects.project").exec();
 
     if (!teams.length) {
-      return sendError(res, 404, "No teams found for the user.");
+      return sendError(res, 404, "No teams found.");
+    }
+
+    // Filter teams to include only those where the logged-in user is a member
+    teams = teams.filter((team) =>
+      team.teamMembers.some((member) => member.user.toString() === userId)
+    );
+
+    // If after filtering there are no teams, it means the user isn't part of any team.
+    if (!teams.length) {
+      return sendError(res, 404, "User is not part of any teams.");
     }
 
     return sendSuccess(
@@ -486,7 +494,7 @@ export const getAllTeamsWithProjectsForUser = async (req, res, next) => {
       teams
     );
   } catch (error) {
-    console.error("Error fetching teams and projects for user:", error);
+    console.error("Error fetching teams and projects:", error);
     sendError(res, 500, "Internal Server Error!");
   }
 };

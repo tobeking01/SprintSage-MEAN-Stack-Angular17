@@ -119,7 +119,6 @@ export const getAllTicketsByProjectId = async (req, res, next) => {
     }
 
     const projectWithTickets = await Project.findById(projectId);
-    console.log("Ticket references in project:", projectWithTickets.tickets);
 
     if (!projectWithTickets) {
       return sendError(res, 404, "Project not found");
@@ -139,7 +138,6 @@ export const getAllTicketsByProjectId = async (req, res, next) => {
 
     // Remove any undefined entries due to not found tickets, if necessary
     const validTickets = tickets.filter((ticket) => ticket !== null);
-    console.log("Valid tickets after fetching and filtering:", validTickets);
 
     const responseData = {
       tickets: validTickets.map((ticket) => {
@@ -158,7 +156,6 @@ export const getAllTicketsByProjectId = async (req, res, next) => {
         };
       }),
     };
-    console.log("Response", responseData);
 
     sendSuccess(
       res,
@@ -233,13 +230,33 @@ export const updateTicketById = async (req, res, next) => {
 export const deleteTicketById = async (req, res, next) => {
   try {
     const ticketId = req.params.id;
-    const deletedTicket = await Ticket.findByIdAndDelete(ticketId);
 
-    if (!deletedTicket) {
+    // Find the ticket first to ensure it exists
+    const ticket = await Ticket.findById(ticketId);
+    if (!ticket) {
       return sendError(res, 404, "Ticket not found for deletion.");
     }
 
-    sendSuccess(res, 200, "Ticket successfully deleted.", [deletedTicket]);
+    // Update the ticket state before deletion if necessary
+    // for example, setting it to a 'Deleted' state or similar.
+    ticket.state = "Deleted";
+    await ticket.save();
+
+    // Remove the ticket reference from the associated Project
+    await Project.updateMany(
+      { "tickets.ticket": mongoose.Types.ObjectId(ticketId) },
+      { $pull: { tickets: { ticket: mongoose.Types.ObjectId(ticketId) } } }
+    );
+
+    // Now delete the ticket
+    const deletedTicket = await Ticket.findByIdAndDelete(ticketId);
+
+    // If for some reason the ticket wasn't deleted, send an error
+    if (!deletedTicket) {
+      return sendError(res, 404, "Ticket could not be deleted.");
+    }
+
+    sendSuccess(res, 200, "Ticket successfully deleted.", deletedTicket);
   } catch (error) {
     console.error("Error encountered while deleting the ticket:", error);
     sendError(res, 500, "Internal Server Error while deleting the ticket!");

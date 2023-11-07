@@ -10,7 +10,7 @@ import {
   getProjectsByTeamId,
   getTeamsByProjectId,
   getTeamMembersByProjectId,
-  getAllTeamsWithProjectsForUser,
+  getAllTeamsWithProjects,
 } from "../controllers/team.controller.js";
 import { verifyToken } from "../middleware/verify-validate.js";
 
@@ -47,9 +47,6 @@ router.post(
   removeUserFromTeam
 );
 
-// Get teams associated with a specific project
-// router.get("/getTeamByProjectId/:projectId", verifyToken, getTeamByProjectId);
-
 // Get projects associated with a specific team
 router.get(
   "/getProjectsByTeamId/:teamId/projects",
@@ -60,10 +57,6 @@ router.get(
 // Get teams associated with a specific user
 router.get("/getTeamsByUserId/:id", verifyToken, getTeamsByUserId);
 
-router.get(
-  "/getAllTeamsWithProjectsForUser",
-  verifyToken,
-  getAllTeamsWithProjectsForUser
-);
+router.get("/getAllTeamsWithProjects", verifyToken, getAllTeamsWithProjects);
 
 export default router;

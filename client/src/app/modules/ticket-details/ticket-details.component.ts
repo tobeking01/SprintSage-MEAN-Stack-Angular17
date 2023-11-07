@@ -1,21 +1,31 @@
 import {
+  AfterViewInit,
+  ChangeDetectorRef,
   Component,
   Input,
   OnChanges,
   OnInit,
   SimpleChanges,
+  ViewChild,
 } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Ticket } from 'src/app/services/model/ticket.model';
 import { TicketService } from 'src/app/services/ticket.service';
 import { CreateTicketComponent } from './create-ticket/create-ticket.component';
+import { MatTableDataSource } from '@angular/material/table';
+import { MatPaginator } from '@angular/material/paginator';
+import { Router } from '@angular/router';
+import { ConfirmationDialogComponent } from 'src/app/shared/components/confirmation-dialog/confirmation-dialog.component';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-ticket-details',
   templateUrl: './ticket-details.component.html',
   styleUrls: ['./ticket-details.component.scss'],
 })
-export class TicketDetailsComponent implements OnInit, OnChanges {
+export class TicketDetailsComponent
+  implements OnInit, OnChanges, AfterViewInit
+{
   tickets: Ticket[] = [];
   isLoading = false;
 
@@ -28,16 +38,32 @@ export class TicketDetailsComponent implements OnInit, OnChanges {
     'ticketType',
     'delete',
   ];
+  dataSource = new MatTableDataSource<Ticket>(this.tickets);
+
+  @ViewChild(MatPaginator) set matPaginator(paginator: MatPaginator) {
+    this.paginator = paginator;
+    if (this.paginator) {
+      this.dataSource.paginator = this.paginator;
+    }
+  }
+  paginator!: MatPaginator;
 
   constructor(
     private ticketService: TicketService,
-    private dialog: MatDialog
+    private router: Router,
+    private dialog: MatDialog,
+    private snackBar: MatSnackBar,
+    private changeDetectorRef: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
     this.tickets = [];
   }
-
+  ngAfterViewInit() {
+    setTimeout(() => {
+      this.dataSource.paginator = this.paginator;
+    });
+  }
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['projectId']) {
       const change = changes['projectId'];
@@ -47,6 +73,9 @@ export class TicketDetailsComponent implements OnInit, OnChanges {
     }
   }
 
+  onRowClicked(row: Ticket) {
+    this.router.navigate(['/team-details', row._id]);
+  }
   private checkAndLoadTickets(): void {
     if (this.projectId?.trim()) {
       this.loadTickets();
@@ -70,16 +99,22 @@ export class TicketDetailsComponent implements OnInit, OnChanges {
         // Check if the response is structured as expected
         if (response && response.data && Array.isArray(response.data.tickets)) {
           this.tickets = response.data.tickets;
+          this.updateDataSource(); // Update the data source with the new tickets
         } else {
           // Handle the case where the structure is not as expected
           console.error('Unexpected response structure:', response);
           this.tickets = []; // Set to empty array to avoid errors
+          this.updateDataSource(); // Update the data source with an empty array
         }
         this.isLoading = false; // Set isLoading to false after handling the response
+        this.changeDetectorRef.detectChanges();
       },
       error: (error) => {
         console.error('There was an error fetching the tickets', error);
+        this.tickets = []; // Set to empty array to avoid UI errors
+        this.updateDataSource(); // Update the data source with an empty array
         this.isLoading = false; // Set isLoading to false even when there's an error
+        this.changeDetectorRef.detectChanges();
       },
     });
   }
@@ -97,8 +132,61 @@ export class TicketDetailsComponent implements OnInit, OnChanges {
       }
     });
   }
+  applyFilter(event: Event) {
+    const filterValue = (event.target as HTMLInputElement).value;
+    this.dataSource.filter = filterValue.trim().toLowerCase();
 
-  searchTickets() {}
+    if (this.dataSource.paginator) {
+      this.dataSource.paginator.firstPage();
+    }
+  }
 
-  deleteTicket(event: MouseEvent, teamId: string): void {}
+  // called after loading tickets
+  private updateDataSource() {
+    this.dataSource.data = this.tickets;
+    if (this.paginator) {
+      this.dataSource.paginator = this.paginator;
+    }
+  }
+
+  deleteTicket(event: MouseEvent, ticketId: string): void {
+    // Prevent the click from triggering the row click event
+    event.stopPropagation();
+
+    // Open a confirmation dialog
+    const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+      data: {
+        title: 'Confirm Delete',
+        message: 'Are you sure you want to delete this ticket?',
+      },
+    });
+
+    // After the dialog is closed, check if the action was confirmed
+    dialogRef.afterClosed().subscribe((confirmed: boolean) => {
+      if (confirmed) {
+        // Call the service to delete the ticket
+        this.ticketService.deleteTicketById(ticketId).subscribe(
+          () => {
+            // Remove the ticket from the local array to update the UI instantly
+            this.tickets = this.tickets.filter(
+              (ticket) => ticket._id !== ticketId
+            );
+            this.dataSource.data = this.tickets;
+            // Optionally show a snackbar notification
+            this.snackBar.open('Ticket deleted successfully', 'Close', {
+              duration: 2000,
+            });
+          },
+          (error) => {
+            // Handle error case
+            console.error('Error deleting the ticket:', error);
+            // Optionally show a snackbar notification for the error
+            this.snackBar.open('Failed to delete the ticket', 'Close', {
+              duration: 2000,
+            });
+          }
+        );
+      }
+    });
+  }
 }

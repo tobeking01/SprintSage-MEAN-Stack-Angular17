@@ -240,7 +240,7 @@ export class ManageProjectComponent implements OnInit, OnDestroy {
     console.log('Fetching teams with their projects...');
 
     this.teamService
-      .getAllTeamsWithProjectsForUser()
+      .getAllTeamsWithProjects()
       .pipe(takeUntil(this.onDestroy$))
       .subscribe(
         (response: MultipleTeamsResponseData) => {
