@@ -262,3 +262,34 @@ export const deleteTicketById = async (req, res, next) => {
     sendError(res, 500, "Internal Server Error while deleting the ticket!");
   }
 };
+
+export const getTicketsByUserId = async (req, res) => {
+  try {
+    const userId = req.params.userId; // Assuming the user's ID will be passed as a URL parameter
+
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return sendError(res, 400, "Invalid User ID");
+    }
+
+    const tickets = await Ticket.find({ submittedByUser: userId })
+      .populate("submittedByUser", "firstName lastName email") // Populate if necessary
+      .populate("assignedToUser", "firstName lastName email") // Populate if necessary
+      .exec();
+
+    if (!tickets) {
+      return sendError(res, 404, "No tickets found for the given user.");
+    }
+
+    sendSuccess(res, 200, "Tickets retrieved successfully.", { tickets });
+  } catch (error) {
+    console.error(
+      "Error encountered while fetching tickets by user ID:",
+      error
+    );
+    sendError(
+      res,
+      500,
+      "Internal Server Error while fetching tickets by user ID!"
+    );
+  }
+};

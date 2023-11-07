@@ -5,6 +5,7 @@ import {
   deleteTicketById,
   getAllTicketsByProjectId,
   getTicketById,
+  getTicketsByUserId,
 } from "../controllers/ticket.controller.js";
 import { verifyToken } from "../middleware/verify-validate.js";
 
@@ -47,5 +48,8 @@ router.put("/updateTicketById/:id", verifyToken, updateTicketById);
  * It uses 'deleteTicketById' method from Ticket Controller.
  */
 router.delete("/deleteTicketById/:id", verifyToken, deleteTicketById);
+
+// Route to get tickets by user ID
+router.get("/tickets/user/:userId", getTicketsByUserId);
 
 export default router;

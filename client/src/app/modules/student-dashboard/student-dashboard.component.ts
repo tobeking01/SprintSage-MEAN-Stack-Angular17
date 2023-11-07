@@ -15,7 +15,13 @@ import { TeamService } from 'src/app/services/team.service';
 import { CreateProjectComponent } from '../manage-project/create-project/create-project.component';
 import { MatDialog } from '@angular/material/dialog';
 import { CreateTeamComponent } from '../manage-team/create-team/create-team.component';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, take, takeUntil } from 'rxjs';
+import {
+  MultipleTicketsResponseData,
+  Ticket,
+} from 'src/app/services/model/ticket.model';
+import { TicketService } from 'src/app/services/ticket.service';
+import { UserService } from 'src/app/services/user.service';
 
 @Component({
   selector: 'app-student-dashboard',
@@ -27,24 +33,47 @@ export class StudentDashboardComponent implements OnInit {
   users: User[] = [];
   teams: TeamPopulated[] = [];
   projects: ProjectPopulated[] = [];
+  tickets: Ticket[] = [];
   selectedProject: ProjectPopulated | null = null;
   isLoading: boolean = false;
   errorMessage: string = '';
+  currentUserId: string = '';
   private onDestroy$ = new Subject<void>(); // For handling unSubscription when the component is destroyed
-
   constructor(
+    private userService: UserService,
     private projectService: ProjectService,
     private teamService: TeamService,
+    private ticketService: TicketService,
     private dialog: MatDialog,
     private router: Router
   ) {}
 
   ngOnInit(): void {
     this.isLoading = true;
-    this.loadAllTeamDetails();
-    this.loadAllProjectDetails();
-  }
 
+    // Subscribe to the getUserId() Observable to get the user ID when it's available
+    this.userService
+      .getUserId()
+      .pipe(
+        take(1) // Take only the first value emitted and then complete
+      )
+      .subscribe({
+        next: (userId: string) => {
+          this.currentUserId = userId;
+          this.loadAllTeamDetails();
+          this.loadAllProjectDetails();
+          this.loadAllTicketDetails();
+        },
+        error: (err) => {
+          console.error('Error fetching user ID:', err);
+          this.errorMessage = 'Error fetching user ID';
+          this.isLoading = false;
+        },
+      });
+  }
+  getCurrentUserId(): string {
+    return this.currentUserId;
+  }
   handleError(err: HttpErrorResponse, defaultMsg: string) {
     let errorMessage = defaultMsg;
     if (err instanceof HttpErrorResponse) {
@@ -91,6 +120,24 @@ export class StudentDashboardComponent implements OnInit {
         (error: HttpErrorResponse) => {
           this.handleError(error, 'Error fetching projects');
           this.projects = [];
+        }
+      );
+  }
+
+  private loadAllTicketDetails(): void {
+    console.log('Fetching tickets... studentDashboard');
+    this.ticketService
+      .getTicketsByUserId(this.currentUserId) // make sure to pass the actual current user's ID
+      .pipe(takeUntil(this.onDestroy$))
+      .subscribe(
+        (response: MultipleTicketsResponseData) => {
+          this.tickets = response.data.tickets;
+          console.log('Tickets fetched:', this.tickets);
+          this.isLoading = false;
+        },
+        (error: HttpErrorResponse) => {
+          this.handleError(error, 'Error fetching tickets');
+          this.tickets = [];
         }
       );
   }

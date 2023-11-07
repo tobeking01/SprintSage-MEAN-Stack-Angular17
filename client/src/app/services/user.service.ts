@@ -55,6 +55,22 @@ export class UserService {
       .get<User[]>(`${this.apiUrl}getUsersForTeam`)
       .pipe(catchError(this.handleError));
   }
+
+  getUserId(): Observable<string> {
+    // Call the backend API endpoint to get the user profile
+    return this.http.get<ResponseData>(`${this.apiUrl}user/profile`).pipe(
+      map((response) => {
+        // Check if the backend response has an '_id' property within 'data'
+        if (response && response.data && response.data._id) {
+          return response.data._id; // Access the _id property
+        } else {
+          throw new Error('User ID not found in response data');
+        }
+      }),
+      catchError(this.handleError) // Use an existing error handling method
+    );
+  }
+
   private handleError(error: any): Observable<never> {
     console.error('An error occurred:', error);
     return throwError(error.message || 'Unknown server error in user service');

@@ -264,6 +264,31 @@ export const updateProfessorProfile = async (req, res, next) => {
   }
 };
 
+// Assuming you have middleware to authenticate and populate req.user
+// user.controller.js
+
+// ... other code ...
+
+export const getUserId = async (req, res) => {
+  try {
+    // Assuming req.user is populated with the authenticated user's information
+    if (!req.user) {
+      return sendError(res, 401, "Not Authenticated");
+    }
+    console.log(req.user);
+    console.log(req.user._id);
+
+    return sendSuccess(res, 200, "User ID retrieved successfully", {
+      _id: req.user.id,
+    });
+  } catch (error) {
+    console.error("Error encountered while retrieving user ID:", error);
+    return sendError(res, 500, "Internal Server Error");
+  }
+};
+
+// ... other code ...
+
 // Error handling middleware
 export const errorHandler = (error, req, res, next) => {
   console.error(error.message);

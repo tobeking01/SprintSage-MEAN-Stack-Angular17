@@ -61,4 +61,10 @@ export class TicketService {
       .delete<void>(`${this.apiUrl}deleteTicketById/${id}`)
       .pipe(catchError(this.handleError));
   }
+
+  getTicketsByUserId(userId: string): Observable<MultipleTicketsResponseData> {
+    return this.http
+      .get<MultipleTicketsResponseData>(`${this.apiUrl}tickets/user/${userId}`)
+      .pipe(catchError(this.handleError));
+  }
 }
