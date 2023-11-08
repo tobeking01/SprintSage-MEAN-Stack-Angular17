@@ -6,7 +6,10 @@ import { Observable, catchError, forkJoin, of } from 'rxjs';
 import { TeamService } from 'src/app/services/team.service';
 import { UserService } from 'src/app/services/user.service';
 import { User } from 'src/app/services/model/user.model';
-import { SingleTeamResponseData } from 'src/app/services/model/team.model';
+import {
+  SingleTeamResponseData,
+  Team,
+} from 'src/app/services/model/team.model';
 
 @Component({
   selector: 'app-add-user-dialog',
@@ -16,10 +19,11 @@ import { SingleTeamResponseData } from 'src/app/services/model/team.model';
 export class AddUserDialogComponent implements OnInit {
   users: User[] = [];
   selectedUsers: User[] = [];
-  currentSelectedUserControl = new FormControl(null);
+  currentSelectedUserControl = new FormControl<User | null>(null);
   addUserForm = this.fb.group({
     userIds: [[], Validators.required],
   });
+  selectedTeam?: Team;
 
   constructor(
     private fb: FormBuilder,
@@ -28,7 +32,7 @@ export class AddUserDialogComponent implements OnInit {
     private snackBar: MatSnackBar,
     private cdr: ChangeDetectorRef,
     public dialogRef: MatDialogRef<AddUserDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: { teamId: string }
+    @Inject(MAT_DIALOG_DATA) public data: { teamId: string; createdBy: string }
   ) {}
 
   ngOnInit(): void {
@@ -42,12 +46,13 @@ export class AddUserDialogComponent implements OnInit {
       this.selectedUsers.splice(index, 1);
     }
   }
-  // Load all users available for selection
+
   private loadAllUsers(): void {
-    this.userService.getAllUsersForTeam().subscribe(
+    this.userService.getUsersForTeam(this.data.teamId).subscribe(
       (users) => {
         console.log('Loaded users:', users);
-        this.users = users;
+        // Filter out the user who created the team from the list
+        this.users = users.filter((user) => user._id !== this.data.createdBy);
       },
       (error) => {
         console.error('Error loading users:', error);
@@ -81,79 +86,42 @@ export class AddUserDialogComponent implements OnInit {
   get isAddButtonDisabled(): boolean {
     return this.selectedUsers.length === 0;
   }
-  addUserToSelection(): void {
-    const selectedUserId = this.currentSelectedUserControl.value;
-    if (!selectedUserId) return;
 
-    const userToAdd = this.users.find((user) => user._id === selectedUserId);
-    if (userToAdd && !this.selectedUsers.some((u) => u._id === userToAdd._id)) {
-      this.selectedUsers.push(userToAdd);
-      this.users = this.users.filter((u) => u._id !== selectedUserId); // Remove the added user from the dropdown
-      this.currentSelectedUserControl.reset();
+  addUserToSelection(): void {
+    // Check if the control value is not null before assigning
+    if (this.currentSelectedUserControl.value) {
+      const selectedUser: User = this.currentSelectedUserControl.value;
+
+      // Check if the user is already in the selectedUsers array
+      if (!this.selectedUsers.some((u) => u._id === selectedUser._id)) {
+        this.selectedUsers.push(selectedUser); // Add the user
+        // Filter out the added user from the users array
+        this.users = this.users.filter((u) => u._id !== selectedUser._id);
+        // Reset the control to allow a new selection
+        this.currentSelectedUserControl.reset();
+      } else {
+        // User already in the selectedUsers array, show an error
+        this.snackBar.open('User already added or does not exist', 'Close', {
+          duration: 3000,
+        });
+      }
+    } else {
+      // If currentSelectedUserControl.value is null, handle it appropriately
+      // For example, show a message or do nothing
+      this.snackBar.open('Please select a user to add', 'Close', {
+        duration: 3000,
+      });
     }
   }
 
   // Adds selected members to the team
   addMemberToTeam(): void {
-    console.log('Adding members to team:', this.selectedUsers);
     if (this.selectedUsers.length === 0) {
       this.snackBar.open('Please select at least one user', 'Close', {
         duration: 3000,
       });
       return;
     }
-
-    const userIds = this.selectedUsers.map((u) => u._id);
-    if (userIds.length === 0) {
-      this.snackBar.open('Please select at least one user', 'Close', {
-        duration: 3000,
-      });
-      return;
-    }
-
-    // Map user IDs to a series of observables handling user addition
-    const addRequests: Observable<SingleTeamResponseData | null>[] =
-      userIds.map(
-        (userId: string) =>
-          this.teamService
-            .addUserToTeam(this.data.teamId, userId)
-            .pipe(catchError(() => of(null))) // Catch errors per request
-      );
-
-    // Subscribe to all add user requests simultaneously
-    forkJoin(addRequests).subscribe({
-      next: (results: (SingleTeamResponseData | null)[]) => {
-        // Find a non-null response to extract the updated team data.
-        const successfulResult = results.find((result) => result !== null);
-        if (successfulResult) {
-          const updatedTeam = successfulResult.data;
-          console.log(updatedTeam);
-          this.dialogRef.close(updatedTeam);
-        } else {
-          // Handle case where no results were successful or no results
-          this.dialogRef.close(); // Close dialog without data, or handle appropriately
-        }
-
-        // Display success message
-        this.snackBar.open('Users added successfully!', 'Close', {
-          duration: 3000,
-          horizontalPosition: 'center',
-          verticalPosition: 'top',
-        });
-      },
-      error: (err) => {
-        // Log and display error message
-        console.error('Error occurred during forkJoin subscription:', err);
-        this.snackBar.open(
-          'An error occurred while adding users. Please try again.',
-          'Close',
-          {
-            duration: 5000,
-            horizontalPosition: 'center',
-            verticalPosition: 'top',
-          }
-        );
-      },
-    });
+    this.dialogRef.close(this.selectedUsers);
   }
 }

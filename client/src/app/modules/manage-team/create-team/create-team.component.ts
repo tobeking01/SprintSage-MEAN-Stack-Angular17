@@ -36,10 +36,34 @@ export class CreateTeamComponent implements OnInit {
     @Inject(MAT_DIALOG_DATA) public data: TeamPopulated
   ) {}
 
+  private loadAllUsersForTeamCreation(createdBy: string): void {
+    this.userService.getUsersForTeam(createdBy).subscribe(
+      (users: User[]) => {
+        this.users = users;
+        console.log('All users fetched for team creation:', this.users);
+      },
+      (error: any) => {
+        console.error('Error fetching users for team creation:', error);
+      }
+    );
+  }
+
   ngOnInit(): void {
     this.initializeForm();
-    this.loadAllUsersForTeamCreation();
+
+    // Fetch the current user's ID
+    this.userService.getUserId().subscribe({
+      next: (userId) => {
+        // Once we have the user ID, load all users for team creation
+        this.loadAllUsersForTeamCreation(userId);
+      },
+      error: (error) => {
+        console.error('Error fetching the current user ID:', error);
+        // Handle the error case here, such as showing a notification to the user
+      },
+    });
   }
+
   logFormValue() {
     console.log(this.createTeamForm.value);
   }
@@ -122,18 +146,6 @@ export class CreateTeamComponent implements OnInit {
   // Removes a user control from the form array by index
   removeUser(index: number) {
     this.teamMembersFormArray.removeAt(index);
-  }
-
-  private loadAllUsersForTeamCreation(): void {
-    this.userService.getAllUsersForTeam().subscribe(
-      (users: User[]) => {
-        this.users = users;
-        console.log('All users fetched for team creation:', this.users);
-      },
-      (error: any) => {
-        console.error('Error fetching users for team creation:', error);
-      }
-    );
   }
 
   // Handles form submission

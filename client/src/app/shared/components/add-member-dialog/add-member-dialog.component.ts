@@ -44,14 +44,50 @@ export class AddMemberDialogComponent {
     });
     this.teamId = data.teamId;
     console.log('Team ID:', this.teamId);
-
-    this.loadAllUsers(); // Load users when component is initialized
   }
 
-  // Loads all users eligible for adding to the team
-  loadAllUsers(): void {
-    this.userService.getAllUsersForTeam().subscribe((users) => {
-      this.users = users;
+  ngOnInit(): void {
+    if (this.teamId) {
+      this.teamService
+        .getTeamDetailsById(this.teamId)
+        .pipe(
+          catchError((error) => {
+            console.error('Failed to load team details', error);
+            return of(null); // Handle the error and return a null team
+          })
+        )
+        .subscribe((response) => {
+          if (
+            response &&
+            response.data &&
+            response.data.createdBy &&
+            response.data.createdBy._id
+          ) {
+            // Use the createdBy ID from the team details to load users
+            this.loadAllUsers(response.data.createdBy._id);
+          } else {
+            // Handle cases where createdBy is not provided
+            console.error(
+              'Team does not have a createdBy property or it is null'
+            );
+          }
+        });
+    } else {
+      // Handle cases where teamId is not provided
+      console.error('No teamId provided');
+    }
+  }
+
+  // Load all users for the team creation
+  private loadAllUsers(createdById: string): void {
+    this.userService.getUsersForTeam(createdById).subscribe({
+      next: (users) => {
+        this.users = users;
+      },
+      error: (error) => {
+        console.error('Failed to load users', error);
+        // Handle errors here, e.g., show a notification
+      },
     });
   }
 

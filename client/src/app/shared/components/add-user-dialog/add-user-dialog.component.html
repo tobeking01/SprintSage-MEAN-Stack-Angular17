@@ -23,7 +23,7 @@
         (selectionChange)="addUserToSelection()"
         aria-label="User selection dropdown"
       >
-        <mat-option *ngFor="let user of users" [value]="user._id">
+        <mat-option *ngFor="let user of users" [value]="user">
           {{ user.firstName }} {{ user.lastName }}
         </mat-option>
       </mat-select>

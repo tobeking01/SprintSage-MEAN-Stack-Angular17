@@ -92,11 +92,42 @@ export class ManageProjectComponent implements OnInit, OnDestroy {
   @ViewChild('projectNameInput') projectNameInputElement?: ElementRef;
 
   ngOnInit(): void {
-    this.userService.getAllUsersForTeam().subscribe((fetchedUsers) => {
-      this.users = fetchedUsers;
-    });
+    this.loadTeamAndUsers();
     this.loadTeamProjectDetails();
   }
+
+  private loadTeamAndUsers(): void {
+    this.teamService.getAllTeamsWithProjects().subscribe({
+      next: (response) => {
+        this.teamInfo = response.data;
+        if (this.teamInfo.length > 0 && this.teamInfo[0].createdBy) {
+          const createdBy = this.teamInfo[0].createdBy._id;
+          if (createdBy) {
+            this.userService.getUsersForTeam(createdBy).subscribe({
+              next: (fetchedUsers) => {
+                this.users = fetchedUsers;
+              },
+              error: (error) => {
+                console.error('Error fetching users for team:', error);
+              },
+            });
+          } else {
+            console.error('No valid creator ID found for the team.');
+            // Handle the case where createdBy is null or undefined
+          }
+        } else {
+          console.error(
+            'Team information is empty or missing createdBy field.'
+          );
+          // Handle the case where teamInfo is empty or missing necessary data
+        }
+      },
+      error: (error) => {
+        console.error('Error fetching team and project information:', error);
+      },
+    });
+  }
+
   ngOnDestroy(): void {
     // Emit an event to trigger unSubscription
     this.onDestroy$.next();

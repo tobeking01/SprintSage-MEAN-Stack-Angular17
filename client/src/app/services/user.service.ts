@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { ResponseData, User } from './model/user.model';
 import { catchError, map } from 'rxjs/operators';
@@ -50,9 +50,13 @@ export class UserService {
       .pipe(catchError(this.handleError));
   }
 
-  getAllUsersForTeam(): Observable<User[]> {
+  getUsersForTeam(createdBy: string): Observable<User[]> {
+    console.log('Created by:', createdBy);
+    const params = createdBy
+      ? new HttpParams().set('createdBy', createdBy)
+      : new HttpParams();
     return this.http
-      .get<User[]>(`${this.apiUrl}getUsersForTeam`)
+      .get<User[]>(`${this.apiUrl}getUsersForTeam`, { params })
       .pipe(catchError(this.handleError));
   }
 

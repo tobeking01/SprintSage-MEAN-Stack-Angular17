@@ -19,6 +19,22 @@ export class TeamService {
 
   constructor(private http: HttpClient) {}
 
+  // Used in team-details
+  addUsersToTeam(
+    teamId: string,
+    membersPayload: { teamMembers: string[] }
+  ): Observable<SingleTeamResponseData> {
+    const fullUrl = `${this.apiUrl}${teamId}/add-members`;
+    console.log('Making request to:', fullUrl);
+    // Then make the HTTP request
+
+    // Note the removal of the extra 'addUsersToTeam/' from the URL
+    return this.http.post<SingleTeamResponseData>(
+      `${this.apiUrl}${teamId}/add-members`,
+      membersPayload
+    );
+  }
+
   createTeam(teamData: {
     teamName: string;
     teamMembers: string[];

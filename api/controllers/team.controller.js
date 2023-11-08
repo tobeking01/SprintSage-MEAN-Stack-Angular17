@@ -254,6 +254,65 @@ export const deleteTeamById = async (req, res, next) => {
   }
 };
 
+// Controller to add users to a team
+export const addUsersToTeam = async (req, res, next) => {
+  try {
+    const { teamId } = req.params;
+    const { teamMembers } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(teamId)) {
+      return sendError(res, 400, "Invalid team ID");
+    }
+
+    if (!Array.isArray(teamMembers) || teamMembers.length === 0) {
+      return sendError(res, 400, "No team members provided");
+    }
+
+    for (const memberId of teamMembers) {
+      if (!mongoose.Types.ObjectId.isValid(memberId)) {
+        return sendError(res, 400, `Invalid member ID: ${memberId}`);
+      }
+    }
+
+    const team = await Team.findById(teamId);
+    if (!team) {
+      return sendError(res, 404, "Team not found");
+    }
+
+    // Initialize members as an array if it does not exist
+    console.log("Team before push:", team);
+    if (!Array.isArray(team.teamMembers)) {
+      console.error("teamMembers is not an array!");
+      // Initialize teamMembers as an array if it's not
+      team.teamMembers = [];
+    }
+    teamMembers.forEach((userId) => {
+      team.teamMembers.push({ user: userId });
+    });
+
+    await team.save();
+
+    // Populate the team's member details before sending the response
+    const populatedTeam = await team.populate({
+      path: "teamMembers.user",
+      select: "firstName lastName",
+    });
+
+    return sendSuccess(
+      res,
+      200,
+      "Users added to team successfully",
+      populatedTeam
+    );
+  } catch (error) {
+    // Specific error handling for StrictPopulateError
+    if (error instanceof mongoose.Error.StrictPopulateError) {
+      console.error("Populate error:", error);
+      return sendError(res, 400, "Populate path is not in the schema");
+    }
+    next(error);
+  }
+};
 // Add a user to a team.
 export const addUserToTeam = async (req, res, next) => {
   try {
@@ -471,7 +530,10 @@ export const getAllTeamsWithProjects = async (req, res, next) => {
     const userId = req.user.id; // Assuming you have user ID from some authentication middleware
 
     // Fetch all teams
-    let teams = await Team.find({}).populate("projects.project").exec();
+    let teams = await Team.find({})
+      .populate("projects.project")
+      .populate("createdBy", "firstName lastName email") // Add this line to populate createdBy
+      .exec();
 
     if (!teams.length) {
       return sendError(res, 404, "No teams found.");

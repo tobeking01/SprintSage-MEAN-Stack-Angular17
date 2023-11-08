@@ -10,7 +10,7 @@ import { RegisterComponent } from './register/register.component';
 import { ResetComponent } from './reset/reset.component';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
-import { TicketDetailsComponent } from './ticket-details/ticket-details.component';
+import { ManageTicketComponent } from './manage-ticket/manage-ticket.component';
 import { CreateTeamComponent } from './manage-team/create-team/create-team.component';
 import { ProfileComponent } from './profile/profile.component';
 import { ProfessorDashboardComponent } from './professor-dashboard/professor-dashboard.component';
@@ -41,7 +41,7 @@ import { TeamDetailsComponent } from './manage-team/team-details/team-details.co
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { CreateTicketComponent } from './ticket-details/create-ticket/create-ticket.component';
+import { CreateTicketComponent } from './manage-ticket/create-ticket/create-ticket.component';
 
 @NgModule({
   declarations: [
@@ -51,7 +51,7 @@ import { CreateTicketComponent } from './ticket-details/create-ticket/create-tic
     LoginComponent,
     RegisterComponent,
     ResetComponent,
-    TicketDetailsComponent,
+    ManageTicketComponent,
     CreateTeamComponent,
     ProfileComponent,
     ProfessorDashboardComponent,
@@ -99,7 +99,7 @@ import { CreateTicketComponent } from './ticket-details/create-ticket/create-tic
     LoginComponent,
     RegisterComponent,
     ResetComponent,
-    TicketDetailsComponent,
+    ManageTicketComponent,
     CreateTeamComponent,
     ProfileComponent,
     ProfessorDashboardComponent,

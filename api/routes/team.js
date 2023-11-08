@@ -5,6 +5,7 @@ import {
   getTeamDetailsById,
   deleteTeamById,
   removeUserFromTeam,
+  addUsersToTeam,
   addUserToTeam,
   getTeamsByUserId,
   getProjectsByTeamId,
@@ -36,6 +37,9 @@ router.get("/getTeamDetailsById/:teamId", getTeamDetailsById);
 
 // Delete a team by its ID. Requires self/Admin privileges.
 router.delete("/deleteTeamById/:id", verifyToken, deleteTeamById);
+
+// Route to add users to a team
+router.post("/:teamId/add-members", verifyToken, addUsersToTeam);
 
 // Add a user to a team
 router.post("/addUserToTeam/:teamId/:userId", verifyToken, addUserToTeam);

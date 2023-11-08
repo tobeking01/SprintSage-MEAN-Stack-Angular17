@@ -21,6 +21,19 @@
         <strong>Created At:</strong>
         {{ selectedTeam.createdAt | date : "yyyy-MM-dd HH:mm" }}
       </div>
+      <!-- Projects Section -->
+      <div class="projects-section">
+        <div>
+          <strong>Number of Associated Projects: </strong>
+          <span>{{ selectedTeam.projects.length }} </span>
+        </div>
+      </div>
+      <br />
+      <div>
+        <button mat-raised-button color="accent" (click)="addMembers()">
+          ADD MEMBERS
+        </button>
+      </div>
       <mat-progress-spinner
         *ngIf="isLoading"
         mode="indeterminate"
@@ -89,13 +102,5 @@
     <mat-card-footer>
       <mat-progress-bar mode="indeterminate"></mat-progress-bar>
     </mat-card-footer>
-  </div>
-  <br />
-  <!-- Projects Section -->
-  <div class="projects-section">
-    <div>
-      <strong>Number of Associated Projects: </strong>
-      <span>{{ selectedTeam.projects.length }} </span>
-    </div>
   </div>
 </div>

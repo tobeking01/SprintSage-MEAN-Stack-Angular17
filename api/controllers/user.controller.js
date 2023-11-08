@@ -114,8 +114,21 @@ export const getUsersForTeam = async (req, res, next) => {
       return res.status(401).json({ message: "Unauthorized. Please log in." });
     }
 
-    // Fetch all users from the database
-    const users = await User.find({}, "firstName lastName");
+    // Get the createdBy ID from the query parameter
+    const createdBy = req.query.createdBy;
+
+    // Check if createdBy ID is provided and valid
+    if (!createdBy || !mongoose.Types.ObjectId.isValid(createdBy)) {
+      return res
+        .status(400)
+        .json({ message: "Invalid or missing creator ID." });
+    }
+
+    // Fetch all users from the database except the team creator
+    const users = await User.find(
+      { _id: { $ne: createdBy } },
+      "firstName lastName email"
+    );
 
     // Send back the array of users
     res.status(200).json(users);
@@ -264,11 +277,6 @@ export const updateProfessorProfile = async (req, res, next) => {
   }
 };
 
-// Assuming you have middleware to authenticate and populate req.user
-// user.controller.js
-
-// ... other code ...
-
 export const getUserId = async (req, res) => {
   try {
     // Assuming req.user is populated with the authenticated user's information
@@ -286,8 +294,6 @@ export const getUserId = async (req, res) => {
     return sendError(res, 500, "Internal Server Error");
   }
 };
-
-// ... other code ...
 
 // Error handling middleware
 export const errorHandler = (error, req, res, next) => {

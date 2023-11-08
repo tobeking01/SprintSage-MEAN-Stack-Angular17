@@ -16,6 +16,8 @@ import { Team, TeamPopulated } from 'src/app/services/model/team.model';
 import { HttpErrorResponse } from '@angular/common/http';
 import { User, UserPopulated } from 'src/app/services/model/user.model';
 import { Subject, takeUntil } from 'rxjs';
+import { MatDialog } from '@angular/material/dialog';
+import { AddUserDialogComponent } from 'src/app/shared/components/add-user-dialog/add-user-dialog.component';
 
 interface Member {
   user: UserPopulated;
@@ -40,12 +42,14 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
   selectedTeam?: TeamPopulated | null = null;
   isLoading = false;
   private destroy$ = new Subject<void>();
+
   constructor(
     private teamService: TeamService,
     private route: ActivatedRoute,
     private fb: FormBuilder,
     private snackBar: MatSnackBar,
     private router: Router,
+    private dialog: MatDialog,
     private changeDetectorRef: ChangeDetectorRef
   ) {
     this.teamForm = this.fb.group({
@@ -73,7 +77,8 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
     this.destroy$.next();
     this.destroy$.complete();
   }
-  loadTeamDetails(teamId: string) {
+
+  private loadTeamDetails(teamId: string): void {
     this.isLoading = true;
     this.teamService
       .getTeamDetailsById(teamId)
@@ -113,26 +118,8 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
     const teamMembersArray = this.teamForm.get('teamMembers') as FormArray;
     teamMembersArray.removeAt(index);
     teamMembersArray.markAsTouched();
-    teamMembersArray.updateValueAndValidity(); // This line ensures the form recalculates its validity
+    teamMembersArray.updateValueAndValidity();
   }
-
-  // private loadProjectsForTeam(teamId: string): void {
-  //   this.projectService.getProjectById(projectId).pipe(takeUntil(this.destroy$))
-  // .subscribe({
-  //     (response: SingleProjectResponseData) => {
-  //       if (response.data) {
-  //         this.selectedProject = response.data;
-  //         this.cdr.detectChanges();
-  //         console.log('Selected Project:', this.selectedProject);
-  //       } else {
-  //         console.warn('No project found for the given ID');
-  //         // Handle this scenario, maybe redirect or show a message.
-  //         this.errorMessage = 'No project found for the given ID';
-  //       }
-  //     },
-  //     (error: HttpErrorResponse) => this.handleError(error)
-  //   );
-  // }
 
   private initializeForm(team: TeamPopulated): void {
     this.teamForm.patchValue({
@@ -143,20 +130,97 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
     this.clearFormArray(this.teamMembers);
     this.clearFormArray(this.projects);
 
-    team.teamMembers.forEach((member) => this.addTeamMember(member));
+    // Initialize team members
+    team.teamMembers.forEach((member) => {
+      if (member.user) {
+        this.addTeamMember({
+          user: member.user, // Assuming member.user is UserPopulated and contains _id
+        });
+      } else {
+        console.error('User details are missing for member:', member);
+      }
+    });
     team.projects.forEach((project) => this.addProject(project));
   }
 
+  public addNewMembersToTeam(members: User[]): void {
+    if (!this.teamId) {
+      this.snackBar.open('No team ID provided', 'Dismiss', { duration: 3000 });
+      return;
+    }
+
+    // Construct payload with only the member IDs
+    const payload = {
+      teamMembers: members.map((member) => member._id),
+    };
+
+    this.isLoading = true; // Show loading indicator
+
+    // Call the service method to add members to the team
+    this.teamService.addUsersToTeam(this.teamId, payload).subscribe({
+      next: () => {
+        this.snackBar.open('Members added successfully', 'Dismiss', {
+          duration: 3000,
+        });
+        if (this.teamId) {
+          // Check that teamId is not undefined
+          this.loadTeamDetails(this.teamId); // Refresh the team details
+        }
+        this.isLoading = false; // Hide loading indicator
+      },
+      error: (err) => {
+        this.handleError(err);
+        this.isLoading = false; // Hide loading indicator
+      },
+    });
+  }
+
+  addMembers(): void {
+    const dialogRef = this.dialog.open(AddUserDialogComponent, {
+      data: {
+        teamId: this.teamId,
+        createdBy: this.selectedTeam?.createdBy._id,
+      },
+    });
+
+    dialogRef.afterClosed().subscribe((selectedUsers: User[]) => {
+      if (selectedUsers && selectedUsers.length > 0) {
+        this.addNewMembersToTeam(selectedUsers);
+      }
+    });
+  }
+
   private addTeamMember(member: Member): void {
-    this.teamMembers.push(
-      this.fb.group({
-        _id: [member.user._id, Validators.required],
-        user: this.fb.group({
-          firstName: [member.user.firstName],
-          lastName: [member.user.lastName],
-        }),
-      })
-    );
+    // Log the member data for debugging purposes
+    console.log('Member data:', member);
+
+    // Use optional chaining to safely access nested properties
+    const _id = member.user._id; // Get the user ID from the member object
+    const firstName = member?.user?.firstName;
+    const lastName = member?.user?.lastName;
+
+    // Validate the required data
+    if (!_id || !firstName || !lastName) {
+      console.error(
+        'Invalid member data: Missing _id, firstName, or lastName',
+        member
+      );
+      // Handle the error as appropriate, such as displaying a user-friendly message
+      return;
+    }
+
+    // Since all the required fields are present, create the form control for the member
+    const memberControl = this.fb.group({
+      _id: [_id, Validators.required], // Assign the user ID string here
+      user: this.fb.group({
+        firstName: [firstName, Validators.required], // Assuming firstName is required
+        lastName: [lastName, Validators.required], // Assuming lastName is required
+        // Include any other user properties with appropriate validators
+      }),
+    });
+
+    // Add the new member control to the form array
+    this.teamMembers.push(memberControl);
   }
 
   private addProject(project: Project): void {

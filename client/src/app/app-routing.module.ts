@@ -5,7 +5,7 @@ import { FullWidthComponent } from './layouts/fullWidth/fullwidth.component';
 import { HomeComponent } from './modules/home/home.component';
 import { LoginComponent } from './modules/login/login.component';
 import { RegisterComponent } from './modules/register/register.component';
-import { TicketDetailsComponent } from './modules/ticket-details/ticket-details.component';
+import { ManageTicketComponent } from './modules/manage-ticket/manage-ticket.component';
 import { CreateTeamComponent } from './modules/manage-team/create-team/create-team.component';
 import { ProfileComponent } from './modules/profile/profile.component';
 import { ForgetPasswordComponent } from './modules/forget-password/forget-password.component';
@@ -48,8 +48,8 @@ const routes: Routes = [
         data: { expectedRole: ['Student', 'Professor', 'Admin'] },
       },
       {
-        path: 'ticket-details/:id',
-        component: TicketDetailsComponent,
+        path: 'manage-ticket/:id',
+        component: ManageTicketComponent,
         canActivate: [RoleAndUserIdGuard],
         data: { expectedRole: ['Student', 'Professor', 'Admin'] },
       },

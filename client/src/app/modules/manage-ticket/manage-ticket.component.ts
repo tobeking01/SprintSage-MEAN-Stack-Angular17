@@ -19,13 +19,11 @@ import { ConfirmationDialogComponent } from 'src/app/shared/components/confirmat
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
-  selector: 'app-ticket-details',
-  templateUrl: './ticket-details.component.html',
-  styleUrls: ['./ticket-details.component.scss'],
+  selector: 'app-manage-ticket',
+  templateUrl: './manage-ticket.component.html',
+  styleUrls: ['./manage-ticket.component.scss'],
 })
-export class TicketDetailsComponent
-  implements OnInit, OnChanges, AfterViewInit
-{
+export class ManageTicketComponent implements OnInit, OnChanges, AfterViewInit {
   tickets: Ticket[] = [];
   isLoading = false;
 
