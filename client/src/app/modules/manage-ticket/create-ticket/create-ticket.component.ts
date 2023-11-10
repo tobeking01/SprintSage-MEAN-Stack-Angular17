@@ -61,9 +61,9 @@ export class CreateTicketComponent {
   onSubmit(): void {
     if (this.ticketForm.valid) {
       this.ticketService.createTicket(this.ticketForm.value).subscribe({
-        next: (response) => {
+        next: () => {
           // Handle the response, such as closing the dialog and returning the result
-          this.dialogRef.close(response);
+          this.dialogRef.close('Ticket Created');
         },
         error: (error) => {
           // Handle errors

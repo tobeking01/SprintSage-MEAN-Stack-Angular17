@@ -51,28 +51,28 @@ export class TeamService {
   }
 
   updateTeamById(
-    id: string,
+    teamId: string,
     teamData: { teamName: string; teamMembers: string[] }
   ): Observable<SingleTeamResponseData> {
     return this.http
       .put<SingleTeamResponseData>(
-        `${this.apiUrl}updateTeamById/${id}`,
+        `${this.apiUrl}updateTeamById/${teamId}`,
         teamData
       )
       .pipe(catchError(this.handleError));
   }
+
   // Method to get team details by ID
   getTeamDetailsById(teamId: string): Observable<SingleTeamResponseData> {
+    console.log('teamId in service', teamId);
     return this.http
-      .get<SingleTeamResponseData>(
-        `${this.apiUrl}/getTeamDetailsById/${teamId}`
-      )
+      .get<SingleTeamResponseData>(`${this.apiUrl}getTeamDetailsById/${teamId}`)
       .pipe(catchError(this.handleError));
   }
 
-  deleteTeamById(id: string): Observable<void> {
+  deleteTeamById(teamId: string): Observable<void> {
     return this.http
-      .delete<void>(`${this.apiUrl}deleteTeamById/${id}`)
+      .delete<void>(`${this.apiUrl}deleteTeamById/${teamId}`)
       .pipe(catchError(this.handleError));
   }
 

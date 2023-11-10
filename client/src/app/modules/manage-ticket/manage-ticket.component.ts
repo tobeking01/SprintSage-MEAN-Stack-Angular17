@@ -17,6 +17,7 @@ import { MatPaginator } from '@angular/material/paginator';
 import { Router } from '@angular/router';
 import { ConfirmationDialogComponent } from 'src/app/shared/components/confirmation-dialog/confirmation-dialog.component';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { EditTicketComponent } from './edit-ticket/edit-ticket.component';
 
 @Component({
   selector: 'app-manage-ticket',
@@ -34,6 +35,7 @@ export class ManageTicketComponent implements OnInit, OnChanges, AfterViewInit {
     'submittedByUser',
     'assignedToUser',
     'ticketType',
+    'edit',
     'delete',
   ];
   dataSource = new MatTableDataSource<Ticket>(this.tickets);
@@ -70,10 +72,47 @@ export class ManageTicketComponent implements OnInit, OnChanges, AfterViewInit {
       }
     }
   }
+  addTicket(): void {
+    const dialogRef = this.dialog.open(CreateTicketComponent, {
+      width: '600px',
+      data: { projectId: this.projectId }, // Passing projectId to the CreateTicketComponent
+    });
 
-  onRowClicked(row: Ticket) {
-    this.router.navigate(['/team-details', row._id]);
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result == 'Ticket Created') {
+        this.loadTickets(); // Reload the tickets list if a new ticket was created
+      }
+    });
   }
+
+  editTicket(ticket: Ticket): void {
+    console.log('Ticket in editTicket: ', ticket);
+    const dialogRef = this.dialog.open(EditTicketComponent, {
+      width: '600px',
+      data: { ticket: ticket, projectId: this.projectId }, // Pass the selected ticket for editing
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result === 'updated') {
+        this.loadTickets(); // Reload tickets
+      }
+    });
+  }
+
+  onRowClicked(ticket: Ticket) {
+    // Open the EditTicketComponent with the clicked ticket's data
+    const dialogRef = this.dialog.open(EditTicketComponent, {
+      width: '600px',
+      data: { ticket: ticket, projectId: this.projectId }, // Pass the selected ticket for editing
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result === 'updated') {
+        this.loadTickets(); // Reload tickets
+      }
+    });
+  }
+
   private checkAndLoadTickets(): void {
     if (this.projectId?.trim()) {
       this.loadTickets();
@@ -117,19 +156,6 @@ export class ManageTicketComponent implements OnInit, OnChanges, AfterViewInit {
     });
   }
 
-  addTicket(): void {
-    // If using a dialog:
-    const dialogRef = this.dialog.open(CreateTicketComponent, {
-      width: '600px',
-      data: { projectId: this.projectId }, // Passing projectId to the CreateTicketComponent
-    });
-
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result) {
-        this.loadTickets(); // Reload the tickets list if a new ticket was created
-      }
-    });
-  }
   applyFilter(event: Event) {
     const filterValue = (event.target as HTMLInputElement).value;
     this.dataSource.filter = filterValue.trim().toLowerCase();

@@ -196,25 +196,40 @@ export const getTicketById = async (req, res, next) => {
 export const updateTicketById = async (req, res, next) => {
   try {
     const ticketId = req.params.id;
-    const { projectId, status } = req.body;
+    const updateData = req.body;
 
-    if (projectId) {
-      const project = await Project.findById(projectId);
+    // Validate project ID if provided
+    if (updateData.projectId) {
+      const project = await Project.findById(updateData.projectId);
       if (!project) {
         return sendError(res, 400, "Invalid project ID.");
       }
     }
 
-    if (status && !TICKET_STATUSES.includes(status)) {
+    // Validate ticket status if provided
+    if (updateData.status && !TICKET_STATUSES.includes(updateData.status)) {
       return sendError(res, 400, "Invalid ticket status.");
     }
 
-    const updatedTicket = await Ticket.findByIdAndUpdate(ticketId, req.body, {
+    // If assignedToUser is provided and invalid, return an error
+    if (
+      updateData.assignedToUser &&
+      !mongoose.Types.ObjectId.isValid(updateData.assignedToUser)
+    ) {
+      return sendError(res, 400, "Invalid assignedToUser ID.");
+    }
+
+    // Remove assignedToUser from updateData if it's null or undefined
+    if (updateData.assignedToUser == null) {
+      delete updateData.assignedToUser;
+    }
+
+    // Proceed to update the ticket
+    const updatedTicket = await Ticket.findByIdAndUpdate(ticketId, updateData, {
       new: true,
     })
       .populate("submittedByUser")
-      .populate("assignedToUser")
-      .populate("project");
+      .populate("assignedToUser");
 
     if (!updatedTicket) {
       return sendError(res, 404, "Ticket not found for update.");

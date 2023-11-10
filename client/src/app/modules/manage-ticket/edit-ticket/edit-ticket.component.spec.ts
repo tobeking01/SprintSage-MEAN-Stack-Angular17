@@ -1,0 +1,21 @@
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+
+import { EditTicketComponent } from './edit-ticket.component';
+
+describe('EditTicketComponent', () => {
+  let component: EditTicketComponent;
+  let fixture: ComponentFixture<EditTicketComponent>;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      declarations: [EditTicketComponent]
+    });
+    fixture = TestBed.createComponent(EditTicketComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
+
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
+});

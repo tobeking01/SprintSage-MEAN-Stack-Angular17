@@ -42,6 +42,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { CreateTicketComponent } from './manage-ticket/create-ticket/create-ticket.component';
+import { EditTicketComponent } from './manage-ticket/edit-ticket/edit-ticket.component';
 
 @NgModule({
   declarations: [
@@ -61,6 +62,7 @@ import { CreateTicketComponent } from './manage-ticket/create-ticket/create-tick
     UpdateProfileComponent,
     TeamDetailsComponent,
     CreateTicketComponent,
+    EditTicketComponent,
   ],
   imports: [
     CommonModule,

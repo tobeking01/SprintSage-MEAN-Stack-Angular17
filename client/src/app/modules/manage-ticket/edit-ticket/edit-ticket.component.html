@@ -1,0 +1,63 @@
+<div class="edit-ticket-container">
+  <h2>Edit Ticket</h2>
+  <form
+    [formGroup]="editTicketForm"
+    (ngSubmit)="onSubmit()"
+    class="ticket-form"
+  >
+    <!-- Form fields similar to create-ticket.component.html, but bound to editTicketForm -->
+    <!-- Issue Description Input -->
+    <mat-form-field appearance="fill">
+      <mat-label>Issue Description</mat-label>
+      <input matInput formControlName="issueDescription" required />
+    </mat-form-field>
+
+    <!-- Severity Selection -->
+    <mat-form-field appearance="fill">
+      <mat-label>Severity</mat-label>
+      <mat-select formControlName="severity" required>
+        <mat-option
+          *ngFor="let severity of severities"
+          [value]="severity.value"
+        >
+          {{ severity.viewValue }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <!-- Assigned To User Dropdown -->
+    <mat-form-field appearance="fill">
+      <mat-label>Assigned To User</mat-label>
+      <mat-select formControlName="assignedToUser">
+        <!-- Iterate over teamMembers to display user details in the template -->
+        <mat-option
+          *ngFor="let member of teamMembers"
+          [value]="member.user._id"
+        >
+          {{ member.user.firstName }} {{ member.user.lastName }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <!-- Ticket Type Selection -->
+    <mat-form-field appearance="fill">
+      <mat-label>Ticket Type</mat-label>
+      <mat-select formControlName="ticketType" required>
+        <mat-option *ngFor="let type of ticketTypes" [value]="type.value">
+          {{ type.viewValue }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <div class="submit-button">
+      <button
+        mat-raised-button
+        color="primary"
+        type="submit"
+        [disabled]="!editTicketForm.valid"
+      >
+        UPDATE TICKET
+      </button>
+    </div>
+  </form>
+</div>

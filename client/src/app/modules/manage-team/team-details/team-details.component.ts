@@ -62,6 +62,7 @@ export class TeamDetailsComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.route.paramMap.pipe(takeUntil(this.destroy$)).subscribe((params) => {
       const id = params.get('teamId');
+      console.log('param teamId in nG:', id);
       if (id) {
         this.teamId = id;
         this.loadTeamDetails(id);

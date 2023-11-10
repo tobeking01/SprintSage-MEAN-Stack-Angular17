@@ -31,12 +31,12 @@ router.get(
 router.get("/getTeamsByUserId", verifyToken, getTeamsByUserId);
 
 // Update a team by its ID
-router.put("/updateTeamById/:id", verifyToken, updateTeamById);
+router.put("/updateTeamById/:teamId", verifyToken, updateTeamById);
 
-router.get("/getTeamDetailsById/:teamId", getTeamDetailsById);
+router.get("/getTeamDetailsById/:teamId", verifyToken, getTeamDetailsById);
 
 // Delete a team by its ID. Requires self/Admin privileges.
-router.delete("/deleteTeamById/:id", verifyToken, deleteTeamById);
+router.delete("/deleteTeamById/:teamId", verifyToken, deleteTeamById);
 
 // Route to add users to a team
 router.post("/:teamId/add-members", verifyToken, addUsersToTeam);
@@ -59,7 +59,7 @@ router.get(
 );
 
 // Get teams associated with a specific user
-router.get("/getTeamsByUserId/:id", verifyToken, getTeamsByUserId);
+router.get("/getTeamsByUserId/:teamId", verifyToken, getTeamsByUserId);
 
 router.get("/getAllTeamsWithProjects", verifyToken, getAllTeamsWithProjects);
 

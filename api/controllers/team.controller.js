@@ -126,6 +126,7 @@ export const getTeamsByUserId = async (req, res, next) => {
 export const getTeamDetailsById = async (req, res, next) => {
   try {
     const { teamId } = req.params;
+    console.log("Received Team ID:", teamId);
 
     // Validate the Team ID
     if (!mongoose.Types.ObjectId.isValid(teamId)) {
@@ -146,6 +147,7 @@ export const getTeamDetailsById = async (req, res, next) => {
         path: "projects.project",
         select: "projectName", // Adjust the fields according to your needs
       });
+    console.log("Team Details:", teamDetails);
 
     // If no team is found with the given ID
     if (!teamDetails) {
@@ -168,14 +170,14 @@ export const getTeamDetailsById = async (req, res, next) => {
 export const updateTeamById = async (req, res) => {
   try {
     const loggedInUserId = req.user.id;
-    const { id } = req.params;
+    const { teamId } = req.params;
     const { teamName, teamMembers } = req.body;
     // Validate the Team ID
-    if (!mongoose.isValidObjectId(id))
+    if (!mongoose.isValidObjectId(teamId))
       return res.status(400).send("Invalid Team ID!");
 
     // Find the team
-    const team = await Team.findById(id);
+    const team = await Team.findById(teamId);
     if (!team) return res.status(404).send("Team not found!");
 
     // Check if the logged-in user is authorized to make changes
@@ -227,10 +229,10 @@ export const deleteTeamById = async (req, res, next) => {
       return sendError(res, 401, "Unauthorized: User authentication failed.");
     }
 
-    const { id } = req.params;
+    const { teamId } = req.params;
 
     // Find the team to check if the logged-in user is the owner
-    const team = await Team.findById(id);
+    const team = await Team.findById(teamId);
     if (!team) {
       return sendError(res, 404, "Team not found!");
     }
