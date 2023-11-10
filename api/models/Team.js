@@ -1,6 +1,7 @@
 // Import the necessary module to interact with MongoDB using Mongoose
 import mongoose from "mongoose";
 const { Schema } = mongoose;
+import Project from "./Project.js";
 
 // TeamSchema definition
 const TeamSchema = new Schema(
@@ -103,6 +104,34 @@ TeamSchema.methods.removeProject = async function (projectId) {
     await this.save();
   }
 };
+
+// Middleware to handle cascading deletions when a team is removed
+TeamSchema.pre(
+  "deleteOne",
+  { document: true, query: false },
+  async function (next) {
+    try {
+      // Find all projects associated with the team
+      const projects = this.projects.map((p) => p.project);
+
+      // Loop over each projectId and delete the corresponding project
+      // This will trigger the ProjectSchema's pre('deleteOne') middleware to delete the tickets
+      for (const projectId of projects) {
+        const project = await Project.findById(projectId);
+        if (project) {
+          await project.deleteOne(); // This triggers the Project's pre-delete middleware
+        }
+      }
+
+      next();
+    } catch (err) {
+      console.error("Error in pre-delete middleware for Team: ", err);
+      next(err);
+    }
+  }
+);
+
+// Rest of your TeamSchema and model export
 
 // Exporting the TeamSchema as the "Team" model
 export default mongoose.model("Team", TeamSchema, "Team");

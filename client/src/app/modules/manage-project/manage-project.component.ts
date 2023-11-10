@@ -35,8 +35,8 @@ import { CreateTeamComponent } from '../manage-team/create-team/create-team.comp
 // HttpErrorResponse for handling HTTP errors
 import { HttpErrorResponse } from '@angular/common/http';
 // Add Subject for unsubscribing from observables
-import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { Subject, throwError } from 'rxjs';
+import { catchError, takeUntil } from 'rxjs/operators';
 import { UserService } from 'src/app/services/user.service';
 import { ConfirmationDialogComponent } from 'src/app/shared/components/confirmation-dialog/confirmation-dialog.component';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -80,6 +80,7 @@ export class ManageProjectComponent implements OnInit, OnDestroy {
   filteredTeams: TeamWithProjects[] = [];
   currentProjectFilter: string = '';
   currentTeamFilter: string = '';
+  private onDestroy$ = new Subject<void>();
 
   constructor(
     private userService: UserService,
@@ -97,35 +98,50 @@ export class ManageProjectComponent implements OnInit, OnDestroy {
   }
 
   private loadTeamAndUsers(): void {
-    this.teamService.getAllTeamsWithProjects().subscribe({
-      next: (response) => {
-        this.teamInfo = response.data;
-        if (this.teamInfo.length > 0 && this.teamInfo[0].createdBy) {
-          const createdBy = this.teamInfo[0].createdBy._id;
-          if (createdBy) {
-            this.userService.getUsersForTeam(createdBy).subscribe({
-              next: (fetchedUsers) => {
-                this.users = fetchedUsers;
-              },
-              error: (error) => {
-                console.error('Error fetching users for team:', error);
-              },
-            });
+    this.teamService
+      .getAllTeamsWithProjects()
+      .pipe(
+        takeUntil(this.onDestroy$),
+        catchError((error: HttpErrorResponse) => {
+          console.error('Error fetching team and project information:', error);
+          this.errorMessage = 'Failed to load team and project information.';
+          return throwError(error); // This will terminate the observable stream
+        })
+      )
+      .subscribe({
+        next: (response) => {
+          this.teamInfo = response.data;
+          if (this.teamInfo.length > 0 && this.teamInfo[0].createdBy) {
+            const createdBy = this.teamInfo[0].createdBy._id;
+            if (createdBy) {
+              this.userService
+                .getUsersForTeam(createdBy)
+                .pipe(takeUntil(this.onDestroy$))
+                .subscribe({
+                  next: (fetchedUsers) => {
+                    this.users = fetchedUsers;
+                  },
+                  error: (error) => {
+                    console.error('Error fetching users for team:', error);
+                    // Handle error (e.g., show user feedback or log to monitoring service)
+                  },
+                });
+            } else {
+              console.error('No valid creator ID found for the team.');
+              // Handle the case where createdBy is null or undefined (e.g., show a message to the user)
+            }
           } else {
-            console.error('No valid creator ID found for the team.');
-            // Handle the case where createdBy is null or undefined
+            console.error(
+              'Team information is empty or missing createdBy field.'
+            );
+            // Handle the case where teamInfo is empty or missing necessary data (e.g., show a message to the user)
           }
-        } else {
-          console.error(
-            'Team information is empty or missing createdBy field.'
-          );
-          // Handle the case where teamInfo is empty or missing necessary data
-        }
-      },
-      error: (error) => {
-        console.error('Error fetching team and project information:', error);
-      },
-    });
+        },
+        error: (error) => {
+          console.error('An error occurred:', error);
+          // Handle the error (e.g., show user feedback or log to monitoring service)
+        },
+      });
   }
 
   ngOnDestroy(): void {
@@ -189,17 +205,20 @@ export class ManageProjectComponent implements OnInit, OnDestroy {
   }
 
   private performProjectDeletion(projectId: string, teamId: string): void {
-    this.projectService.deleteProjectById(projectId).subscribe({
-      next: () => {
-        this.snackBar.open('Project deleted successfully!', 'Close', {
-          duration: 3000,
-        });
-        this.loadTeamProjectDetails(); // Reload project details to reflect changes
-      },
-      error: (error: HttpErrorResponse) => {
-        this.handleError(error, 'Error deleting project');
-      },
-    });
+    this.projectService
+      .deleteProjectById(projectId)
+      .pipe(takeUntil(this.onDestroy$))
+      .subscribe({
+        next: () => {
+          this.snackBar.open('Project deleted successfully!', 'Close', {
+            duration: 3000,
+          });
+          this.loadTeamProjectDetails();
+        },
+        error: (error: HttpErrorResponse) => {
+          this.handleError(error, 'Error deleting project');
+        },
+      });
   }
 
   applyFilter(event: Event): void {
@@ -261,11 +280,10 @@ export class ManageProjectComponent implements OnInit, OnDestroy {
     this.errorMessage = errorMessage;
     this.isLoading = false;
     // Displaying a simple message
-    // this.snackBar.open('An error occurred. Please try again.', 'Close', {
-    //   duration: 3000,
-    // });
+    this.snackBar.open('An error occurred. Please try again.', 'Close', {
+      duration: 3000,
+    });
   }
-  private onDestroy$ = new Subject<void>();
 
   private loadTeamProjectDetails(): void {
     console.log('Fetching teams with their projects...');

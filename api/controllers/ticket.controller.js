@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
-import Ticket from "../models/Ticket.js";
 import Project from "../models/Project.js";
+import Ticket from "../models/Ticket.js";
 import TicketState from "../models/TicketState.js";
 import { sendError, sendSuccess } from "../utils/createResponse.js";
 const TICKET_STATUSES = ["OPEN", "IN_PROGRESS", "CLOSED", "REJECTED"];
@@ -227,39 +227,45 @@ export const updateTicketById = async (req, res, next) => {
   }
 };
 
-export const deleteTicketById = async (req, res, next) => {
+// Controller function to delete a ticket by ID
+export const deleteTicketById = async (req, res) => {
   try {
     const ticketId = req.params.id;
 
-    // Find the ticket first to ensure it exists
     const ticket = await Ticket.findById(ticketId);
     if (!ticket) {
-      return sendError(res, 404, "Ticket not found for deletion.");
+      return res.status(404).send({ message: "Ticket not found." });
     }
 
-    // Update the ticket state before deletion if necessary
-    // for example, setting it to a 'Deleted' state or similar.
-    ticket.state = "Deleted";
-    await ticket.save();
+    // Log the deletion in TicketState
+    await new TicketState({
+      action: "DELETION",
+      changedBy: ticket.submittedByUser,
+      ticketId: ticket._id,
+      newValue: "Deleted",
+      oldValue: ticket.state,
+    }).save();
 
-    // Remove the ticket reference from the associated Project
-    await Project.updateMany(
-      { "tickets.ticket": mongoose.Types.ObjectId(ticketId) },
-      { $pull: { tickets: { ticket: mongoose.Types.ObjectId(ticketId) } } }
+    // Remove the ticket from the Project
+    const projectUpdateResult = await Project.updateMany(
+      { "tickets._id": ticket._id }, // targeting the `_id` field within the tickets array
+      { $pull: { tickets: { _id: ticket._id } } } // pulling the object by its `_id`
     );
 
-    // Now delete the ticket
-    const deletedTicket = await Ticket.findByIdAndDelete(ticketId);
+    console.log("Project update result:", projectUpdateResult);
 
-    // If for some reason the ticket wasn't deleted, send an error
-    if (!deletedTicket) {
-      return sendError(res, 404, "Ticket could not be deleted.");
-    }
+    // Delete the ticket
+    const deleteResult = await Ticket.deleteOne({ _id: ticket._id });
 
-    sendSuccess(res, 200, "Ticket successfully deleted.", deletedTicket);
+    console.log("Ticket delete result:", deleteResult);
+
+    return res.status(200).send({
+      message:
+        "Ticket deleted successfully and reference removed from project.",
+    });
   } catch (error) {
     console.error("Error encountered while deleting the ticket:", error);
-    sendError(res, 500, "Internal Server Error while deleting the ticket!");
+    return res.status(500).send({ message: "Internal Server Error." });
   }
 };
 

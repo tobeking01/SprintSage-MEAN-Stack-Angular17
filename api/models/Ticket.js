@@ -1,6 +1,7 @@
 // Import the mongoose library to interact with MongoDB
 import mongoose from "mongoose";
 const { Schema } = mongoose;
+import TicketState from "./TicketState.js";
 
 // Define the schema for the "Ticket" collection, which represents issues, bugs, or tasks within a system.
 const TicketSchema = new Schema(
@@ -58,20 +59,6 @@ const TicketSchema = new Schema(
     autoIndex: true,
   }
 );
-
-// Middleware to handle deletions and cleanup related references when a ticket is removed.
-TicketSchema.pre("remove", async function (next) {
-  try {
-    // Deleting all audit logs related to this ticket
-    await TicketState.deleteMany({ ticketId: this._id });
-
-    // Since Project references Ticket, we no longer need to perform cleanup here in the Ticket schema.
-
-    next();
-  } catch (error) {
-    next(error);
-  }
-});
 
 // Middleware to log ticket status changes.
 TicketSchema.pre("save", async function (next) {

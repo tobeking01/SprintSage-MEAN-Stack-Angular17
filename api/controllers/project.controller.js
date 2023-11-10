@@ -315,17 +315,15 @@ export const deleteProjectById = async (req, res) => {
     const { id } = req.params;
     const projectId = new mongoose.Types.ObjectId(id); // Ensure the ID is a valid ObjectId
 
-    // Delete the project
-    const deletedProject = await Project.findByIdAndDelete(projectId);
-    if (!deletedProject) {
+    // Find the project first to make sure it exists
+    const project = await Project.findById(projectId);
+    if (!project) {
       return res.status(404).send({ message: "Project not found!" });
     }
 
-    // Now remove the project reference from the associated Team(s)
-    await Team.updateMany(
-      { "projects.project": projectId },
-      { $pull: { projects: { project: projectId } } }
-    );
+    // Use deleteOne method to trigger the pre 'deleteOne' middleware
+    // which will handle the deletion of associated tickets and the updating of teams
+    await project.deleteOne();
 
     return res.status(200).send({ message: "Project deleted successfully!" });
   } catch (error) {

@@ -1,7 +1,8 @@
 // Import the necessary module to interact with MongoDB using Mongoose
 import mongoose from "mongoose";
 const { Schema } = mongoose;
-
+import Team from "./Team.js";
+import Ticket from "./Ticket.js";
 // Define the schema for the "Project" collection
 const ProjectSchema = new Schema(
   {
@@ -62,21 +63,31 @@ ProjectSchema.pre(
   { document: true, query: false },
   async function (next) {
     try {
-      const projectId = this._id;
+      const project = this;
 
-      // Delete associated tickets. This will not trigger Ticket's pre('remove') middleware
-      await Ticket.deleteMany({ project: projectId });
+      // Log the project tickets to verify they're populated correctly
+      console.log("Project tickets before deletion:", project.tickets);
 
-      // Manually handle the cleanup that would have been done in Ticket's pre('remove') middleware, if any
+      // Iterate over each ticket ObjectId in the project's tickets array
+      for (let ticketRef of project.tickets) {
+        // ticketRef directly contains the ObjectId, use ticketRef._id
+        // Use deleteOne method to ensure that pre and post hooks of Ticket model are triggered
+        const deletionResult = await Ticket.deleteOne({ _id: ticketRef._id });
+        console.log(
+          `Ticket deletion result for ${ticketRef._id}:`,
+          deletionResult
+        );
+      }
 
       // Update Teams - remove this project from teams that are associated with it
       await Team.updateMany(
-        { projects: { $elemMatch: { project: projectId } } },
-        { $pull: { projects: { project: projectId } } }
+        { projects: { $elemMatch: { project: project._id } } },
+        { $pull: { projects: { project: project._id } } }
       );
 
       next();
     } catch (err) {
+      console.error("Error in pre-delete middleware for Project:", err);
       next(err);
     }
   }
