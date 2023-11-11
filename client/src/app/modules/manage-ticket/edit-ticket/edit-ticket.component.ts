@@ -53,9 +53,7 @@ export class EditTicketComponent implements OnInit {
     @Inject(MAT_DIALOG_DATA) public data: { ticket: Ticket; projectId: string },
     private ticketService: TicketService,
     private teamService: TeamService,
-    private snackBar: MatSnackBar,
-    private ngZone: NgZone,
-    private cdr: ChangeDetectorRef
+    private snackBar: MatSnackBar
   ) {
     // Initialize the form with the data of the ticket to be edited
     this.editTicketForm = this.fb.group({
@@ -91,32 +89,37 @@ export class EditTicketComponent implements OnInit {
   }
 
   onSaveTicket(): void {
-    if (this.editTicketForm.valid && this.data.ticket && this.data.ticket._id) {
-      this.ticketService
-        .updateTicketById(this.data.ticket._id, this.editTicketForm.value)
-        .subscribe({
-          next: () => {
-            this.snackBar.open('Ticket updated successfully', 'Close', {
-              duration: 2000,
-            });
-            this.dialogRef.close('updated'); // Close dialog on success
-          },
-          error: (error) => {
-            console.error('Error updating the ticket', error);
-            this.snackBar.open('Failed to update the ticket', 'Close', {
-              duration: 2000,
-            });
-            this.dialogRef.close('error'); // Close dialog on error
-          },
-        });
-    } else {
+    if (
+      !this.editTicketForm.valid ||
+      !this.data.ticket ||
+      !this.data.ticket._id
+    ) {
       this.snackBar.open(
-        'Failed to update the ticket - Ticket ID is undefined',
+        'Ticket update failed - Invalid input or missing ticket ID',
         'Close',
         { duration: 2000 }
       );
-      this.dialogRef.close('invalid'); // Close dialog if validation fails
+      this.dialogRef.close('invalid');
+      return;
     }
+
+    this.ticketService
+      .updateTicketById(this.data.ticket._id, this.editTicketForm.value)
+      .subscribe({
+        next: () => {
+          this.snackBar.open('Ticket updated successfully', 'Close', {
+            duration: 2000,
+          });
+          this.dialogRef.close('updated');
+        },
+        error: (error) => {
+          console.error('Error updating the ticket', error);
+          this.snackBar.open('Failed to update the ticket', 'Close', {
+            duration: 2000,
+          });
+          this.dialogRef.close('error');
+        },
+      });
   }
 
   ngOnDestroy(): void {
