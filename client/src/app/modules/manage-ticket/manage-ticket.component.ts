@@ -50,7 +50,6 @@ export class ManageTicketComponent implements OnInit, OnChanges, AfterViewInit {
 
   constructor(
     private ticketService: TicketService,
-    private router: Router,
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
     private changeDetectorRef: ChangeDetectorRef
@@ -86,10 +85,9 @@ export class ManageTicketComponent implements OnInit, OnChanges, AfterViewInit {
   }
 
   editTicket(ticket: Ticket): void {
-    console.log('Ticket in editTicket: ', ticket);
     const dialogRef = this.dialog.open(EditTicketComponent, {
       width: '600px',
-      data: { ticket: ticket, projectId: this.projectId }, // Pass the selected ticket for editing
+      data: { ticket: ticket, projectId: this.projectId },
     });
 
     dialogRef.afterClosed().subscribe((result) => {

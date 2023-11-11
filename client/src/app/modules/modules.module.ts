@@ -108,6 +108,7 @@ import { EditTicketComponent } from './manage-ticket/edit-ticket/edit-ticket.com
     NotFoundComponent,
     AdminDashboardComponent,
     ManageTeamComponent,
+    EditTicketComponent,
   ],
 })
 export class ModulesModule {}

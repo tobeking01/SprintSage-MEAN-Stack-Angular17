@@ -1,10 +1,6 @@
 <div class="edit-ticket-container">
   <h2>Edit Ticket</h2>
-  <form
-    [formGroup]="editTicketForm"
-    (ngSubmit)="onSubmit()"
-    class="ticket-form"
-  >
+  <form [formGroup]="editTicketForm" class="ticket-form">
     <!-- Form fields similar to create-ticket.component.html, but bound to editTicketForm -->
     <!-- Issue Description Input -->
     <mat-form-field appearance="fill">
@@ -53,10 +49,10 @@
       <button
         mat-raised-button
         color="primary"
-        type="submit"
+        (click)="onSaveTicket()"
         [disabled]="!editTicketForm.valid"
       >
-        UPDATE TICKET
+        SAVE TICKET
       </button>
     </div>
   </form>
