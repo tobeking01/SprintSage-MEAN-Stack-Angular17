@@ -5,29 +5,6 @@ import TicketState from "../models/TicketState.js";
 import { sendError, sendSuccess } from "../utils/createResponse.js";
 const TICKET_STATUSES = ["OPEN", "IN_PROGRESS", "CLOSED", "REJECTED"];
 
-// Almost good needs testing
-const getTicketByIdHelper = async (ticketId) => {
-  const ticket = await mongoose
-    .model("Ticket")
-    .findById(ticketId)
-    .populate("submittedByUser")
-    .populate("assignedToUser")
-    .populate({
-      path: "team",
-      populate: {
-        path: "teamMembers.user",
-        model: "User",
-        populate: {
-          path: "roles",
-          model: "Role",
-        },
-      },
-    })
-    .populate("project");
-
-  return ticket;
-};
-
 export const createTicket = async (req, res) => {
   try {
     console.log("Request Body:", req.body);
