@@ -17,6 +17,7 @@ import { NotFoundComponent } from './modules/not-found/not-found.component';
 import { ManageTeamComponent } from './modules/manage-team/manage-team.component';
 import { StudentDashboardComponent } from './modules/student-dashboard/student-dashboard.component';
 import { TeamDetailsComponent } from './modules/manage-team/team-details/team-details.component';
+import { TicketDetailsComponent } from './modules/manage-ticket/ticket-details/ticket-details.component';
 
 const routes: Routes = [
   {
@@ -50,6 +51,12 @@ const routes: Routes = [
       {
         path: 'manage-ticket/:id',
         component: ManageTicketComponent,
+        canActivate: [RoleAndUserIdGuard],
+        data: { expectedRole: ['Student', 'Professor', 'Admin'] },
+      },
+      {
+        path: 'ticket-details/:projectId/:ticketId',
+        component: TicketDetailsComponent,
         canActivate: [RoleAndUserIdGuard],
         data: { expectedRole: ['Student', 'Professor', 'Admin'] },
       },

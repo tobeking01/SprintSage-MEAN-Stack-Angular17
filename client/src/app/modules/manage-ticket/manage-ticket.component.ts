@@ -17,7 +17,6 @@ import { MatPaginator } from '@angular/material/paginator';
 import { Router } from '@angular/router';
 import { ConfirmationDialogComponent } from 'src/app/shared/components/confirmation-dialog/confirmation-dialog.component';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { EditTicketComponent } from './edit-ticket/edit-ticket.component';
 
 @Component({
   selector: 'app-manage-ticket',
@@ -35,7 +34,6 @@ export class ManageTicketComponent implements OnInit, OnChanges, AfterViewInit {
     'submittedByUser',
     'assignedToUser',
     'ticketType',
-    'edit',
     'delete',
   ];
   dataSource = new MatTableDataSource<Ticket>(this.tickets);
@@ -50,6 +48,7 @@ export class ManageTicketComponent implements OnInit, OnChanges, AfterViewInit {
 
   constructor(
     private ticketService: TicketService,
+    private router: Router,
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
     private changeDetectorRef: ChangeDetectorRef
@@ -84,31 +83,13 @@ export class ManageTicketComponent implements OnInit, OnChanges, AfterViewInit {
     });
   }
 
-  editTicket(ticket: Ticket): void {
-    const dialogRef = this.dialog.open(EditTicketComponent, {
-      width: '600px',
-      data: { ticket: ticket, projectId: this.projectId },
-    });
-
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result === 'updated') {
-        this.loadTickets(); // Reload tickets
-      }
-    });
-  }
-
-  onRowClicked(ticket: Ticket) {
-    // Open the EditTicketComponent with the clicked ticket's data
-    const dialogRef = this.dialog.open(EditTicketComponent, {
-      width: '600px',
-      data: { ticket: ticket, projectId: this.projectId }, // Pass the selected ticket for editing
-    });
-
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result === 'updated') {
-        this.loadTickets(); // Reload tickets
-      }
-    });
+  onRowClicked(row: Ticket) {
+    if (this.projectId) {
+      this.router.navigate(['/ticket-details', this.projectId, row._id]);
+    } else {
+      console.error('Project ID is not defined');
+      // handle the error or redirect to a safe route
+    }
   }
 
   private checkAndLoadTickets(): void {

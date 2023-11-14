@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 import { User, UserPopulated } from './user.model';
-import { ProjectPopulated } from './project.model';
+import { Project, ProjectPopulated } from './project.model';
 
 // Interface for teams
 export interface Team {
@@ -9,16 +9,16 @@ export interface Team {
 
   // Adjusted to include addedDate and direct reference to user/project
   teamMembers: {
-    user: mongoose.Types.ObjectId;
+    user: User;
     addedDate?: Date; // default is managed by mongoose, but can be provided
   }[];
 
   projects?: {
-    project: mongoose.Types.ObjectId;
+    project: Project;
     addedDate?: Date;
   }[];
 
-  createdBy: mongoose.Types.ObjectId;
+  createdBy: User;
   createdAt?: Date;
   updatedAt?: Date;
   __v?: number;

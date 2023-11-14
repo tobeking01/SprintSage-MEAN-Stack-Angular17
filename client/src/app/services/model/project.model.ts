@@ -7,10 +7,10 @@ export interface Project {
   _id: string;
   projectName: string;
   tickets?: {
-    ticket: mongoose.Types.ObjectId;
+    ticket: Ticket;
     addedDate?: Date;
   }[];
-  createdBy: mongoose.Types.ObjectId;
+  createdBy: User;
   startDate?: Date;
   endDate?: Date;
   createdAt?: Date;

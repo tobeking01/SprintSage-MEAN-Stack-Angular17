@@ -77,17 +77,17 @@
       <div class="right-side">
         <div class="my-tickets">
           <h2>My Tickets</h2>
-          <!-- Tickets List here -->
-          <div *ngIf="tickets.length"></div>
-          <div *ngFor="let ticket of tickets">
-            <!-- Updated line below -->
-            <a [routerLink]="['/ticket-details', ticket._id]">{{
-              ticket.issueDescription
-            }}</a>
-          </div>
           <div *ngIf="!tickets.length">
-            <p>You don't have any projects yet.</p>
+            <p>You don't have any tickets yet.</p>
           </div>
+          <mat-card>
+            <div *ngFor="let ticket of tickets">
+              <p><strong>Description:</strong> {{ ticket.issueDescription }}</p>
+              <p><strong>Severity:</strong> {{ ticket.severity }}</p>
+              <mat-divider></mat-divider>
+              <!-- Other ticket details -->
+            </div></mat-card
+          >
         </div>
       </div>
     </div>

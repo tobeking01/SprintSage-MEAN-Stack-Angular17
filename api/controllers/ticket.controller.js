@@ -172,24 +172,51 @@ export const getAllTicketsByProjectId = async (req, res, next) => {
   }
 };
 
-export const getTicketById = async (req, res, next) => {
+export const getTicketById = async (req, res) => {
   try {
-    const ticketId = req.params.id;
+    const { projectId, ticketId } = req.params;
+    console.log("Fetching ticket with ID:", ticketId, "in project:", projectId);
 
-    // Use the getTicketByIdHelper function to fetch the ticket.
-    // This function will provide a richer object with more populated fields.
-    const ticket = await getTicketByIdHelper(ticketId);
+    // Convert strings to ObjectId
+    const ticketObjectId = new mongoose.Types.ObjectId(ticketId);
+    const projectObjectId = new mongoose.Types.ObjectId(projectId);
+    console.log("Converted ObjectIds:", { ticketObjectId, projectObjectId });
+
+    // Fetch the ticket with user details populated
+    const ticket = await Ticket.findById(ticketObjectId)
+      .populate("submittedByUser", "firstName lastName")
+      .populate("assignedToUser", "firstName lastName")
+      .exec();
 
     if (!ticket) {
+      console.log("Ticket not found for ID:", ticketId);
       return sendError(res, 404, "Ticket not found.");
     }
 
-    sendSuccess(res, 200, "Ticket successfully retrieved.", ticket);
+    // Check if the ticket belongs to the given project
+    const project = await Project.findOne({
+      _id: projectObjectId,
+      "tickets._id": ticketObjectId,
+    }).exec();
+
+    if (!project) {
+      console.log("Ticket not part of the project:", projectId);
+      return sendError(res, 404, "Ticket not found in the specified project.");
+    }
+
+    console.log("Found ticket for project:", project);
+
+    const ticketResponse = {
+      ...ticket.toObject(),
+      projectId: project._id,
+      submittedByUser: ticket.submittedByUser,
+      assignedToUser: ticket.assignedToUser,
+    };
+
+    sendSuccess(res, 200, "Ticket successfully retrieved.", ticketResponse);
   } catch (error) {
-    console.error("Error encountered while fetching ticket by ID:", error);
-    next(
-      sendError(res, 500, "Internal Server Error while fetching tickets by ID!")
-    );
+    console.error("Error while fetching ticket by ID:", error);
+    sendError(res, 500, "Internal Server Error while fetching ticket by ID!");
   }
 };
 
@@ -224,6 +251,25 @@ export const updateTicketById = async (req, res, next) => {
       delete updateData.assignedToUser;
     }
 
+    // Fetch the current ticket for state comparison
+    const currentTicket = await Ticket.findById(ticketId);
+    if (!currentTicket) {
+      return sendError(res, 404, "Ticket not found for update.");
+    }
+
+    // Check for state change and record audit if necessary
+    if (updateData.state && currentTicket.state !== updateData.state) {
+      const audit = new TicketState({
+        action: "STATUS_CHANGE",
+        ticketId: currentTicket._id,
+        changedBy: currentTicket.submittedByUser,
+        oldValue: currentTicket.state,
+        newValue: updateData.state,
+      });
+      await audit.save();
+    }
+
+    console.log("update data", updateData);
     // Proceed to update the ticket
     const updatedTicket = await Ticket.findByIdAndUpdate(ticketId, updateData, {
       new: true,
@@ -231,11 +277,7 @@ export const updateTicketById = async (req, res, next) => {
       .populate("submittedByUser")
       .populate("assignedToUser");
 
-    if (!updatedTicket) {
-      return sendError(res, 404, "Ticket not found for update.");
-    }
-
-    sendSuccess(res, 200, "Ticket successfully updated.", [updatedTicket]);
+    sendSuccess(res, 200, "Ticket successfully updated.", updatedTicket);
   } catch (error) {
     console.error("Error encountered while updating the ticket:", error);
     sendError(res, 500, "Internal Server Error while updating the ticket!");

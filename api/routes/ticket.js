@@ -33,7 +33,7 @@ router.get(
  * Route to get a specific ticket by its ID.
  * It uses 'getTicketById' method from Ticket Controller.
  */
-router.get("/getTicketById/:id", verifyToken, getTicketById);
+router.get("/getTicketById/:projectId/:ticketId", verifyToken, getTicketById);
 
 /**
  * PUT /tickets/:id

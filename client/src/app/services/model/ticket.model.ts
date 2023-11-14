@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { User } from './user.model';
 
 export enum TicketSeverity {
   LOW = 'Low',
@@ -25,12 +26,13 @@ export interface Ticket {
   _id?: string;
   issueDescription: string;
   severity: TicketSeverity;
-  submittedByUser: mongoose.Types.ObjectId; // Assuming it's an ObjectId in string form.
-  assignedToUser?: mongoose.Types.ObjectId; // Optional, and again assuming an ObjectId in string form.
+  submittedByUser: User; // Assuming it's an ObjectId in string form.
+  assignedToUser?: User; // Optional, and again assuming an ObjectId in string form.
   ticketType: TicketType;
   state?: TicketState;
   createdAt?: Date;
   updatedAt?: Date;
+  projectId?: string;
 }
 
 // For singular ticket responses

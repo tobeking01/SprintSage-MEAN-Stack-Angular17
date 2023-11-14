@@ -38,9 +38,14 @@ export class TicketService {
       .pipe(catchError(this.handleError));
   }
 
-  getTicketById(id: string): Observable<SingleTicketResponseData> {
+  getTicketById(
+    projectId: string,
+    ticketId: string
+  ): Observable<SingleTicketResponseData> {
     return this.http
-      .get<SingleTicketResponseData>(`${this.apiUrl}getTicketById/${id}`)
+      .get<SingleTicketResponseData>(
+        `${this.apiUrl}getTicketById/${projectId}/${ticketId}`
+      )
       .pipe(catchError(this.handleError));
   }
 

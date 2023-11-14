@@ -1,8 +1,8 @@
 import Team from "../models/Team.js";
 import { sendError, sendSuccess } from "../utils/createResponse.js";
 import mongoose from "mongoose";
+const { ObjectId } = mongoose.Types;
 import User from "../models/User.js";
-const ObjectId = mongoose.Types.ObjectId;
 
 const validateObjectIds = (ids) => {
   return ids.every((id) => mongoose.Types.ObjectId.isValid(id));

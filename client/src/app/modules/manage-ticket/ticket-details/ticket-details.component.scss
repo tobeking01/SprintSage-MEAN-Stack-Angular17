@@ -1,0 +1,129 @@
+.ticket-details-container {
+  background-color: #f4f7f6; // Light background for the form
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  max-width: 600px;
+  margin: auto;
+
+  h2 {
+    color: #0056b3; // Theme color for headings
+    text-align: center;
+    margin-bottom: 30px;
+  }
+
+  .ticket-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px; // Spacing between form fields
+
+    mat-form-field {
+      border-radius: 8px;
+      overflow: hidden;
+
+      // Styles for the label
+      mat-label {
+        color: #333; // Darker text for readability
+      }
+
+      // Style for the input and select elements
+      input,
+      mat-select {
+        padding: 8px;
+
+        &:focus {
+          border-color: #0056b3; // Highlight color when focused
+        }
+      }
+    }
+
+    .submit-button {
+      margin-top: 20px;
+
+      button {
+        width: 100%; // Full width button
+        padding: 10px;
+        font-size: 16px;
+        font-weight: bold;
+
+        &:hover {
+          background-color: darken(#0056b3, 5%); // Slightly darker on hover
+        }
+      }
+    }
+  }
+}
+
+// Handle the disabled state of the button
+button:disabled {
+  background-color: #ccc;
+  color: #666;
+}
+
+.ticket-detail {
+  background-color: #f4f7f6; // Light background for the form
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  max-width: 600px;
+  margin: auto;
+
+  .top-section {
+    h2 {
+      color: #0056b3; // Theme color for headings
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .ticket-info {
+      display: flex;
+      flex-direction: column;
+      gap: 15px; // Spacing between form fields
+
+      mat-form-field {
+        width: 100%; // Ensures full width
+        border-radius: 8px;
+        overflow: hidden;
+
+        mat-label {
+          color: #333; // Darker text for readability
+        }
+
+        input,
+        mat-select {
+          padding: 8px;
+
+          &:focus {
+            border-color: #0056b3; // Highlight color when focused
+          }
+        }
+      }
+
+      .ticket-actions {
+        margin-top: 20px;
+        display: flex;
+        gap: 10px; // Space between buttons
+
+        button {
+          flex: 1; // Buttons take equal width
+          padding: 10px;
+          font-size: 16px;
+          font-weight: bold;
+
+          &:hover {
+            background-color: darken(#0056b3, 5%); // Slightly darker on hover
+          }
+
+          &:disabled {
+            background-color: #ccc;
+            color: #666;
+          }
+        }
+      }
+    }
+  }
+
+  mat-progress-spinner {
+    margin-top: 20px; // Spacing above the spinner
+  }
+}

@@ -1,0 +1,57 @@
+<div *ngIf="TicketDetailForm" class="ticket-detail">
+  <div class="top-section">
+    <div class="ticket-info">
+      <div>
+        <strong>Ticket Details</strong>
+      </div>
+
+      <form [formGroup]="TicketDetailForm">
+        <mat-form-field appearance="fill">
+          <mat-label>Issue Description</mat-label>
+          <input matInput formControlName="issueDescription" required />
+        </mat-form-field>
+
+        <mat-form-field appearance="fill">
+          <mat-label>Severity</mat-label>
+          <mat-select formControlName="severity" required>
+            <mat-option
+              *ngFor="let severity of severities"
+              [value]="severity.value"
+            >
+              {{ severity.viewValue }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="fill">
+          <mat-label>Ticket Type</mat-label>
+          <mat-select formControlName="ticketType" required>
+            <mat-option *ngFor="let type of ticketTypes" [value]="type.value">
+              {{ type.viewValue }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <div class="ticket-actions">
+          <button
+            mat-raised-button
+            color="primary"
+            (click)="onSaveTicket()"
+            [disabled]="!TicketDetailForm.valid"
+          >
+            Save Ticket
+          </button>
+          <button mat-raised-button color="warn" (click)="cancelEdit()">
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <mat-progress-spinner
+    *ngIf="isLoading"
+    mode="indeterminate"
+    aria-label="Loading..."
+  ></mat-progress-spinner>
+</div>

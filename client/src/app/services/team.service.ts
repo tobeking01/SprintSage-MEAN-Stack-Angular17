@@ -125,7 +125,7 @@ export class TeamService {
   ): Observable<TeamMemberDetails[]> {
     return this.http
       .get<{ data: TeamMemberDetails[] }>(
-        `${this.apiUrl}/getTeamMembersByProjectId?projectId=${projectId}`
+        `${this.apiUrl}getTeamMembersByProjectId?projectId=${projectId}`
       )
       .pipe(
         map((response) => response.data), // Map the response to extract the data property
