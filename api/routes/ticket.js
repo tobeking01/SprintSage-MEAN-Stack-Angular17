@@ -3,8 +3,9 @@ import {
   createTicket,
   updateTicketById,
   deleteTicketById,
-  getAllTickets,
+  getAllTicketsByProjectId,
   getTicketById,
+  getTicketsByUserId,
 } from "../controllers/ticket.controller.js";
 import { verifyToken } from "../middleware/verify-validate.js";
 
@@ -21,14 +22,18 @@ router.post("/createTicket/", verifyToken, createTicket);
  * GET /tickets
  * Route to get all tickets. It uses 'getAllTickets' method from Ticket Controller.
  */
-router.get("/getAllTickets/", verifyToken, getAllTickets);
+router.get(
+  "/tickets/project/:projectId",
+  verifyToken,
+  getAllTicketsByProjectId
+);
 
 /**
  * GET /tickets/:id
  * Route to get a specific ticket by its ID.
  * It uses 'getTicketById' method from Ticket Controller.
  */
-router.get("/getTicketById/:id", verifyToken, getTicketById);
+router.get("/getTicketById/:projectId/:ticketId", verifyToken, getTicketById);
 
 /**
  * PUT /tickets/:id
@@ -43,5 +48,8 @@ router.put("/updateTicketById/:id", verifyToken, updateTicketById);
  * It uses 'deleteTicketById' method from Ticket Controller.
  */
 router.delete("/deleteTicketById/:id", verifyToken, deleteTicketById);
+
+// Route to get tickets by user ID
+router.get("/tickets/user/:userId", getTicketsByUserId);
 
 export default router;

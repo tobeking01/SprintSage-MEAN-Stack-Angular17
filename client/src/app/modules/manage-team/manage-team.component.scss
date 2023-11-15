@@ -1,0 +1,88 @@
+.main-container {
+  margin: 0 auto;
+  padding: 0 16px;
+  max-width: 100%;
+
+  .top-section {
+    text-align: center;
+    background-color: #fff;
+    padding: 20px;
+    margin-bottom: 20px; // Separate from middle section
+    border-bottom: 1px solid #e1e1e1;
+
+    h1,
+    h2 {
+      color: rgb(47, 116, 180); // Following the primary color scheme
+    }
+  }
+
+  .middle-section {
+    max-width: 80%;
+    margin: 20px auto;
+    display: flex;
+    justify-content: left;
+
+    .create-team button {
+      border: none;
+      color: #0056b3;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      &:hover {
+        color: #f1f4f6;
+        background-color: #27405c;
+      }
+    }
+  }
+  .delete-icon-color {
+    color: #0056b3;
+  }
+
+  mat-divider {
+    margin: 20px 0;
+  }
+
+  .bottom-section {
+    max-width: 80%;
+    margin: auto;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+
+    h2 {
+      text-align: center;
+      color: rgb(47, 116, 180);
+      padding-bottom: 10px;
+      border-bottom: 1px solid #e1e1e1;
+    }
+  }
+}
+
+// Define a loading style if desired
+.loading-template {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh; // full height if it's a full page loader
+  p {
+    font-size: 1.5rem;
+    color: rgb(47, 116, 180);
+  }
+}
+
+// Additional global styles if needed
+.mat-header-cell,
+.mat-cell {
+  padding: 8px;
+}
+
+.error-message {
+  color: red;
+  background-color: #ffe6e6;
+  padding: 10px;
+  margin-top: 10px;
+  border: 1px solid #ffcccc;
+  border-radius: 4px;
+}

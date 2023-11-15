@@ -116,6 +116,9 @@
   <br />
   <!-- Tickets Section -->
   <div class="ticket-section">
-    <app-ticket-details></app-ticket-details>
+    <!-- Pass the projectId to the TicketDetailsComponent -->
+    <app-manage-ticket
+      [projectId]="selectedProject?._id || ''"
+    ></app-manage-ticket>
   </div>
 </div>

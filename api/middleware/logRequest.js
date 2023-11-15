@@ -1,3 +1,5 @@
+import { v4 as uuidv4 } from "uuid";
+
 /**
  * Middleware to log every incoming request with its details, and then logs the response's status.
  * This is especially useful for debugging, monitoring, and getting insights on the nature of the traffic
@@ -7,11 +9,14 @@
  */
 const logRequestMiddleware = (app) => {
   app.use((req, res, next) => {
+    // Generate a unique UUID for the current request
+    const requestId = uuidv4();
+    req.requestId = requestId; // Attach the requestId to the request object
     // Capture the start time for calculating request duration later
     const startTimestamp = Date.now();
 
-    // Log basic details about the incoming request
-    console.log(`--- New Request ---`);
+    // Log entry with requestId
+    console.log(`--- New Request [${requestId}] ---`);
     console.log(`Timestamp: ${new Date(startTimestamp).toISOString()}`);
     console.log(`Method: ${req.method}`);
     console.log(`Path: ${req.path}`);
@@ -28,21 +33,19 @@ const logRequestMiddleware = (app) => {
       console.log(`Body: ${JSON.stringify(req.body)}`);
 
     res.on("finish", () => {
-      logResponseDetails(res, req, startTimestamp);
+      logResponseDetails(res, req, startTimestamp, requestId);
     });
 
     next();
   });
 };
 
-const logResponseDetails = (res, req, startTimestamp) => {
-  // Calculate the duration it took to process the request
+const logResponseDetails = (res, req, startTimestamp, requestId) => {
   const duration = Date.now() - startTimestamp;
-
-  // Determine if the response indicates an error (any status code >= 400)
   const isErrorResponse = res.statusCode >= 400;
 
-  console.log(`--- Response Sent ---`);
+  // Include requestId in response log
+  console.log(`--- Response Sent [${requestId}] ---`);
   console.log(`Duration: ${duration}ms`);
   console.log(`Status Code: ${res.statusCode}`);
 

@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FullWidthComponent } from './fullWidth.component';
+import { FullWidthComponent } from './fullwidth.component';
 import { RouterModule } from '@angular/router';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { SharedModule } from '../../shared/shared.module';

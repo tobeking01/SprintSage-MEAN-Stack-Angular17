@@ -19,12 +19,6 @@ const TicketStateSchema = new Schema({
     enum: ["STATUS_CHANGE", "CREATION", "DELETION", "UPDATE"], // Allowed types of actions
     required: true,
   },
-  // The ID of the ticket that was changed. Creates a relation between AuditLog and Ticket model
-  ticketId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Ticket", // Reference to the Ticket model
-    required: true,
-  },
   // The user who made the change. Creates a relation between AuditLog and User model
   changedBy: {
     type: mongoose.Schema.Types.ObjectId,

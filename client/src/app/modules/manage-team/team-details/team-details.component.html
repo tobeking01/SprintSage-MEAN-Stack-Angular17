@@ -1,0 +1,106 @@
+<!-- team-details.component.html -->
+<div *ngIf="selectedTeam" class="team-detail">
+  <!-- Top Section -->
+  <div class="top-section">
+    <div class="team-info">
+      <div>
+        <strong>Team Name</strong>
+
+        <p>{{ selectedTeam.teamName }}</p>
+      </div>
+      <div>
+        <div>
+          <strong>Created By: </strong>
+          <span
+            >{{ selectedTeam.createdBy.firstName }}
+            {{ selectedTeam.createdBy.lastName }}
+          </span>
+        </div>
+
+        <br />
+        <strong>Created At:</strong>
+        {{ selectedTeam.createdAt | date : "yyyy-MM-dd HH:mm" }}
+      </div>
+      <!-- Projects Section -->
+      <div class="projects-section">
+        <div>
+          <strong>Number of Associated Projects: </strong>
+          <span>{{ selectedTeam.projects.length }} </span>
+        </div>
+      </div>
+      <br />
+      <div>
+        <button mat-raised-button color="accent" (click)="addMembers()">
+          ADD MEMBERS
+        </button>
+      </div>
+      <mat-progress-spinner
+        *ngIf="isLoading"
+        mode="indeterminate"
+        aria-label="Loading..."
+      ></mat-progress-spinner>
+    </div>
+  </div>
+
+  <div class="team-details-card">
+    <form [formGroup]="teamForm" (ngSubmit)="saveTeam()">
+      <!-- Team Info Section -->
+      <div class="team-info">
+        <mat-form-field appearance="fill" class="full-width-field">
+          <mat-label>Team Name</mat-label>
+          <input
+            matInput
+            formControlName="teamName"
+            placeholder="Enter team name"
+          />
+          <mat-error *ngIf="teamForm.get('teamName')?.errors?.['required']">
+            Team name is required
+          </mat-error>
+        </mat-form-field>
+      </div>
+
+      <!-- Team Members Section -->
+      <div formArrayName="teamMembers" class="members-section">
+        <h3>Team Members</h3>
+        <div
+          *ngFor="let member of teamMembers.controls; let i = index"
+          [formGroupName]="i"
+          class="member-row"
+        >
+          <mat-form-field appearance="fill" class="full-width-field">
+            <mat-label>Member Name</mat-label>
+            <input
+              matInput
+              [value]="getMemberFullName(member)"
+              placeholder="Member Name"
+              readonly
+            />
+            <button
+              mat-icon-button
+              color="warn"
+              (click)="removeMember(i)"
+              aria-label="Remove Member"
+            >
+              <mat-icon>remove_circle</mat-icon>
+            </button>
+          </mat-form-field>
+        </div>
+      </div>
+
+      <!-- Actions Section -->
+      <div class="team-actions">
+        <button
+          mat-raised-button
+          color="accent"
+          [disabled]="!teamForm.valid || teamId === undefined"
+          type="submit"
+        >
+          Save Team
+        </button>
+      </div>
+    </form>
+    <mat-card-footer>
+      <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+    </mat-card-footer>
+  </div>
+</div>

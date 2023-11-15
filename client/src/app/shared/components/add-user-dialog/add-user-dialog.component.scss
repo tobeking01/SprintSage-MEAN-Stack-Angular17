@@ -1,0 +1,90 @@
+.add-main {
+  width: 350px;
+  margin: auto;
+
+  .header {
+    background-color: #f2f2f2;
+    padding: 1rem;
+    text-align: center;
+
+    h2 {
+      margin: 0;
+      color: #333;
+    }
+  }
+
+  .body {
+    padding: 1rem;
+
+    .selected-user {
+      background-color: #e9ecef;
+      border-radius: 10px;
+      padding: 10px;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      span {
+        flex-grow: 1;
+      }
+
+      button {
+        margin-left: 10px;
+        cursor: pointer;
+      }
+    }
+
+    mat-form-field {
+      width: 100%;
+      margin-top: 1rem;
+
+      .mat-select {
+        width: 100%;
+      }
+    }
+
+    .action-buttons {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+
+      button[color="accent"] {
+        margin-top: 1rem;
+        padding: 10px;
+        border-radius: 5px;
+        border: none; // Removed border-color to match with rest of the styling.
+        color: #0056b3;
+
+        cursor: pointer;
+        transition: background-color 0.3s;
+
+        &:hover {
+          background-color: #891a16; // Adjusted background color for hover
+          color: white;
+        }
+
+        &:disabled {
+          background-color: #ccc;
+          color: #666;
+        }
+      }
+
+      button[color="warn"] {
+        margin-top: 0.5rem;
+        padding: 10px;
+        background-color: #e9ecef;
+        border: none; // Added to remove border
+        border-radius: 10px;
+
+        cursor: pointer;
+        transition: background-color 0.3s;
+
+        &:hover {
+          color: white;
+          background-color: #9a2f12;
+        }
+      }
+    }
+  }
+}

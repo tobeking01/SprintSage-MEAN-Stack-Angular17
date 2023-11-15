@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { ResponseData, User } from './model/user.model';
-import { catchError } from 'rxjs/operators';
+import { catchError, map } from 'rxjs/operators';
 
 import { apiUrls } from '../api.urls';
 
@@ -50,11 +50,31 @@ export class UserService {
       .pipe(catchError(this.handleError));
   }
 
-  getAllUsersForTeam(): Observable<User[]> {
+  getUsersForTeam(createdBy: string): Observable<User[]> {
+    console.log('Created by:', createdBy);
+    const params = createdBy
+      ? new HttpParams().set('createdBy', createdBy)
+      : new HttpParams();
     return this.http
-      .get<User[]>(`${this.apiUrl}getUsersForTeam`)
+      .get<User[]>(`${this.apiUrl}getUsersForTeam`, { params })
       .pipe(catchError(this.handleError));
   }
+
+  getUserId(): Observable<string> {
+    // Call the backend API endpoint to get the user profile
+    return this.http.get<ResponseData>(`${this.apiUrl}user/profile`).pipe(
+      map((response) => {
+        // Check if the backend response has an '_id' property within 'data'
+        if (response && response.data && response.data._id) {
+          return response.data._id; // Access the _id property
+        } else {
+          throw new Error('User ID not found in response data');
+        }
+      }),
+      catchError(this.handleError) // Use an existing error handling method
+    );
+  }
+
   private handleError(error: any): Observable<never> {
     console.error('An error occurred:', error);
     return throwError(error.message || 'Unknown server error in user service');

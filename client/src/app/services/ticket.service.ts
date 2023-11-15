@@ -28,20 +28,24 @@ export class TicketService {
       .pipe(catchError(this.handleError));
   }
 
-  getAllTickets(
-    page: number = 1,
-    limit: number = 10
+  getAllTicketsByProjectId(
+    projectId: string
   ): Observable<MultipleTicketsResponseData> {
     return this.http
       .get<MultipleTicketsResponseData>(
-        `${this.apiUrl}getAllTickets?page=${page}&limit=${limit}`
+        `${this.apiUrl}tickets/project/${projectId}`
       )
       .pipe(catchError(this.handleError));
   }
 
-  getTicketById(id: string): Observable<SingleTicketResponseData> {
+  getTicketById(
+    projectId: string,
+    ticketId: string
+  ): Observable<SingleTicketResponseData> {
     return this.http
-      .get<SingleTicketResponseData>(`${this.apiUrl}getTicketById/${id}`)
+      .get<SingleTicketResponseData>(
+        `${this.apiUrl}getTicketById/${projectId}/${ticketId}`
+      )
       .pipe(catchError(this.handleError));
   }
 
@@ -60,6 +64,12 @@ export class TicketService {
   deleteTicketById(id: string): Observable<void> {
     return this.http
       .delete<void>(`${this.apiUrl}deleteTicketById/${id}`)
+      .pipe(catchError(this.handleError));
+  }
+
+  getTicketsByUserId(userId: string): Observable<MultipleTicketsResponseData> {
+    return this.http
+      .get<MultipleTicketsResponseData>(`${this.apiUrl}tickets/user/${userId}`)
       .pipe(catchError(this.handleError));
   }
 }

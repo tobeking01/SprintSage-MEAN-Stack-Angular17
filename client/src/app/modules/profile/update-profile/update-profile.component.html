@@ -1,6 +1,6 @@
 <h1 mat-dialog-title>Update Profile</h1>
 <div mat-dialog-content>
-  <form [formGroup]="updateForm">
+  <form [formGroup]="updateForm" (ngSubmit)="onUpdate()">
     <!-- First Name -->
     <mat-form-field>
       <mat-label>First Name</mat-label>
@@ -36,32 +36,63 @@
         Please provide a valid email
       </mat-error>
     </mat-form-field>
-    <!-- First Name -->
-    <mat-form-field>
-      <mat-label>School Year</mat-label>
-      <input matInput formControlName="schoolYear" />
-      <mat-error *ngIf="updateForm.controls['schoolYear'].hasError('required')">
-        School Year is required
-      </mat-error>
-    </mat-form-field>
-    <mat-form-field>
-      <mat-label>Expected Graduation Date</mat-label>
-      <input
-        matInput
-        [matDatepicker]="picker"
-        formControlName="expectedGraduation"
-      />
-      <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-      <mat-datepicker #picker></mat-datepicker>
-      <mat-error
-        *ngIf="updateForm.controls['expectedGraduation'].hasError('required')"
-      >
-        Expected Graduation Date is required
-      </mat-error>
-    </mat-form-field>
+    <!-- Conditional Fields -->
+    <!-- Student Fields -->
+    <ng-container *ngIf="data.roles?.includes('Student')">
+      <mat-form-field>
+        <mat-label>School Year</mat-label>
+        <input matInput formControlName="schoolYear" />
+        <mat-error *ngIf="updateForm.get('schoolYear')?.hasError('required')">
+          School Year is required
+        </mat-error>
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label>Expected Graduation Date</mat-label>
+        <input
+          matInput
+          [matDatepicker]="picker"
+          formControlName="expectedGraduation"
+        />
+        <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+        <mat-datepicker #picker></mat-datepicker>
+        <mat-error
+          *ngIf="updateForm.get('expectedGraduation')?.hasError('required')"
+        >
+          Expected Graduation Date is required
+        </mat-error>
+      </mat-form-field>
+    </ng-container>
+
+    <!-- Professor Fields -->
+    <ng-container *ngIf="data.roles?.includes('Professor')">
+      <mat-form-field>
+        <mat-label>Professor Title</mat-label>
+        <input matInput formControlName="professorTitle" />
+        <mat-error
+          *ngIf="updateForm.get('professorTitle')?.hasError('required')"
+        >
+          Professor Title is required
+        </mat-error>
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label>Professor Department</mat-label>
+        <input matInput formControlName="professorDepartment" />
+        <mat-error
+          *ngIf="updateForm.get('professorDepartment')?.hasError('required')"
+        >
+          Professor Department is required
+        </mat-error>
+      </mat-form-field>
+    </ng-container>
+    <!-- Add submit button -->
+    <div mat-dialog-actions>
+      <button mat-button (click)="onCancel()">Cancel</button>
+      <button mat-button type="submit" [disabled]="updateForm.invalid">
+        Save
+      </button>
+      <div *ngIf="formInvalid" class="error-message">
+        Please correct the errors before saving.
+      </div>
+    </div>
   </form>
-</div>
-<div mat-dialog-actions>
-  <button mat-button (click)="onCancel()">Cancel</button>
-  <button mat-button (click)="onUpdate()">Update</button>
 </div>

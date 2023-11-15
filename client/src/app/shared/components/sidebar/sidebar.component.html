@@ -30,25 +30,18 @@
       <a
         mat-list-item
         [routerLinkActive]="['list-item-active']"
-        routerLink="manage-project/m"
-        ><mat-icon>create_new_folder</mat-icon> Manage Project</a
+        routerLink="manage-team"
+        ><mat-icon>groups</mat-icon> Manage Team</a
       >
       <a
         mat-list-item
         [routerLinkActive]="['list-item-active']"
-        routerLink="ticket-details/:id"
-        ><mat-icon>local_activity</mat-icon> Tickets</a
+        routerLink="manage-project/m"
+        ><mat-icon>create_new_folder</mat-icon> Manage Project</a
       >
     </mat-card>
     <mat-divider> </mat-divider>
     <mat-card>
-      <h2 matSubheader>Teams</h2>
-      <a
-        mat-list-item
-        [routerLinkActive]="['list-item-active']"
-        routerLink="team-details/:id"
-        ><mat-icon>groups</mat-icon> My Team</a
-      >
       <a
         mat-list-item
         [routerLinkActive]="['list-item-active']"

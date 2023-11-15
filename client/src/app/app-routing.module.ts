@@ -1,12 +1,12 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { DefaultComponent } from './layouts/default/default.component';
-import { FullWidthComponent } from './layouts/fullWidth/fullWidth.component';
+import { FullWidthComponent } from './layouts/fullWidth/fullwidth.component';
 import { HomeComponent } from './modules/home/home.component';
 import { LoginComponent } from './modules/login/login.component';
 import { RegisterComponent } from './modules/register/register.component';
-import { TicketDetailsComponent } from './modules/ticket-details/ticket-details.component';
-import { CreateTeamComponent } from './modules/team-details/create-team/create-team.component';
+import { ManageTicketComponent } from './modules/manage-ticket/manage-ticket.component';
+import { CreateTeamComponent } from './modules/manage-team/create-team/create-team.component';
 import { ProfileComponent } from './modules/profile/profile.component';
 import { ForgetPasswordComponent } from './modules/forget-password/forget-password.component';
 import { ProfessorDashboardComponent } from './modules/professor-dashboard/professor-dashboard.component';
@@ -14,8 +14,10 @@ import { RoleAndUserIdGuard } from './services/role.guard';
 import { AdminDashboardComponent } from './modules/admin-dashboard/admin-dashboard.component';
 import { ResetComponent } from './modules/reset/reset.component';
 import { NotFoundComponent } from './modules/not-found/not-found.component';
-import { TeamDetailsComponent } from './modules/team-details/team-details.component';
+import { ManageTeamComponent } from './modules/manage-team/manage-team.component';
 import { StudentDashboardComponent } from './modules/student-dashboard/student-dashboard.component';
+import { TeamDetailsComponent } from './modules/manage-team/team-details/team-details.component';
+import { TicketDetailsComponent } from './modules/manage-ticket/ticket-details/ticket-details.component';
 
 const routes: Routes = [
   {
@@ -47,7 +49,13 @@ const routes: Routes = [
         data: { expectedRole: ['Student', 'Professor', 'Admin'] },
       },
       {
-        path: 'ticket-details/:id',
+        path: 'manage-ticket/:id',
+        component: ManageTicketComponent,
+        canActivate: [RoleAndUserIdGuard],
+        data: { expectedRole: ['Student', 'Professor', 'Admin'] },
+      },
+      {
+        path: 'ticket-details/:projectId/:ticketId',
         component: TicketDetailsComponent,
         canActivate: [RoleAndUserIdGuard],
         data: { expectedRole: ['Student', 'Professor', 'Admin'] },
@@ -59,7 +67,13 @@ const routes: Routes = [
         data: { expectedRole: ['Student', 'Professor', 'Admin'] },
       },
       {
-        path: 'team-details/:id',
+        path: 'manage-team',
+        component: ManageTeamComponent,
+        canActivate: [RoleAndUserIdGuard],
+        data: { expectedRole: ['Student', 'Professor', 'Admin'] },
+      },
+      {
+        path: 'team-details/:teamId',
         component: TeamDetailsComponent,
         canActivate: [RoleAndUserIdGuard],
         data: { expectedRole: ['Student', 'Professor', 'Admin'] },

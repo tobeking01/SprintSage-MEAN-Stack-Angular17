@@ -1,6 +1,7 @@
 // Import the mongoose library to interact with MongoDB
 import mongoose from "mongoose";
 const { Schema } = mongoose;
+import TicketState from "./TicketState.js";
 
 // Define the schema for the "Ticket" collection, which represents issues, bugs, or tasks within a system.
 const TicketSchema = new Schema(
@@ -31,19 +32,6 @@ const TicketSchema = new Schema(
       ref: "User",
     },
 
-    // Team associated with the ticket, if any.
-    team: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Team",
-    },
-
-    // Project in which the ticketed issue occurs or is related to.
-    project: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Project",
-      required: true,
-    },
-
     // Categorization of the ticket, for organizational purposes.
     ticketType: {
       type: String,
@@ -71,53 +59,6 @@ const TicketSchema = new Schema(
     autoIndex: true,
   }
 );
-
-// Middleware to validate that the user submitting the ticket is associated with the related project.
-TicketSchema.pre("save", async function (next) {
-  const user = await mongoose.model("User").findById(this.submittedByUser);
-  const project = await mongoose.model("Project").findById(this.project);
-
-  // Check if user is part of any team that's associated with the project
-  const isUserAssociatedWithProject = user.teams.some((teamId) =>
-    project.teams.includes(teamId)
-  );
-
-  if (!isUserAssociatedWithProject) {
-    throw new Error("User not associated with the project through any team");
-  }
-
-  next();
-});
-
-// Middleware to log the creation of a new ticket.
-TicketSchema.pre("save", async function (next) {
-  if (this.isNew) {
-    const audit = new TicketState({
-      action: "CREATION",
-      ticketId: this._id,
-      changedBy: this.submittedByUser,
-    });
-    await audit.save();
-  }
-  next();
-});
-
-// Middleware to handle deletions and cleanup related references when a ticket is removed.
-TicketSchema.pre("remove", async function (next) {
-  try {
-    // Deleting all audit logs related to this ticket
-    await TicketState.deleteMany({ ticketId: this._id });
-
-    // Remove this ticket from its associated project's ticket list
-    await mongoose
-      .model("Project")
-      .updateOne({ tickets: this._id }, { $pull: { tickets: this._id } });
-
-    next();
-  } catch (error) {
-    next(error);
-  }
-});
 
 // Middleware to log ticket status changes.
 TicketSchema.pre("save", async function (next) {

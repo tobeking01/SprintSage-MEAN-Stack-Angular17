@@ -83,9 +83,7 @@
               >
                 <h4>{{ project.project.projectName }}</h4>
                 <p>Number of Team Members: {{ team.teamMembers.length }}</p>
-                <p>
-                  Number of Tickets: {{ project.project.tickets?.length || 0 }}
-                </p>
+                <p>Number of Tickets: {{ project.project.tickets?.length }}</p>
                 <p>
                   Start Date:
                   {{ project.project.startDate | date : "MMM d, y" }}

@@ -1,0 +1,47 @@
+<div class="add-main">
+  <div class="header">
+    <h2>Add Members to Team</h2>
+  </div>
+  <div class="body">
+    <!-- Display selected users with option to remove them -->
+    <div *ngFor="let user of selectedUsers" class="selected-user">
+      <span>{{ user.firstName }} {{ user.lastName }}</span>
+      <button
+        mat-icon-button
+        aria-label="Remove user"
+        color="warn"
+        (click)="removeUserFromSelection(user)"
+      >
+        <mat-icon>remove_circle</mat-icon>
+      </button>
+    </div>
+
+    <mat-form-field>
+      <mat-label>Select a User to Add</mat-label>
+      <mat-select
+        [formControl]="currentSelectedUserControl"
+        (selectionChange)="addUserToSelection()"
+        aria-label="User selection dropdown"
+      >
+        <mat-option *ngFor="let user of users" [value]="user">
+          {{ user.firstName }} {{ user.lastName }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <!-- Buttons for actions -->
+    <div class="action-buttons">
+      <button
+        mat-raised-button
+        color="accent"
+        (click)="addMemberToTeam()"
+        [disabled]="isAddButtonDisabled"
+      >
+        Confirm & Add Members
+      </button>
+      <button mat-button color="warn" (click)="dialogRef.close()">
+        Cancel
+      </button>
+    </div>
+  </div>
+</div>

@@ -6,13 +6,14 @@ import { AuthInterceptor } from './auth.interceptor';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
+import { MatChipsModule } from '@angular/material/chips';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { DefaultModule } from './layouts/default/default.module';
-import { FullWidthModule } from './layouts/fullWidth/fullWidth.module';
+import { FullWidthModule } from './layouts/fullWidth/fullwidth.module';
 import { ModulesModule } from './modules/modules.module';
 import { Router } from '@angular/router';
 
@@ -30,6 +31,7 @@ import { Router } from '@angular/router';
     ReactiveFormsModule,
     MatNativeDateModule,
     MatDatepickerModule,
+    MatChipsModule,
   ],
   providers: [
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },

@@ -18,10 +18,13 @@ import { ConfirmationDialogComponent } from './components/confirmation-dialog/co
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
-import { AddMemberComponent } from './components/add-member/add-member.component';
+import { AddMemberDialogComponent } from './components/add-member-dialog/add-member-dialog.component';
 import { FormsModule } from '@angular/forms';
 import { MatSelectModule } from '@angular/material/select';
-import { ReactiveFormsModule } from '@angular/forms'; // For reactive forms
+import { ReactiveFormsModule } from '@angular/forms';
+import { AddUserDialogComponent } from './components/add-user-dialog/add-user-dialog.component';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
 
 @NgModule({
   declarations: [
@@ -30,7 +33,8 @@ import { ReactiveFormsModule } from '@angular/forms'; // For reactive forms
     FooterComponent,
     HeaderFullWidthComponent,
     ConfirmationDialogComponent,
-    AddMemberComponent,
+    AddMemberDialogComponent,
+    AddUserDialogComponent,
   ],
   imports: [
     CommonModule,
@@ -50,6 +54,8 @@ import { ReactiveFormsModule } from '@angular/forms'; // For reactive forms
     FormsModule,
     MatSelectModule,
     ReactiveFormsModule,
+    MatAutocompleteModule,
+    MatChipsModule,
   ],
   exports: [
     HeaderComponent,

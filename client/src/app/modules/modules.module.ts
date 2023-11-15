@@ -10,8 +10,8 @@ import { RegisterComponent } from './register/register.component';
 import { ResetComponent } from './reset/reset.component';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
-import { TicketDetailsComponent } from './ticket-details/ticket-details.component';
-import { CreateTeamComponent } from './team-details/create-team/create-team.component';
+import { ManageTicketComponent } from './manage-ticket/manage-ticket.component';
+import { CreateTeamComponent } from './manage-team/create-team/create-team.component';
 import { ProfileComponent } from './profile/profile.component';
 import { ProfessorDashboardComponent } from './professor-dashboard/professor-dashboard.component';
 import { AdminDashboardComponent } from './admin-dashboard/admin-dashboard.component';
@@ -23,7 +23,7 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatIconModule } from '@angular/material/icon';
-import { TeamDetailsComponent } from './team-details/team-details.component';
+import { ManageTeamComponent } from './manage-team/manage-team.component';
 import { MatListModule } from '@angular/material/list';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -31,6 +31,18 @@ import { MatButtonModule } from '@angular/material/button';
 import { UpdateProfileComponent } from './profile/update-profile/update-profile.component';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatCardModule } from '@angular/material/card';
+import { MatTableModule } from '@angular/material/table';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatSortModule } from '@angular/material/sort';
+import { TeamDetailsComponent } from './manage-team/team-details/team-details.component';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { CreateTicketComponent } from './manage-ticket/create-ticket/create-ticket.component';
+import { TicketDetailsComponent } from './manage-ticket/ticket-details/ticket-details.component';
 
 @NgModule({
   declarations: [
@@ -40,14 +52,17 @@ import { MatNativeDateModule } from '@angular/material/core';
     LoginComponent,
     RegisterComponent,
     ResetComponent,
-    TicketDetailsComponent,
+    ManageTicketComponent,
     CreateTeamComponent,
     ProfileComponent,
     ProfessorDashboardComponent,
     AdminDashboardComponent,
     NotFoundComponent,
-    TeamDetailsComponent,
+    ManageTeamComponent,
     UpdateProfileComponent,
+    TeamDetailsComponent,
+    CreateTicketComponent,
+    TicketDetailsComponent,
   ],
   imports: [
     CommonModule,
@@ -68,6 +83,16 @@ import { MatNativeDateModule } from '@angular/material/core';
     MatButtonModule,
     MatDatepickerModule,
     MatNativeDateModule,
+    MatChipsModule,
+    MatCardModule,
+    MatTableModule,
+    MatCheckboxModule,
+    MatPaginatorModule,
+    MatSortModule,
+    MatProgressSpinnerModule,
+    MatDividerModule,
+    MatPaginatorModule,
+    MatProgressBarModule,
   ],
   exports: [
     StudentDashboardComponent,
@@ -76,13 +101,14 @@ import { MatNativeDateModule } from '@angular/material/core';
     LoginComponent,
     RegisterComponent,
     ResetComponent,
-    TicketDetailsComponent,
+    ManageTicketComponent,
     CreateTeamComponent,
     ProfileComponent,
     ProfessorDashboardComponent,
     NotFoundComponent,
     AdminDashboardComponent,
-    TeamDetailsComponent,
+    ManageTeamComponent,
+    TicketDetailsComponent,
   ],
 })
 export class ModulesModule {}

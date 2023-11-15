@@ -114,8 +114,21 @@ export const getUsersForTeam = async (req, res, next) => {
       return res.status(401).json({ message: "Unauthorized. Please log in." });
     }
 
-    // Fetch all users from the database
-    const users = await User.find({}, "firstName lastName");
+    // Get the createdBy ID from the query parameter
+    const createdBy = req.query.createdBy;
+
+    // Check if createdBy ID is provided and valid
+    if (!createdBy || !mongoose.Types.ObjectId.isValid(createdBy)) {
+      return res
+        .status(400)
+        .json({ message: "Invalid or missing creator ID." });
+    }
+
+    // Fetch all users from the database except the team creator
+    const users = await User.find(
+      { _id: { $ne: createdBy } },
+      "firstName lastName email"
+    );
 
     // Send back the array of users
     res.status(200).json(users);
@@ -176,8 +189,10 @@ export const updateStudentProfile = async (req, res, next) => {
     if (roles.includes("Student")) {
       // Using includes to check if user has "Student" role
       updates = {
+        ...req.body, // Preserve other fields
         schoolYear: req.body.schoolYear,
         expectedGraduation: req.body.expectedGraduation,
+        roles: undefined, // Prevent roles from being updated
       };
     } else {
       return next(
@@ -232,8 +247,10 @@ export const updateProfessorProfile = async (req, res, next) => {
     if (roles.includes("Professor")) {
       // Using includes to check if user has "Professor" role
       updates = {
+        ...req.body, // Preserve other fields
         professorTitle: req.body.professorTitle,
         professorDepartment: req.body.professorDepartment,
+        roles: undefined, // Prevent roles from being updated
       };
     } else {
       return next(
@@ -257,6 +274,24 @@ export const updateProfessorProfile = async (req, res, next) => {
   } catch (error) {
     console.error("Error updating professor profile:", error);
     sendError(res, 500, "Error updating professor profile.");
+  }
+};
+
+export const getUserId = async (req, res) => {
+  try {
+    // Assuming req.user is populated with the authenticated user's information
+    if (!req.user) {
+      return sendError(res, 401, "Not Authenticated");
+    }
+    console.log(req.user);
+    console.log(req.user._id);
+
+    return sendSuccess(res, 200, "User ID retrieved successfully", {
+      _id: req.user.id,
+    });
+  } catch (error) {
+    console.error("Error encountered while retrieving user ID:", error);
+    return sendError(res, 500, "Internal Server Error");
   }
 };
 
