@@ -8,11 +8,13 @@ body {
 h1 {
   text-align: center;
   margin: 0;
-  font-size: 30px;
+  font-size: 3.5rem;
 }
 h3 {
   margin: 0;
-  font-size: 20px;
+  font-size: 2.5rem;
+  line-height: 2.5rem;
+  margin-bottom: 10px;
 }
 #desc {
   padding: 10px;
@@ -29,15 +31,34 @@ h3 {
   background-repeat: no-repeat;
   min-height: 100vh;
   padding: 40px 0; /* Adds padding to the top and bottom */
+  min-width: 90vw;
+  font-size: x-large;
+  line-height: 2.5rem;
 }
 
-.welcome-section, .call-to-action {
-  background-color: rgba(197, 216, 209, 0.9); /* semi-transparent */
-  margin: 30px;
+.welcome-section  {
+  display: flex;
+  flex-direction: column;
+  background-color: rgba(247, 249, 249, 0.9); /* semi-transparent */
+  color: #12263a; /* dark blue text */
   padding: 20px;
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-  width: 80%; /* Adjust the width as needed */
+  width: 90vw; /* Adjust the width as needed */
+  height:50vh;
+  align-items: center;
+  justify-content: center;
+  
+}
+
+.call-to-action
+{
+  margin-top: 50px;
+  color: #12263a; /* dark blue text */
+  border-radius: 8px;
+  border-top: #12263a; /* dark blue border */
+  border-bottom: #12263a; /* dark blue border */
+  height: fit-content;
 }
 .welcome-section {
   margin-top: 0;
