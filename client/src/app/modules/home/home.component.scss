@@ -1,36 +1,82 @@
+body {
+  font-family: 'Arial', sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f4edea; /* light peach background */
+  color: #12263a; /* dark blue text */
+}
+h1 {
+  text-align: center;
+  margin: 0;
+  font-size: 3.5rem;
+}
+h3 {
+  margin: 0;
+  font-size: 2.5rem;
+  line-height: 2.5rem;
+  margin-bottom: 10px;
+}
+#desc {
+  padding: 10px;
+}
 .home-container {
-  font-family: "Arial", sans-serif;
   display: flex;
   flex-direction: column;
+  justify-content: center; /* This will vertically center the items */
+  align-items: center; /* This will horizontally center the items */
+  text-align: center;
+  background-image: url('/assets/images/homeimage.jpeg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   min-height: 100vh;
+  padding: 40px 0; /* Adds padding to the top and bottom */
+  min-width: 90vw;
+  font-size: x-large;
+  line-height: 2.5rem;
+}
+
+.welcome-section  {
+  display: flex;
+  flex-direction: column;
+  background-color: rgba(247, 249, 249, 0.9); /* semi-transparent */
+  color: #12263a; /* dark blue text */
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  width: 90vw; /* Adjust the width as needed */
+  height:50vh;
+  align-items: center;
+  justify-content: center;
+  
+}
+
+.call-to-action
+{
+  margin-top: 50px;
+  color: #12263a; /* dark blue text */
+  border-radius: 8px;
+  border-top: #12263a; /* dark blue border */
+  border-bottom: #12263a; /* dark blue border */
+  height: fit-content;
+}
+.welcome-section {
+  margin-top: 0;
 }
 
 header {
-  padding: 1rem 0;
-  text-align: center;
-
-  h1 {
-    margin: 0;
-    font-size: 2rem;
-  }
+  background-color: #12263a; 
+  color: white;
+  font-weight: bold;
+  width: 100%;
+  padding: 20px 0;
 }
 
-main {
-  flex: 1;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  .welcome-section {
-    text-align: center;
-
-    h2 {
-      font-size: 1.5rem;
-      margin-bottom: 1rem;
-    }
-
-    p {
-      margin-bottom: 2rem;
-    }
-  }
+.action-button {
+  background-color: #06bcc1; /* teal background */
+  color: #fff; /* white text */
+  padding: 10px 20px;
+  text-decoration: none; /* Remove underline from links */
+  border-radius: 5px; /* Rounded corners for buttons */
+  margin: 30px; /* Space out buttons */
 }
