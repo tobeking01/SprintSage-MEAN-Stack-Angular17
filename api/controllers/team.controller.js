@@ -1,8 +1,8 @@
 import Team from "../models/Team.js";
+import User from "../models/User.js";
 import { sendError, sendSuccess } from "../utils/createResponse.js";
 import mongoose from "mongoose";
 const { ObjectId } = mongoose.Types;
-import User from "../models/User.js";
 
 const validateObjectIds = (ids) => {
   return ids.every((id) => mongoose.Types.ObjectId.isValid(id));
@@ -21,8 +21,8 @@ const getTeamByIdHelper = async (teamId) => {
     model: "User",
     populate: {
       path: "roles",
-      model: "Role",
-    },
+      model: "Role"
+    }
   });
 
   return team;
@@ -33,6 +33,9 @@ export const createTeam = async (req, res, next) => {
 
   // Extract the ID of the user who's creating the team
   const creatorUserId = req.user.id;
+
+  //add team owner/creator to team
+  teamMembers.push(creatorUserId);
 
   // Check if teamName is provided
   if (!teamName) {
@@ -67,18 +70,18 @@ export const createTeam = async (req, res, next) => {
     // Create a new Team instance with createdBy
     const newTeam = new Team({
       teamName,
-      createdBy: creatorUserId,
+      createdBy: creatorUserId
     });
 
-    // Add the creator as the first team member
-    newTeam.teamMembers.push({ user: creatorUserId });
+    //remove duplicate users
+    const teamMembersSet = new Set(teamMembers);
 
     // Add each additional team member
-    teamMembers.forEach((userId) => {
-      if (userId.toString() !== creatorUserId.toString()) {
-        newTeam.teamMembers.push({ user: userId });
-      }
+    teamMembersSet.forEach((userId) => {
+      newTeam.teamMembers.push({ user: userId });
     });
+
+    // newTeam.teamMembers = [...teamMembersSet];
 
     await newTeam.save();
     sendSuccess(res, 201, "Team Created!", newTeam);
@@ -98,12 +101,12 @@ export const getTeamsByUserId = async (req, res, next) => {
     const teams = await Team.find({
       $or: [
         { createdBy: loggedInUserId },
-        { "teamMembers.user": new mongoose.Types.ObjectId(loggedInUserId) },
-      ],
+        { "teamMembers.user": new mongoose.Types.ObjectId(loggedInUserId) }
+      ]
     })
       .populate({
         path: "createdBy",
-        select: "firstName lastName", // Selects only the firstName and lastName fields, excludes the _id field
+        select: "firstName lastName" // Selects only the firstName and lastName fields, excludes the _id field
       })
       .populate("teamMembers.user"); // Adjusted to populate user details
 
@@ -137,15 +140,15 @@ export const getTeamDetailsById = async (req, res, next) => {
     const teamDetails = await Team.findById(teamId)
       .populate({
         path: "teamMembers.user",
-        select: "firstName lastName", // Adjust the fields according to your needs
+        select: "firstName lastName" // Adjust the fields according to your needs
       })
       .populate({
         path: "createdBy",
-        select: "firstName lastName", // Adjust the fields according to your needs
+        select: "firstName lastName" // Adjust the fields according to your needs
       })
       .populate({
         path: "projects.project",
-        select: "projectName", // Adjust the fields according to your needs
+        select: "projectName" // Adjust the fields according to your needs
       });
     console.log("Team Details:", teamDetails);
 
@@ -199,7 +202,7 @@ export const updateTeamById = async (req, res) => {
         // Ensure memberId is a valid ObjectId
         if (mongoose.Types.ObjectId.isValid(memberId)) {
           team.teamMembers.push({
-            user: new mongoose.Types.ObjectId(memberId),
+            user: new mongoose.Types.ObjectId(memberId)
           });
         } else {
           return res.status(400).send(`Invalid User ID: ${memberId}`);
@@ -213,7 +216,7 @@ export const updateTeamById = async (req, res) => {
     // Respond with success
     return res.status(200).json({
       message: "Team updated successfully!",
-      team,
+      team
     });
   } catch (error) {
     console.error("Error updating team:", error);
@@ -254,7 +257,7 @@ export const deleteTeamById = async (req, res, next) => {
       res,
       200,
       "Team and all associated projects and tickets deleted successfully!",
-      { _id: id }
+      { _id: teamId }
     );
   } catch (error) {
     console.error("Error deleting team:", error);
@@ -303,7 +306,7 @@ export const addUsersToTeam = async (req, res, next) => {
     // Populate the team's member details before sending the response
     const populatedTeam = await team.populate({
       path: "teamMembers.user",
-      select: "firstName lastName",
+      select: "firstName lastName"
     });
 
     return sendSuccess(
@@ -471,7 +474,7 @@ export const getTeamsByProjectId = async (req, res, next) => {
     // Fetch teams associated with the provided project ID that also have the logged-in user as a team member
     const teams = await Team.find({
       "projects.project": new mongoose.Types.ObjectId(projectId),
-      "teamMembers.user": new mongoose.Types.ObjectId(loggedInUserId),
+      "teamMembers.user": new mongoose.Types.ObjectId(loggedInUserId)
     })
       .populate("teamMembers.user")
       .populate("projects.project");
@@ -503,7 +506,7 @@ export const getTeamMembersByProjectId = async (req, res, next) => {
     // Fetch teams associated with the provided project ID that also have the logged-in user as a team member
     const teams = await Team.find({
       "projects.project": new mongoose.Types.ObjectId(projectId),
-      "teamMembers.user": new mongoose.Types.ObjectId(loggedInUserId),
+      "teamMembers.user": new mongoose.Types.ObjectId(loggedInUserId)
     })
       .populate("teamMembers.user")
       .populate("projects.project");
