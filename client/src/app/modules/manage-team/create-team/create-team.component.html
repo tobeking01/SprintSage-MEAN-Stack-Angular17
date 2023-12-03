@@ -38,9 +38,6 @@
                 {{ user.firstName }} {{ user.lastName }}
               </mat-option>
             </mat-select>
-            <mat-error *ngIf="memberCtrl.hasError('required')">
-              Name is required!
-            </mat-error>
           </mat-form-field>
           <button mat-icon-button color="warn" (click)="removeUser(i)">
             <mat-icon>remove_circle</mat-icon>
@@ -54,7 +51,7 @@
         mat-raised-button
         color="primary"
         type="submit"
-        [disabled]="!createTeamForm.valid || !isAtLeastOneMemberSelected()"
+        [disabled]="!createTeamForm.valid"
       >
         Create New Team
       </button>
