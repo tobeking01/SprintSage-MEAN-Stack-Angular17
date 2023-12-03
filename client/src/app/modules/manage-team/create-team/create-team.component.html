@@ -14,13 +14,15 @@
           formControlName="teamName"
           placeholder="Enter Team Name"
         />
-        <mat-error
-          *ngIf="
-            createTeamForm.get('teamName')?.invalid &&
-            createTeamForm.get('teamName')?.touched
-          "
-        >
-          Please enter team name
+        <mat-error *ngIf="createTeamForm.get('teamName')?.touched">
+          <ng-container *ngIf="createTeamForm.get('teamName')?.value === ''"
+            >Please enter team name</ng-container
+          >
+          <ng-container
+            *ngIf="createTeamForm.get('teamName')?.hasError('teamNameExists')"
+            >Team name already exists. Please choose a different
+            name.</ng-container
+          >
         </mat-error>
       </mat-form-field>
 
@@ -38,6 +40,13 @@
                 {{ user.firstName }} {{ user.lastName }}
               </mat-option>
             </mat-select>
+            <div>
+              <mat-error
+                *ngIf="createTeamForm.get('teamMembers')?.hasError('invalid')"
+              >
+                Invalid or duplicate member.
+              </mat-error>
+            </div>
           </mat-form-field>
           <button mat-icon-button color="warn" (click)="removeUser(i)">
             <mat-icon>remove_circle</mat-icon>
