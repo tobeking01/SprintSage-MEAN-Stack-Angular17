@@ -297,6 +297,15 @@ export const addUsersToTeam = async (req, res, next) => {
       // Initialize teamMembers as an array if it's not
       team.teamMembers = [];
     }
+
+    const duplicateMembers = teamMembers.filter((memberId) =>
+      team.teamMembers.some((member) => member.user.toString() === memberId)
+    );
+
+    if (duplicateMembers.length) {
+      return sendError(res, 400, `Duplicate Team Members`);
+    }
+
     teamMembers.forEach((userId) => {
       team.teamMembers.push({ user: userId });
     });
