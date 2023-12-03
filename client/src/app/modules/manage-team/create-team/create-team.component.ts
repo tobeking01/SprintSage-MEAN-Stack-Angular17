@@ -155,15 +155,18 @@ export class CreateTeamComponent implements OnInit {
         teamName: this.createTeamForm.value.teamName,
         teamMembers: this.createTeamForm.value.teamMembers,
       };
-      console.log(this.createTeamForm.value);
-
       this.teamService.createTeam(teamData).subscribe(
         (response: SingleTeamResponseData) => {
           console.log('Newly created team:', response.data);
           if (this.dialogRef) this.dialogRef.close(true);
         },
         (error: any) => {
-          console.error(error);
+          if (error.error.message.includes('not valid')) {
+            this.createTeamForm.get('teamMembers')?.setErrors({ 'invalid': true });
+          }
+          if(error.error.message.includes('Team name already exists')) {
+            this.createTeamForm.get('teamName')?.setErrors({ 'teamNameExists': true });
+          }
         }
       );
     }
